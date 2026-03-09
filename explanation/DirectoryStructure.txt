@@ -1,0 +1,59 @@
+1. app/
+=>This directory contains the core code of the application, including controllers, models, middlewaresand other classes that define the application's behavior.
+=>This directory holds the main logic of the application
+
+2. bootstrap/
+=>This directory is used  for bootstrapping the framwork
+=>Main file in this directory is bootstrap/app.php
+=>This file creates the laravel application instance
+=>It loads the service container
+=>Prepare the framwork for handle request
+
+3. config/
+=>This directory contains the configuration setings for laravel application
+=>This directory contains application name, database configuration, mail configuration, cache configuration
+
+4. database/
+=>This directory contains database related files
+=>structure: database/
+             |--migrations/
+             |--seeders/
+             |--factories/
+=>migrations -> manage the database schema
+=>seeders    -> insert sample database
+=>factories  -> generate fake data for testing
+
+5. public/
+=>This directory is a root directory for laravel application
+=>The main file in directory is "index.php"
+=>This file is entry point of the application
+=>This directory also contains publically accessible files like icons, images, compiled assets
+
+6. resources/
+=>This directory contains the views and row assets
+=>structure: resources/
+             |--views/
+             |--js/
+             |--css/
+=>views  -> contains the blade templates
+=>css/js -> contains the frontend assets
+
+7. routes/
+=>This directory contains the all application routes definations
+=>Routes defines URL end points and corresponding actions
+=>structure: routes/
+             |--web.php
+             |--api.php
+             |--console.php
+=>web.php -> this file contains routes for web pages
+=>api.php -> this file contains routes for APIs
+=>console.php -> this file contains the routes for php artisan commands 
+
+8. storage/
+=>This directory use for store files at runtime
+=>It stores cache files, application logs, uploaded files, session files
+
+9. vendor/
+=>This directory contains all Composer Dependencies
+=>It automatically created when running "composer install" command
+=>It includes laravel framwork and third-party dependencies
