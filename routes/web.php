@@ -11,11 +11,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/company/config',[CompanyController::class,'companyDetails']);
+Route::get('/company/config', [CompanyController::class, 'companyDetails']);
 
-Route::get("/discount-price",[ProductController::class,'discountPrice']);
+Route::get("/discount-price", [ProductController::class, 'discountPrice']);
 
 Route::get('/test', [TestController::class, 'index'])
-      ->middleware(LogRequestMiddleware::class);
+    ->middleware(LogRequestMiddleware::class);
 
 Route::get('/pay', [PaymentController::class, 'pay']);
+
+Route::get('/test-service', [TestController::class, 'test']);
