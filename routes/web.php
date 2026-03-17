@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TestController;
 use App\Http\Middleware\LogRequestMiddleware;
@@ -16,3 +17,5 @@ Route::get("/discount-price",[ProductController::class,'discountPrice']);
 
 Route::get('/test', [TestController::class, 'index'])
       ->middleware(LogRequestMiddleware::class);
+
+Route::get('/pay', [PaymentController::class, 'pay']);

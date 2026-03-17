@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,6 +14,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Log::info('AppServiceProvider register method');
+
+        $this->app->bind(PaymentService::class, function () {
+            return new PaymentService();
+        });
     }
 
     /**
