@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CustomService;
 use App\Services\TestService1;
 use App\Services\TestService2;
 use Illuminate\Http\Request;
@@ -27,6 +28,14 @@ class TestController extends Controller
         return [
             'bind_same?' => $this->bindService1 === $bindService2,
             'singleton_same?' => $this->singletonService1 === $singletonService2,
+        ];
+    }
+
+    public function message(CustomService $service)
+    {
+        return [
+            'service-message'=>$service->message(),
+            'config-message'=>config('message', 'default message')
         ];
     }
 }

@@ -21,3 +21,5 @@ Route::get('/test', [TestController::class, 'index'])
 Route::get('/pay', [PaymentController::class, 'pay']);
 
 Route::get('/test-service', [TestController::class, 'test']);
+
+Route::get('custom-sp',[TestController::class,'message']);
