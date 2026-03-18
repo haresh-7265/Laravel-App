@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DependencyController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductController1;
@@ -145,3 +146,5 @@ Route::prefix('response')->group(function () {
         return response()->success(null, 'This is macro response', 200);
     });
 });
+
+Route::get('/dependency', [DependencyController::class, 'index']);
