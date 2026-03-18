@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Greeter;
 use App\Services\PaymentService;
 use App\Services\TestService1;
 use App\Services\TestService2;
@@ -24,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TestService1::class);
 
         $this->app->singleton(TestService2::class);
+
+        $this->app->singleton('greeter', function () {
+            return new Greeter();
+        });
     }
 
     /**
