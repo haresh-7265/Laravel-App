@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TestController;
@@ -113,3 +114,5 @@ Route::get('/seed', function () {
 Route::get('/product/{product}', function (Product $product) {
     return $product;
 });
+
+Route::get('/dashboard-1', DashboardController::class);
