@@ -49,3 +49,56 @@ Route::get('/facade-test', function () {
 Route::get('/greet', function () {
     return Greeter::greet("Haresh Ayar");
 });
+
+Route::get('/hello', function () {
+    return 'Hello World!';
+});
+
+Route::post('/submit', function () {
+    return 'Form Submitted!';
+});
+
+Route::get('/user/{id}', function (string $id) {
+    return "User ID is: {$id}";
+});
+
+Route::get('/user/{name?}', function (string $name = 'Guest') {
+    return "Hello, {$name}!";
+});
+
+Route::get('/dashboard', function () {
+    return 'Dashboard';
+})->name('dashboard');
+
+Route::redirect('/home', '/dashboard');
+
+Route::group([], function () {
+    Route::get('/profile', function () {
+        return 'Profile';
+    });
+    Route::get('/settings', function () {
+        return 'Settings';
+    });
+});
+
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', function () {
+        return 'Admin Dashboard';
+    });
+    Route::get('/users', function () {
+        return 'Admin Users';
+    });
+});
+
+Route::middleware([])->group(function () {
+    Route::get('/dashboard1', function () {
+        return 'Dashboard 1';
+    });
+    Route::get('/profile1', function () {
+        return 'Profile 1';
+    });
+});
+
+Route::fallback(function () {
+    return 'Page Not Found!';
+});
