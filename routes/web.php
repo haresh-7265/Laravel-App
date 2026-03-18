@@ -116,3 +116,11 @@ Route::get('/product/{product}', function (Product $product) {
 });
 
 Route::get('/dashboard-1', DashboardController::class);
+
+Route::get('/form', function () {
+    return view('form');
+});
+
+Route::post('/submit', function () {
+    return 'Form Submitted Successfully!';
+});
