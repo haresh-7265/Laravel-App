@@ -4,6 +4,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductController1;
 use App\Http\Controllers\TestController;
 use App\Http\Middleware\LogRequestMiddleware;
 use App\Models\Product;
@@ -124,3 +125,5 @@ Route::get('/form', function () {
 Route::post('/submit', function () {
     return 'Form Submitted Successfully!';
 });
+
+Route::resource('products',ProductController1::class);
