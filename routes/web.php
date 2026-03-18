@@ -5,7 +5,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TestController;
-use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\LogRequestMiddleware;
 use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
@@ -87,7 +86,7 @@ Route::group([], function () {
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return 'Admin Dashboard';
-    })->middleware(CheckRole::class);
+    })->middleware('role:admin');
     Route::get('/users', function () {
         return 'Admin Users';
     });
