@@ -5,6 +5,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TestController;
 use App\Http\Middleware\LogRequestMiddleware;
+use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -101,4 +102,14 @@ Route::middleware([])->group(function () {
 
 Route::fallback(function () {
     return 'Page Not Found!';
+});
+
+Route::get('/seed', function () {
+    Product::create(['name' => 'Laptop', 'price' => 999]);
+    Product::create(['name' => 'Phone', 'price' => 499]);
+    return 'Products created!';
+});
+
+Route::get('/product/{product}', function (Product $product) {
+    return $product;
 });
