@@ -126,4 +126,22 @@ Route::post('/submit', function () {
     return 'Form Submitted Successfully!';
 });
 
-Route::resource('products',ProductController1::class);
+Route::resource('products', ProductController1::class);
+
+Route::prefix('response')->group(function () {
+    Route::get('/view', function () {
+        return view('view');
+    });
+    Route::get('/json', function () {
+        return response()->json(['response' => 'json response'], 200);
+    });
+    Route::get('/redirect', function () {
+        return redirect('/response/json');
+    });
+    Route::get('/download', function () {
+        return response()->download(storage_path('app/test.txt'));
+    });
+    Route::get('/macro', function () {
+        return response()->success(null, 'This is macro response', 200);
+    });
+});

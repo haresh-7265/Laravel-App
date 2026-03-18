@@ -37,5 +37,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Log::info('AppServiceProvider boot method');
+
+        \Response::macro('success', function ($data = null, $message = 'Success', $code = 200) {
+            return \Response::json([
+                'status'  => 'success',
+                'message' => $message,
+                'data'    => $data,
+            ], $code);
+        });
     }
 }
