@@ -23,3 +23,19 @@ require __DIR__ . '/auth.php';
 Route::get('products/search', [ProductController1::class, 'search']);
 
 Route::resource('products', ProductController1::class);
+
+Route::get('res-string', function () {
+    return "String Response";
+});
+
+Route::get('res-json', function () {
+    return response()->json(['message' => 'JSON response']);
+});
+
+Route::get('res-array', function () {
+    return ['message' => 'array response']; // Laravel auto-converts any Model, Collection, or array returned from a controller to JSON.
+});
+
+Route::get('res-view', function () {
+    return view('view');
+});
