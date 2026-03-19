@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -27,14 +28,9 @@ class ProductController1 extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required'],
-            'price' => ['required', 'numeric'],
-            'category' => ['required'],
-            'description' => ['max:500']
-        ]);
+        $validated = $request->validated();
 
         Product::create($validated);
         return redirect()->route('products.index')->with('success', 'Product created!');
