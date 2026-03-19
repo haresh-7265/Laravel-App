@@ -29,15 +29,26 @@ class ProductController1 extends Controller
      */
     public function store(Request $request)
     {
-        $product = [
-            'name' => $request->string('name', null),
-            'price' => $request->float('price', 0)
-        ];
+        $name = $request->input('name', 'default'); // get input field with default value
+        $price = $request->price; // shorthand 
+        $inputs = $request->all(); // get all input as associative array with query string inputs
 
-        Product::create($product);
+        // key existance check
+        if ($request->has('description')) {
+            echo "product has description key<br>";
+        }
 
-        return redirect()->route('products.index')
-            ->with('success', 'Product created!');
+        // key existance check + not null value
+        if ($request->filled('description')) {
+            echo "product has description value<br>";
+        }
+
+        Product::create($request->only(['name', 'price', 'category', 'description']));
+        dd(
+            $name,
+            $price,
+            $inputs
+        );
     }
 
     /**
