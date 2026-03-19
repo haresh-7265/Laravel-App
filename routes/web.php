@@ -20,4 +20,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__ . '/auth.php';
 
+Route::get('products/search', [ProductController1::class, 'search']);
+
 Route::resource('products', ProductController1::class);

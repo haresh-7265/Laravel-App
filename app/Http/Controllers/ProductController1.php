@@ -93,4 +93,18 @@ class ProductController1 extends Controller
         return redirect()->route('products.index')
             ->with('success', 'Product deleted!');
     }
+
+    public function search(Request $request)
+    {
+        $category = $request->query('category', null);
+        $price = $request->query('price', null);
+
+        $products = Product::query()
+            ->when($category, fn($q) => $q->where('category', $category))
+            ->when($price, fn($q) => $q->where('price', $price))
+            ->get()
+            ->toArray();
+
+        return $products;
+    }
 }
