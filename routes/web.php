@@ -148,3 +148,19 @@ Route::prefix('response')->group(function () {
 });
 
 Route::get('/dependency', [DependencyController::class, 'index']);
+
+Route::get('/students', function () {
+    $students = [
+        ['name' => 'Aarav Shah', 'roll' => 101, 'marks' => 92],
+        ['name' => 'Priya Mehta', 'roll' => 102, 'marks' => 45],
+        ['name' => 'Rohan Patel', 'roll' => 103, 'marks' => 78],
+        ['name' => 'Sneha Joshi', 'roll' => 104, 'marks' => 85],
+        ['name' => 'Dev Trivedi', 'roll' => 105, 'marks' => 38],
+        ['name' => 'Ananya Desai', 'roll' => 106, 'marks' => 91],
+    ];
+    usort($students, fn(array $a, array $b) => $b['marks'] - $a['marks']);
+
+    $semester = 1;
+
+    return view('students.index', compact('students', 'semester'));
+});
