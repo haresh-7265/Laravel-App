@@ -1,4 +1,4 @@
-<form method="POST" action="{{ route('products.store') }}">
+<form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data">
     @csrf
     Name:
     <input type="text" name="name" placeholder="Product Name" value="{{ old('name') }}"/>
@@ -26,6 +26,12 @@
     Description:
     <textarea name="description" placeholder="Description (optional)">{{ old('description') }}</textarea>
     @error('description')
+    <span style="color: red;">{{ $message }}</span>
+    @enderror
+    <br><br>
+    Image:
+    <input type="file" name="image" placeholder="upload image here" accept="image/*">
+    @error('image')
     <span style="color: red;">{{ $message }}</span>
     @enderror
     <br><br>

@@ -32,6 +32,12 @@ class ProductController1 extends Controller
     {
         $validated = $request->validated();
 
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $extension = $file->extension();
+            $validated['image'] = $file->storeAs('products', $request->name . '.' . $extension, 'public');
+        }
+
         Product::create($validated);
         return redirect()->route('products.index')->with('success', 'Product created!');
     }

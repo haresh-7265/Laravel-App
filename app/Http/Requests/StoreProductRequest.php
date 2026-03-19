@@ -27,7 +27,8 @@ class StoreProductRequest extends FormRequest
             'name' => ['required'],
             'price' => ['required', 'numeric'],
             'category' => ['required'],
-            'description' => ['max:500']
+            'description' => ['nullable','max:500'],
+            'image' => ['nullable', 'image', 'max:2048', 'mimes:png,jpg,jpeg']
         ];
     }
 
@@ -37,7 +38,8 @@ class StoreProductRequest extends FormRequest
             'name' => 'product name',
             'price' => 'product price',
             'category' => 'product category',
-            'description' => 'product description'
+            'description' => 'product description',
+            'image' => 'product image'
         ];
     }
 }
