@@ -1,14 +1,18 @@
-<html>
-    <head>
-        <title>{{ $page_title }}</title>
-<!-- CSS -->
+@extends('layouts.app')
+
+@section('title','Laravel app')
+
+@section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+@endsection
 
-<!-- JS -->
+@section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
+@endsection
 
+@section('header', $company_name)
+
+@section('content')
 @session('success')
 <x-alert type="info" message="{{ session('success') }}"/>
 @endsession
@@ -26,7 +30,16 @@
     </form>
 @endforeach
 
-<a href="{{ route('products.create') }}">Create New</a>
-    
-</body>
-</html>
+@section('sidebar')
+@include('partials.navbar')
+@endsection
+ 
+@endsection
+
+@section('footer')
+<footer class="bg-lime-300 text-white text-center py-3 mt-auto">
+    <p class="text-muted small mb-0">
+        &copy; {{ date('Y') .' '. config('app.name')}} . All rights reserved.
+    </p>
+</footer>
+@endsection
