@@ -14,8 +14,10 @@ class ProductController1 extends Controller
     public function index(Request $request)
     {
         $products = Product::all();
+        $total_products = count($products);
+        $page_title = 'Product-list';
         if ($request->acceptsHtml()) {
-            return view('products.index', compact('products'));
+            return view('products.index', compact('products','total_products','page_title'));
         }
         return response()->success($products, 'All products');
     }

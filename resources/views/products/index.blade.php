@@ -1,11 +1,18 @@
+<html>
+    <head>
+        <title>{{ $page_title }}</title>
 <!-- CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
 @session('success')
 <x-alert type="info" message="{{ session('success') }}"/>
 @endsession
+<h1>Total products: {{ $total_products }}</h1>
 @foreach($products as $product)
     <p>{{ $product->name }} - {{ $product->price }}</p>
 
@@ -20,3 +27,6 @@
 @endforeach
 
 <a href="{{ route('products.create') }}">Create New</a>
+    
+</body>
+</html>
