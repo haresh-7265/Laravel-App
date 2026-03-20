@@ -39,7 +39,8 @@ class ProductController1 extends Controller
         }
 
         Product::create($validated);
-        return redirect()->route('products.index')->with('success', 'Product created!');
+        session()->flash('success','Product created successfully');
+        return redirect()->route('products.index');
     }
 
     /**
