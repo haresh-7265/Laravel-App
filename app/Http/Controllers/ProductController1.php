@@ -15,7 +15,7 @@ class ProductController1 extends Controller
     {
         $products = Product::all();
         if ($request->acceptsHtml()) {
-            return view('products.index')->with('products', $products);
+            return view('products.index', compact('products'));
         }
         return response()->success($products, 'All products');
     }
