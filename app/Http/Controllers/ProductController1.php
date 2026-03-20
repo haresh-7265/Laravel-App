@@ -11,10 +11,13 @@ class ProductController1 extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $products = Product::all();
-        return view('products.index')->with('products', $products);
+        if ($request->acceptsHtml()) {
+            return view('products.index')->with('products', $products);
+        }
+        return response()->success($products, 'All products');
     }
 
     /**
@@ -39,7 +42,7 @@ class ProductController1 extends Controller
         }
 
         Product::create($validated);
-        session()->flash('success','Product created successfully');
+        session()->flash('success', 'Product created successfully');
         return redirect()->route('products.index');
     }
 
