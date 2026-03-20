@@ -53,5 +53,11 @@ class AppServiceProvider extends ServiceProvider
                 'error' => $error
             ]);
         });
+
+        \View::composer('*', function ($view) {
+            $view->with('current_logged_user', auth()->user());
+        });
+
+        \View::share('company_name', 'Intern Training App');
     }
 }

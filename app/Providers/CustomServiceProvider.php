@@ -30,8 +30,5 @@ class CustomServiceProvider extends ServiceProvider
             $view->with('globalMessage', config('message', 'default message'));
         });
 
-        View::composer('*', function ($view) {
-            $view->with('current_logged_user', auth()->user());
-        });
     }
 }
