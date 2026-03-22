@@ -17,9 +17,11 @@
 <x-alert type="info" message="{{ session('success') }}"/>
 @endsession
 <h1>Total products: {{ $total_products }}</h1>
-@foreach($products as $product)
+@forelse($products as $product)
     <x-product-card :product="$product" />
-@endforeach
+@empty
+    <p>No products found</p>
+@endforelse
 
 @section('sidebar')
 @include('partials.navbar')
