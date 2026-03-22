@@ -18,16 +18,7 @@
 @endsession
 <h1>Total products: {{ $total_products }}</h1>
 @foreach($products as $product)
-    <p>{{ $product->name }} - {{ $product->price }}</p>
-
-    <a href="{{ route('products.edit', $product->id) }}">Edit</a>
-    <a href="{{ route('products.show', $product->id) }}">Show</a>
-
-    <form method="POST" action="{{ route('products.destroy', $product->id) }}">
-        @csrf
-        @method('DELETE')
-        <button type="submit">Delete</button>
-    </form>
+    <x-product-card :product="$product" />
 @endforeach
 
 @section('sidebar')
