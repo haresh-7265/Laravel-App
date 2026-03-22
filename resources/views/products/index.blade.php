@@ -14,7 +14,9 @@
 
 @section('content')
 @session('success')
-<x-alert type="info" message="{{ session('success') }}"/>
+<x-alert type="info">
+    {{ session('success') }}
+</x-alert>
 @endsession
 <h1>Total products: {{ $total_products }}</h1>
 @forelse($products as $product)
