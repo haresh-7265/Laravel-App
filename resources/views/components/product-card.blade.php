@@ -29,7 +29,7 @@
         <!-- Price -->
         <div class="mt-3 flex flex-wrap gap-2">
             <span class="text-xl font-bold text-green-600">
-                <strong>Price: </strong>₹{{number_format($product->price) }}
+                <strong>Price: </strong>@currency($product->price)
             </span>
 
             <a href="{{ route('products.edit', $product->id) }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Edit</a>

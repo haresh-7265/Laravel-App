@@ -59,5 +59,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         \View::share('company_name', 'Intern Training App');
+
+        \Blade::directive('currency', function ($amount) {
+            return "<?php echo '₹' . number_format((float)$amount, 2); ?>";
+        });
     }
 }
