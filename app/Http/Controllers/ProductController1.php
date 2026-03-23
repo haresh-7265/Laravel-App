@@ -2,106 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreProductRequest;
-use App\Models\Product;
 use Illuminate\Http\Request;
-
+use App\Services\DiscountService;
 class ProductController1 extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        $products = Product::all();
-        $total_products = count($products);
-        $page_title = 'Product-list';
-        if ($request->acceptsHtml()) {
-            return view('products.index', compact('products','total_products','page_title'));
+    protected $discountService;
+
+    public function __construct(DiscountService $discountService){
+        $this->discountService = $discountService;
+    }
+
+    public function discountPrice(Request $request){
+        $price = $request->query('price');
+        $discountPercentage = 20;
+
+        if(!$price){
+            return "<h1>Please give price to get discounted price</h1>";
         }
-        return response()->success($products, 'All products');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('products.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreProductRequest $request)
-    {
-        $validated = $request->validated();
-
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $extension = $file->extension();
-            $validated['image'] = $file->storeAs('products', $request->name . '.' . $extension, 'public');
-        }
-
-        Product::create($validated);
-        session()->flash('success', 'Product created successfully');
-        return redirect()->route('products.index');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product)
-    {
-        return view('products.show')->with('product', $product);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
-    {
-        return view('products.edit')->with('product', $product);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Product $product)
-    {
-        $data = [
-            'name' => $request->string('name', null),
-            'price' => $request->float('price', 0)
-        ];
-
-        $product->update($data);
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product updated!');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Product $product)
-    {
-        $product->delete();
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product deleted!');
-    }
-
-    public function search(Request $request)
-    {
-        $category = $request->query('category', null);
-        $price = $request->query('price', null);
-
-        $products = Product::query()
-            ->when($category, fn($q) => $q->where('category', $category))
-            ->when($price, fn($q) => $q->where('price', $price))
-            ->get()
-            ->toArray();
-
-        return $products;
+        $discount = $this->discountService->calculateDiscount($price,$discountPercentage);
+        return "<h1>Price after discount= $discount</h1>";
     }
 }

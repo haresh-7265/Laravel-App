@@ -1,41 +1,44 @@
+{{-- resources/views/layouts/app.blade.php --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'App') — Laravel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100">
 
-        <title>@yield('title')</title>
-        
-        @yield('styles')
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            {{-- Sidebar --}}
-            @yield('sidebar')
-
-            <!-- Page Heading -->
-            @hasSection('header')
-                <header class="bg-white  shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        @yield('header')
-                    </div>
-                </header>
-            @endif
-            
-            <!-- Page Content -->
-            <main>
-                @yield('content')
-            </main>
-            {{-- Footer --}}
-            @yield('footer')
+    {{-- Navbar --}}
+    <nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <span class="font-semibold text-gray-800">MyApp</span>
+        <div class="flex items-center gap-4 text-sm text-gray-600">
+            <span>{{ auth()->user()->name }}</span>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                        class="text-red-500 hover:text-red-700 hover:underline">
+                    Logout
+                </button>
+            </form>
         </div>
-        @yield('scripts')
-    </body>
+    </nav>
+
+    {{-- Flash messages --}}
+    <div class="max-w-4xl mx-auto mt-4 px-6">
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-300 text-green-800
+                        text-sm px-4 py-3 rounded-lg mb-4">
+                {{ session('success') }}
+            </div>
+        @endif
+    </div>
+
+    {{-- Page content --}}
+    <main class="max-w-4xl mx-auto px-6 py-6">
+        @yield('content')
+    </main>
+
+</body>
 </html>

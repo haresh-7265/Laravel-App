@@ -22,3 +22,5 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/app/Http/Middleware/Authenticate.php
+/app/Http/Middleware/RedirectIfAuthenticated.php

@@ -13,9 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // $middleware->append(CheckRole::class);
         $middleware->alias([
-            'role' => App\Http\Middleware\CheckRole::class
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
