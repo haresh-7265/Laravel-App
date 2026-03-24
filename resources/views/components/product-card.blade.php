@@ -1,49 +1,62 @@
 @props(['product'])
-<div class="max-w-sm bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">
+<div class="card h-100 shadow-sm border-0 product-card">
 
-    <!-- Product Image -->
-    @if($product->image)
-    <img 
-        src="{{ asset('storage/'.$product->image) }}" 
-        alt="{{ $product->name }}" 
-        class="w-full h-48 object-cover"
-    >
-    @endif
+    {{-- Product Image --}}
+    <div style="position: relative; overflow: hidden;">
+        <img src="{{ $product->image ? asset('storage/'. $product->image) : asset('storage/products/default.jpg') }}"
+             alt="{{ $product->name }}"
+             class="card-img-top"
+             style="height: 220px; object-fit: cover; transition: transform 0.3s ease;">
 
-    <div class="p-4">
 
-        <span class="text-xs text-gray-500 uppercase">
-            <strong>Category: </strong>{{ $product->category ?? 'No category'}}
+        {{-- Category Badge --}}
+        <span class="badge bg-primary"
+              style="position: absolute; top: 10px; left: 10px;">
+            {{ $product->category }}
         </span>
+    </div>
 
-        <!-- Product Name -->
-        <h2 class="text-lg font-semibold text-gray-800 mt-1">
-            <strong>Name: </strong>{{ $product->name }}
-        </h2>
+    <div class="card-body d-flex flex-column">
 
-        <!-- Description -->
-        <p class="text-sm text-gray-600 mt-2">
-            <strong>Deasription: </strong>{{ $product->description }}
+        {{-- Name --}}
+        <h5 class="card-title fw-bold mb-1">{{ $product->name }}</h5>
+
+        {{-- Description --}}
+        <p class="card-text text-muted small mb-3"
+           style="display: -webkit-box; -webkit-line-clamp: 2;
+                  -webkit-box-orient: vertical; overflow: hidden;">
+            {{ Str::limit($product->description ?? 'No description available.', 30, '...') }}
         </p>
 
-        <!-- Price -->
-        <div class="mt-3 flex flex-wrap gap-2">
-            <span class="text-xl font-bold text-green-600">
-                <strong>Price: </strong>@currency($product->price)
-            </span>
-
-            <a href="{{ route('products.edit', $product->id) }}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Edit</a>
-            <a href="{{ route('products.show', $product->id) }} " class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700" style="background-color: green;">Show</a>
-
-            <form method="POST" action="{{ route('products.destroy', $product->id) }}">
-                @csrf
-                @method('DELETE')
-                {{-- <button type="submit">Delete</button> --}}
-                <button class="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700">
-                    Delete
-                </button>
-            </form>
+        {{-- Price & Stock --}}
+        <div class="d-flex justify-content-between align-items-center mb-3 mt-auto">
+            <strong class="text-success fs-5">
+                {{ config('admin.currency') }} {{ number_format($product->price, 2) }}
+            </strong>
+            <small class="{{ $product->stock > 0 ? 'text-primary' : 'text-danger' }}">
+                {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of Stock' }}
+            </small>
         </div>
 
+        {{-- Actions --}}
+        <div class="d-flex gap-2">
+            <a href="{{ route('products.show', $product->id) }}"
+               class="btn btn-outline-primary btn-sm flex-fill">View</a>
+
+            @can('edit-product')
+                <a href="{{ route('products.edit', $product->id) }}"
+                   class="btn btn-warning btn-sm flex-fill">Edit</a>
+            @endcan
+
+            @can('delete-product')
+                <form action="{{ route('products.destroy', $product->id) }}"
+                      method="POST"
+                      onsubmit="return confirm('Delete this product?')">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            @endcan
+        </div>
     </div>
 </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Facades\Products;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
@@ -48,15 +49,10 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $validated = $request->validated();
+        $data = $request->except(['image','_token']);
+        $image = $request->file('image');
 
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $extension = $file->extension();
-            $validated['image'] = $file->storeAs('products', $request->name . '.' . $extension, 'public');
-        }
-
-        Products::create($validated);
+        Products::create($data, $image);
         session()->flash('success', 'Product created successfully');
         return redirect()->route('products.index');
     }
@@ -80,14 +76,12 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        $data = [
-            'name' => $request->string('name', null),
-            'price' => $request->float('price', 0)
-        ];
+        $data = $request->except(['image','_token','_method']);
+        $image = $request->file('image');
 
-        Products::update($product, $data);
+        Products::update($product, $data, $image);
 
         return redirect()->route('products.index')
             ->with('success', 'Product updated!');

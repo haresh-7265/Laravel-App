@@ -24,22 +24,25 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required'],
-            'price' => ['required', 'numeric'],
-            'category' => ['required'],
-            'description' => ['nullable','max:500'],
-            'image' => ['nullable', 'image', 'max:2048', 'mimes:png,jpg,jpeg']
+            'name'        => ['required','string','max:255'],
+            'description' => ['nullable','string'],
+            'price'       => ['required','numeric','min:0'],
+            'stock'       => ['required','integer','min:0'],
+            'category'    => ['required','string','max:100'],
+            'image'       => ['nullable','image','mimes:jpg,jpeg,png','max:2048'],
         ];
     }
 
-    public function attributes(): array
+    public function messages(): array
     {
         return [
-            'name' => 'product name',
-            'price' => 'product price',
-            'category' => 'product category',
-            'description' => 'product description',
-            'image' => 'product image'
+            'name.required'     => 'Product name is required.',
+            'price.required'    => 'Product price is required.',
+            'price.numeric'     => 'Price must be a valid number.',
+            'stock.required'    => 'Stock quantity is required.',
+            'category.required' => 'Category is required.',
+            'image.image'       => 'File must be an image.',
+            'image.max'         => 'Image size must not exceed 2MB.',
         ];
     }
 }
