@@ -126,7 +126,8 @@ return [
     ],
 
     'aliases' => Facade::defaultAliases()->merge([
-        'Greeter' => App\Facades\Greeter::class
+        'Greeter' => App\Facades\Greeter::class,
+        'Products' => App\Facades\Products::class
     ])->toArray(),
 
 ];

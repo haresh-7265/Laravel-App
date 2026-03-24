@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Products;
 use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -10,10 +11,13 @@ use Illuminate\Routing\Controllers\Middleware;
 class ProductController extends Controller
 {
     // role middleware on specific methods
-    public static function middleware(): array{
+    public static function middleware(): array
+    {
         return [
             new Middleware('role:admin', except: [
-                'index', 'show', 'search'
+                'index',
+                'show',
+                'search'
             ]),
         ];
     }
@@ -22,7 +26,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::all();
+        $products = Products::getAll();
         $total_products = count($products);
         $page_title = 'Product-list';
         if ($request->acceptsHtml()) {
@@ -52,7 +56,7 @@ class ProductController extends Controller
             $validated['image'] = $file->storeAs('products', $request->name . '.' . $extension, 'public');
         }
 
-        Product::create($validated);
+        Products::create($validated);
         session()->flash('success', 'Product created successfully');
         return redirect()->route('products.index');
     }
@@ -83,7 +87,7 @@ class ProductController extends Controller
             'price' => $request->float('price', 0)
         ];
 
-        $product->update($data);
+        Products::update($product, $data);
 
         return redirect()->route('products.index')
             ->with('success', 'Product updated!');
@@ -94,7 +98,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->delete();
+        Products::delete($product);
 
         return redirect()->route('products.index')
             ->with('success', 'Product deleted!');
@@ -102,14 +106,9 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        $category = $request->query('category', null);
-        $price = $request->query('price', null);
+        $filters = $request->only(['category', 'price']);
 
-        $products = Product::query()
-            ->when($category, fn($q) => $q->where('category', $category))
-            ->when($price, fn($q) => $q->where('price', $price))
-            ->get()
-            ->toArray();
+        $products = Products::search($filters);
 
         return $products;
     }

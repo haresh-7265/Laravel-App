@@ -1,0 +1,7 @@
+<?php
+
+return [
+    'name'          => env('ADMIN_NAME', 'Admin Panel'),
+    'currency'      => env('ADMIN_CURRENCY', 'USD'),
+    'allow_delete'  => env('ADMIN_ALLOW_DELETE', true),
+];
