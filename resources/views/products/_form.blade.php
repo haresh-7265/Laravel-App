@@ -36,12 +36,12 @@
 
 <div class="mb-3">
     <label class="form-label">Category</label>
-    <select name="category" class="form-select @error('category') is-invalid @enderror">
+    <select name="category_id" class="form-select @error('category_id') is-invalid @enderror">
         <option value="">-- Select Category --</option>
-        @foreach(['Electronics', 'Clothings', 'Books', 'Furniture', 'Sports', 'Toys', 'Beauty', 'Food'] as $category)
-            <option value="{{ $category }}"
-                {{ old('category', $product->category ?? '') == $category ? 'selected' : '' }}>
-                {{ $category }}
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}"
+                {{ old('category_id', $product->category->id ?? '') == $category->id ? 'selected' : '' }}>
+                {{ $category->name }}
             </option>
         @endforeach
     </select>

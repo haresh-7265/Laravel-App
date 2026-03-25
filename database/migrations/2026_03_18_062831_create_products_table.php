@@ -15,7 +15,10 @@ return new class extends Migration {
             $table->string('name');
             $table->decimal('price', 8, 2);
             $table->integer('stock');
-            $table->string('category');
+            // Foreign key
+            $table->foreignId('category_id')
+                ->constrained()
+                ->cascadeOnDelete();
             $table->text('description')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();

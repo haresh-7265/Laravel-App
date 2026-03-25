@@ -28,7 +28,7 @@ class StoreProductRequest extends FormRequest
             'description' => ['nullable','string'],
             'price'       => ['required','numeric','min:0'],
             'stock'       => ['required','integer','min:0'],
-            'category'    => ['required','string','max:100'],
+            'category_id' => ['required','exists:categories,id'],
             'image'       => ['nullable','image','mimes:jpg,jpeg,png','max:2048'],
         ];
     }
@@ -40,7 +40,7 @@ class StoreProductRequest extends FormRequest
             'price.required'    => 'Product price is required.',
             'price.numeric'     => 'Price must be a valid number.',
             'stock.required'    => 'Stock quantity is required.',
-            'category.required' => 'Category is required.',
+            'category_id.required' => 'Category is required.',
             'image.image'       => 'File must be an image.',
             'image.max'         => 'Image size must not exceed 2MB.',
         ];

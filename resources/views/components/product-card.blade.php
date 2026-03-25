@@ -12,7 +12,7 @@
         {{-- Category Badge --}}
         <span class="badge bg-primary"
               style="position: absolute; top: 10px; left: 10px;">
-            {{ $product->category }}
+            {{ $product->category->name }}
         </span>
     </div>
 

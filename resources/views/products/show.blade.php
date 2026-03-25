@@ -38,7 +38,7 @@
                     {{-- Category --}}
                     <p class="text-muted mb-2">
                         <strong>Category:</strong>
-                        <span class="badge bg-primary">{{ $product->category }}</span>
+                        <span class="badge bg-primary">{{ $product->category->name }}</span>
                     </p>
 
                     {{-- Description --}}
