@@ -11,3 +11,17 @@
         ->Requires a route with a name.
         ->Parameters are passed automatically as arguments.
         ->Automatically updates if route URL changes.
+
+21.3 – Asset Helper
+
+    =>Public Folder
+        ->It is the entry point of the Laravel application.
+        ->Contains index.php which handles all requests.
+        ->Stores publicly accessible files like CSS, JS, and images.
+        ->Only this folder is accessible from the browser.
+    
+    =>Storage Linking
+        ->Used to make files in storage/app/public accessible.
+        ->Created using command: php artisan storage:link.
+        ->Creates a link: public/storage → storage/app/public.
+        ->Allows users to access uploaded files via browser.
