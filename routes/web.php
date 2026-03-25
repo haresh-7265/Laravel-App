@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', function () {
@@ -41,3 +42,22 @@ Route::get('download-invoice', function () {
 Route::get('welcome', function() {
     return view('welcome');
 });
+
+// Generate signed URL
+Route::get('/test-signed/{user?}', function ($user = 1) {
+    $signedUrl = URL::temporarySignedRoute(
+        'unsubscribe',
+        now()->addMinutes(10), // expires in 10 minutes
+        ['user' => $user]
+    );
+    return "<a href='$signedUrl'> $signedUrl</a>";
+});
+
+// Validate signed URL
+Route::get('/unsubscribe/{user}', function (Request $request, $user) {
+    if (! $request->hasValidSignature()) {
+        abort(403, 'Invalid or expired link');
+    }
+
+    return "User unsubscribed successfully";
+})->name('unsubscribe');
