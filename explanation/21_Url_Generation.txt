@@ -1,0 +1,13 @@
+21.2 - URL Helper
+
+    =>url() Helper
+        ->Generates URL using a direct path.
+        ->Does not require a named route.
+        ->Parameters are passed manually in the URL.
+        ->Needs manual update if URL changes.
+
+    =>route() Helper
+        ->Generates URL using a named route.
+        ->Requires a route with a name.
+        ->Parameters are passed automatically as arguments.
+        ->Automatically updates if route URL changes.
