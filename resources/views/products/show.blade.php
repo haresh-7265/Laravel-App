@@ -8,9 +8,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Product Details</h2>
         <div>
-            @if(auth()->user()->isAdmin())
+            @admin
             <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning">Edit</a>
-            @endif
+            @endadmin
             <a href="{{ route('products.index') }}" class="btn btn-secondary">Back</a>
         </div>
     </div>
@@ -55,7 +55,7 @@
                             <div class="p-3 bg-light rounded text-center">
                                 <small class="text-muted d-block">Price</small>
                                 <strong class="fs-4 text-success">
-                                    {{ config('admin.currency') }} {{ number_format($product->price, 2) }}
+                                    @currency($product->price)
                                 </strong>
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                         </div>
                     </div>
 
-                    @if (auth()->user()->isAdmin())
+                    @admin
             
                     <hr>
 
@@ -103,7 +103,7 @@
                         </form>
                     </div>
 
-                    @endif
+                    @endadmin
 
                 </div>
             </div>

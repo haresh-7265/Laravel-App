@@ -22,6 +22,16 @@ class ProductServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Blade::directive('admin', function () {
+            return "<?php if(auth()->user()->role === 'admin'): ?>";
+        });
+
+        \Blade::directive('endadmin', function () {
+            return "<?php endif; ?>";
+        });
+
+        \Blade::directive('currency', function ($amount) {
+            return "<?php echo config('admin.currency') .' '. number_format((float)$amount, 2); ?>";
+        });
     }
 }

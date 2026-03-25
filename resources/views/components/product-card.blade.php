@@ -31,7 +31,7 @@
         {{-- Price & Stock --}}
         <div class="d-flex justify-content-between align-items-center mb-3 mt-auto">
             <strong class="text-success fs-5">
-                {{ config('admin.currency') }} {{ number_format($product->price, 2) }}
+                @currency($product->price)
             </strong>
             <small class="{{ $product->stock > 0 ? 'text-primary' : 'text-danger' }}">
                 {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of Stock' }}
