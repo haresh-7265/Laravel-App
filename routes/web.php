@@ -37,3 +37,7 @@ Route::get('res-view', function () {
 Route::get('download-invoice', function () {
     return response()->download(storage_path('app/public/products/Asus slim 15.jpg'), 'invoice');
 });
+
+Route::get('welcome', function() {
+    return view('welcome');
+});
