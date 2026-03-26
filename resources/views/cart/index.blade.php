@@ -161,7 +161,7 @@
                                     <span class="qty-display">{{ $item['qty'] }}</span>
 
                                     {{-- Increase --}}
-                                    <form action="{{ route('cart.add', $id) }}" method="POST">
+                                    <form action="{{ route('cart.add', $item['slug']) }}" method="POST">
                                         @csrf
                                         <button type="submit"
                                                 class="btn btn-outline-secondary qty-btn"

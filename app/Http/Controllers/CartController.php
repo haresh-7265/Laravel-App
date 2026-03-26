@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    
-    public function index(){
+
+    public function index()
+    {
         $cart = session('cart', []);
-        if(empty($cart)){
+        if (empty($cart)) {
             return view('cart.index', compact('cart'))->with('warning', 'Cart is empty');
         }
 
@@ -31,6 +32,7 @@ class CartController extends Controller
 
         $cart[$product->id] = [
             'name' => $product->name,
+            'slug' => $product->slug,
             'price' => $product->price,
             'qty' => $qty,
         ];

@@ -40,11 +40,11 @@
 
         {{-- Actions --}}
         <div class="d-flex gap-2">
-            <a href="{{ route('products.show', $product->id) }}"
+            <a href="{{ route('products.show', $product->slug) }}"
                class="btn btn-outline-primary btn-sm flex-fill">View</a>
 
             @can('edit-product')
-                <a href="{{ route('products.edit', $product->id) }}"
+                <a href="{{ route('products.edit', $product->slug) }}"
                    class="btn btn-warning btn-sm flex-fill">Edit</a>
             @endcan
 
