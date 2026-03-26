@@ -62,3 +62,8 @@ Route::get('/unsubscribe/{user}', function (Request $request, $user) {
 
     return "User unsubscribed successfully";
 })->name('unsubscribe');
+
+// Display session data
+Route::get('/session-data', function () {
+    return session()->all(); // shows all session data
+});
