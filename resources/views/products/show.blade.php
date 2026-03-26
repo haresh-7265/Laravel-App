@@ -69,6 +69,34 @@
                         </div>
                     </div>
 
+                    @if (auth()->user()->role == 'customer')
+                        <hr>
+
+{{-- Add to Cart --}}
+@if($product->stock > 0)
+    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-flex gap-2 align-items-center">
+        @csrf
+
+        {{-- Quantity --}}
+        <input type="number" 
+               name="qty" 
+               value="1" 
+               min="1" 
+               max="{{ $product->stock }}"
+               class="form-control w-25">
+
+        {{-- Button --}}
+        <button type="submit" class="btn btn-success">
+            🛒 Add to Cart
+        </button>
+    </form>
+@else
+    <button class="btn btn-secondary" disabled>
+        Out of Stock
+    </button>
+@endif
+                    @endif
+
                     @admin
             
                     <hr>

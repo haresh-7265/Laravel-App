@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+require __DIR__ . '/cart.php';
 
 Route::get('res-string', function () {
     return "String Response";
