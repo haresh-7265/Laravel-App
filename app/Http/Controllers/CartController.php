@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ProductOutOfStockException;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -22,6 +23,17 @@ class CartController extends Controller
         $cart = session('cart', []);
 
         $qty = $request->input('qty', 1);
+
+        if ($product->stock < $qty) {
+            throw new ProductOutOfStockException(
+                productName: $product->name,
+                productId: $product->id,
+                requestedQuantity: $qty,
+                availableQuantity: $product->stock,
+                message: "Product '{$product->name}' is out of stock." 
+            );
+        }
+
         if (isset($cart[$product->id])) {
             $cart[$product->id]['qty'] += $qty;
             session()->put('cart', $cart);
