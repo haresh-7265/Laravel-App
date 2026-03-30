@@ -14,6 +14,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('products/search', [ProductController::class, 'search']);
+    Route::get('/products/export', [ProductController::class, 'exportCsv'])->name('products.export');
     Route::resource('products', ProductController::class);
 });
 

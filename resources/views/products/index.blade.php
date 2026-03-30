@@ -3,7 +3,13 @@
 @section('title','Products')
 
 @section('content')
-<h1>Total products: {{ $total_products }}</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Total products: {{ $total_products }}</h1>
+    @admin
+        <x-export-filter-popup/>
+    @endadmin
+</div>
+
 {{-- Product Cards Grid --}}
     <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
         @forelse($products as $product)

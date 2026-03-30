@@ -35,7 +35,7 @@ class ProductServiceProvider extends ServiceProvider
             return "<?php echo config('admin.currency') .' '. number_format((float)$amount, 2); ?>";
         });
 
-        \View::composer('products._form', function ($view) {
+        \View::composer(['products._form','components.export-filter-popup'], function ($view) {
             $view->with('categories', Category::all());
         });
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductsExport;
 use App\Facades\Products;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -9,6 +10,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller implements HasMiddleware
 {
@@ -106,5 +108,31 @@ class ProductController extends Controller implements HasMiddleware
         $products = Products::search($filters);
 
         return $products;
+    }
+
+    // export csv file
+    public function exportCsv(Request $request)
+    {
+        $request->validate([
+            'category_id' => 'nullable|exists:categories,id',
+            'min_price'   => 'nullable|numeric|min:0',
+            'max_price'   => 'nullable|numeric|min:0|gte:min_price',
+            'min_stock'   => 'nullable|integer|min:0',
+            'max_stock'   => 'nullable|integer|min:0',
+        ]);
+
+        $filename = 'products_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        return Excel::download(
+            new ProductsExport(
+                categoryId: $request->category_id,
+                minPrice:   $request->min_price,
+                maxPrice:   $request->max_price,
+                minStock:   $request->min_stock,
+                maxStock:   $request->max_stock,
+            ),
+            $filename,
+            \Maatwebsite\Excel\Excel::CSV
+        );
     }
 }

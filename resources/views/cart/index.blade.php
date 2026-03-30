@@ -74,6 +74,31 @@
         @media (max-width: 767px) {
             .summary-card { position: static; margin-top: 20px; }
         }
+
+        .item-img-placeholder {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            background: #f8f9fa;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+        }
+            
+        .item-img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* makes image square without distortion */
+        }
+        
+        .item-img-placeholder i {
+            font-size: 24px;
+            color: #6c757d;
+        }
+
     </style>
 @endsection
 
@@ -133,7 +158,11 @@
 
                                 {{-- Product Image Placeholder --}}
                                 <div class="item-img-placeholder">
-                                    <i class="bi bi-box-seam text-secondary" style="font-size:22px"></i>
+                                    @if($item['image'] ?? null)
+                                        <img src="{{ asset('storage/' . $item['image']) }}" alt="Product">
+                                    @else
+                                        <i class="bi bi-box-seam text-secondary" style="font-size:22px"></i>
+                                    @endif
                                 </div>
 
                                 {{-- Product Info --}}

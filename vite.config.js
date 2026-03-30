@@ -9,6 +9,8 @@ export default defineConfig({
                 "resources/js/app.js",
                 "resources/css/welcome.css",
                 "resources/js/welcome.js",
+                "resources/js/csvExport.js",
+                "resources/css/csvExport.css",
             ],
             refresh: true,
         }),

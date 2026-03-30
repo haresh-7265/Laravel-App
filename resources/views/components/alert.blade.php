@@ -1,10 +1,13 @@
 {{-- alert class component --}}
 <div 
-class="alert alert-{{ $type }} alert-dismissible fade show position-relative overflow-hidden custom-alert" 
+class="alert alert-{{ $type }} alert-dismissible fade show custom-alert position-fixed top-0 start-50 translate-middle-x mt-3" 
 role="alert" 
-data-duration="5000">
+data-duration="2000"
+style="z-index: 9999; min-width: 800px; max-width: 1000px;"
+>
     {{ $slot }}
-    <!-- Progress Bar (Bootstrap) -->
+
+    <!-- Progress Bar -->
     <div class="progress position-absolute bottom-0 start-0 w-100" style="height: 4px;">
         <div class="progress-bar bg-{{ $type }}"></div>
     </div>
