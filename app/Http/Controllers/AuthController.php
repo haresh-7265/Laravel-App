@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -39,7 +38,15 @@ class AuthController extends Controller
         // Regenerate session id after login 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')
+        \Log::channel('security')->info('New user registered', [
+            'user_id'    => $user->id,
+            'email'      => $user->email,
+            'ip'         => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp'  => now()->toIso8601String(),
+        ]);
+
+        return redirect()->route('products.index')
                          ->with('success', 'Account created! Welcome, ' . $user->name);
     }
 
@@ -57,9 +64,25 @@ class AuthController extends Controller
             // Regenerate session ID to prevent session fixation attacks
             $request->session()->regenerate();
 
+            \Log::channel('security')->info('User logged in', [
+                'user_id'     => Auth::id(),
+                'email'       => Auth::user()->email,
+                'remember_me' => $request->boolean('remember'),
+                'ip'          => $request->ip(),
+                'user_agent'  => $request->userAgent(),
+                'timestamp'   => now()->toIso8601String(),
+            ]);
+
             // Redirect to originally requested URL or dashboard
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('products.index'));
         }
+
+        \Log::channel('security')->warning('Failed login attempt', [
+            'email'      => $request->email, 
+            'ip'         => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp'  => now()->toIso8601String(),
+        ]);
 
         // Failed — send back with a single generic error 
         return back()
@@ -71,11 +94,21 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $userId = Auth::id();
+        $email = Auth::user()->email;
+
         Auth::logout();
 
         // Invalidate session & regenerate CSRF token
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        \Log::channel('security')->info('User logged out', [
+            'user_id'   => $userId,
+            'email'     => $email,
+            'ip'        => $request->ip(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
 
         return redirect()->route('login')
                          ->with('success', 'You have been logged out.');

@@ -127,13 +127,31 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Custom: product channel
         'product' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/product.log'),
+            'path' => storage_path('logs/products/product.log'),
             'level' => 'info',
             'days' => 14,
         ],
 
+        // Custom: order channel
+        'order' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/orders/order.log'),
+            'level'  => env('LOG_LEVEL', 'debug'),
+            'days'   => 90,   
+            'replace_placeholders' => true,
+        ],
+
+        // Custom: security channel
+         'security' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/security/security.log'),
+            'level'  => 'info',
+            'days'   => 180,       
+            'replace_placeholders' => true,
+        ],
     ],
 
 ];
