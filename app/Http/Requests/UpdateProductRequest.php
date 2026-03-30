@@ -30,7 +30,7 @@ class UpdateProductRequest extends FormRequest
             'discount_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
             'stock' => ['sometimes','required', 'integer', 'min:0'],
             'category_id' => ['sometimes','required', 'exists:categories,id'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'tags' => ['sometimes','array', 'min:1'],
             'tags.*' => ['string', 'distinct']
         ];

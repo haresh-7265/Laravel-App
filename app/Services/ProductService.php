@@ -3,18 +3,17 @@
 namespace App\Services;
 
 use App\Models\Product;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Stmt\TryCatch;
 
 class ProductService
 {
     // GET ALL
     public function getAll()
     {
-        Log::channel('product')->info('Fetched all products', [
-            'user_id' => auth()->id(),
-        ]);
 
         return Product::all();
     }
@@ -22,85 +21,172 @@ class ProductService
     // CREATE
     public function create(array $data, ?UploadedFile $image)
     {
-        if ($image) {
-            $data['image'] = $this->uploadImage($image);
+        try {
+            if ($image) {
+                $data['image'] = $this->uploadImage($image);
+            }
+
+            $product = Product::create($data);
+
+            Log::channel('product')->info('Product created', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'category_id' => $product->category_id,
+                'has_image' => !is_null($product->image),
+                'created_by' => auth()->id(),
+            ]);
+
+            return $product;
+
+        } catch (QueryException $e) {
+            // DB error Log
+            Log::channel('product')->error('Failed to create product', [
+                'error' => $e->getMessage(),
+                'sql' => $e->getSql(),
+                'created_by' => auth()->id(),
+            ]);
+
+            throw $e;   // re-throw so controller/handler can respond
+
+        } catch (\Exception $e) {
+            // Log unexpected errors
+            Log::channel('product')->error('Unexpected error creating product', [
+                'error' => $e->getMessage(),
+                'created_by' => auth()->id(),
+            ]);
+
+            throw $e;
         }
-
-        $product = Product::create($data);
-
-        Log::channel('product')->info('Product created', [
-            'product_id' => $product->id,
-            'data' => $data,
-            'user_id' => auth()->id(),
-        ]);
-
-        return $product;
     }
+
 
     // UPDATE
     public function update(Product $product, array $data, ?UploadedFile $image = null)
     {
-        $original = $product->getOriginal();
+        try {
 
-        if ($image) {
-            $this->deleteImage($product->image);
-            $data['image'] = $this->uploadImage($image);
+            $original = $product->getOriginal();
+
+            if ($image) {
+                $this->deleteImage($product->image);
+                $data['image'] = $this->uploadImage($image);
+            }
+
+            $product->update($data);
+
+            Log::channel('product')->info('Product updated', [
+                'product_id' => $product->id,
+                'changes' => $product->getChanges(),
+                'original' => $original,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return $product;
+        } catch (QueryException $e) {
+            Log::channel('product')->error('Failed to update product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'updated_by' => auth()->id(),
+            ]);
+
+            throw $e;
+
+        } catch (\Exception $e) {
+            Log::channel('product')->error('Unexpected error updating product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'updated_by' => auth()->id(),
+            ]);
+
+            throw $e;
         }
-
-        $product->update($data);
-
-        Log::channel('product')->info('Product updated', [
-            'product_id' => $product->id,
-            'changes' => $product->getChanges(),
-            'original' => $original,
-            'user_id' => auth()->id(),
-        ]);
-
-        return $product;
     }
 
     // DELETE
-    public function delete(Product $product)
+    public function delete(Product $product): bool
     {
-        $productData = $product->toArray();
+        try {
+            $snapshot = $product->only(['id', 'name', 'price', 'category_id', 'image', 'stock']);
 
-        $this->deleteImage($product->image);
-        $product->delete();
+            $this->deleteImage($product->image);
+            $product->delete();
 
-        Log::channel('product')->warning('Product deleted', [
-            'product_id' => $product->id,
-            'data' => $productData,
-            'user_id' => auth()->id(),
-        ]);
+            Log::channel('product')->warning('Product deleted', [
+                'product_id' => $snapshot['id'],
+                'product_name' => $snapshot['name'],
+                'deleted_by' => auth()->id(),
+                'product_data' => $snapshot,
+            ]);
 
-        return true;
+            return true;
+
+        } catch (QueryException $e) {
+            Log::channel('product')->error('Failed to delete product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'deleted_by' => auth()->id(),
+            ]);
+
+            throw $e;
+
+        } catch (\Exception $e) {
+            Log::channel('product')->error('Unexpected error deleting product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'deleted_by' => auth()->id(),
+            ]);
+
+            throw $e;
+        }
     }
 
     // FILTER / SEARCH
-    public function search(array $filters)
+    public function search(array $filters): array
     {
-        $results = Product::query()
-            ->when($filters['category'] ?? null, fn($q, $category) => $q->where('category', $category))
-            ->when($filters['price'] ?? null, fn($q, $price) => $q->where('price', $price))
-            ->get();
+        try {
+            $results = Product::query()
+                ->when($filters['category'] ?? null, fn($q, $v) => $q->where('category_id', $v))
+                ->when($filters['price'] ?? null, fn($q, $v) => $q->where('price', $v))
+                ->get();
 
-        Log::channel('product')->info('Product search executed', [
-            'filters' => $filters,
-            'result_count' => $results->count(),
-            'user_id' => auth()->id(),
-        ]);
+            if ($results->isEmpty()) {
+                Log::channel('product')->info('Product search returned no results', [
+                    'filters' => $filters,
+                    'user_id' => auth()->id(),
+                ]);
+            }
 
-        return $results->toArray();
+            Log::channel('product')->debug('Product search executed', [
+                'filters' => $filters,
+                'result_count' => $results->count(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return $results->toArray();
+
+        } catch (QueryException $e) {
+            Log::channel('product')->error('Product search query failed', [
+                'filters' => $filters,
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+
+            throw $e;
+        }
     }
 
     // DELETE image
     private function deleteImage(?string $path): void
     {
-        if ($path && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        try {
+            if ($path && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
 
-            Log::channel('product')->info('Product image deleted', [
+            }
+        } catch (\Exception $e) {
+            Log::channel('product')->error('Failed to delete product image', [
                 'path' => $path,
+                'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
             ]);
         }
@@ -109,13 +195,20 @@ class ProductService
     // Upload image
     private function uploadImage(UploadedFile $image): string
     {
-        $path = $image->store('products', 'public');
+        try {
+            $path = $image->store('products', 'public');
 
-        Log::channel('product')->info('Product image uploaded', [
-            'path' => $path,
-            'user_id' => auth()->id(),
-        ]);
+            return $path;
+        } catch (\Exception $e) {
+            Log::channel('product')->error('Product image upload failed', [
+                'original_name' => $image->getClientOriginalName(),
+                'mime_type' => $image->getMimeType(),
+                'size' => $image->getSize(),
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
 
-        return $path;
+            throw $e;
+        }
     }
 }
