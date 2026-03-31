@@ -7,6 +7,7 @@ use App\Facades\Products;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\Services\RecentlyViewedService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -15,13 +16,14 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, RecentlyViewedService $recentlyViewedService)
     {
         $products = Products::getAll();
         $total_products = count($products);
+        $recentlyViewed = $recentlyViewedService->get();
         $page_title = 'Product-list';
         if ($request->acceptsHtml()) {
-            return view('products.index', compact('products', 'total_products', 'page_title'));
+            return view('products.index', compact('products', 'total_products', 'page_title', 'recentlyViewed'));
         }
         return response()->success($products, 'All products');
     }
@@ -50,8 +52,9 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(Product $product, RecentlyViewedService $recentlyViewedService)
     {
+        $recentlyViewedService->track($product->id);
         return view('products.show')->with('product', $product);
     }
 
