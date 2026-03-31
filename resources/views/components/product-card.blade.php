@@ -30,13 +30,28 @@
 
         {{-- Price & Stock --}}
         <div class="d-flex justify-content-between align-items-center mb-3 mt-auto">
-            <strong class="text-success fs-5">
-                @currency($product->price)
-            </strong>
-            <small class="{{ $product->stock > 0 ? 'text-primary' : 'text-danger' }}">
-                {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of Stock' }}
-            </small>
+            <div>
+                @if(!empty($product->discount_price) && $product->discount_price < $product->price)
+                    {{-- Has discount --}}
+                    <span class="text-decoration-line-through text-muted me-1">
+                        @currency($product->price)
+                    </span>
+                    <strong class="text-success fs-5">
+                        @currency($product->discount_price)
+                    </strong>
+                    <span class="badge bg-success ms-1" style="font-size: 10px;">
+                        {{ round(($product->price - $product->discount_price) / $product->price * 100) }}% OFF
+                    </span>
+                @else
+                    <strong class="text-success fs-5">
+                        @currency($product->price)
+                    </strong>
+                @endif
+            </div>
         </div>
+        <small class="{{ $product->stock > 0 ? 'text-primary' : 'text-danger' }} mb-1">
+            {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of Stock' }}
+        </small>
 
         {{-- Actions --}}
         <div class="d-flex gap-2">

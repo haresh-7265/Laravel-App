@@ -8,23 +8,10 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 use Maatwebsite\Excel\Facades\Excel;
 
-class ProductController extends Controller implements HasMiddleware
+class ProductController extends Controller
 {
-    // role middleware on specific methods
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('role:admin', except: [
-                'index',
-                'show',
-                'search'
-            ]),
-        ];
-    }
     /**
      * Display a listing of the resource.
      */

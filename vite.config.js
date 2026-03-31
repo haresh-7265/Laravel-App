@@ -11,6 +11,7 @@ export default defineConfig({
                 "resources/js/welcome.js",
                 "resources/js/csvExport.js",
                 "resources/css/csvExport.css",
+                "resources/css/cart.css",
             ],
             refresh: true,
         }),

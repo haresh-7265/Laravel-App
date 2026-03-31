@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
@@ -25,8 +26,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'unique:users,email'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)->symbols()->mixedCase()],
         ]);
 
@@ -38,16 +39,19 @@ class AuthController extends Controller
         // Regenerate session id after login 
         $request->session()->regenerate();
 
+        // Merge guest cart into user cart here
+        app(CartService::class)->mergeSessionCart();
+
         \Log::channel('security')->info('New user registered', [
-            'user_id'    => $user->id,
-            'email'      => $user->email,
-            'ip'         => $request->ip(),
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'timestamp'  => now()->toIso8601String(),
+            'timestamp' => now()->toIso8601String(),
         ]);
 
         return redirect()->route('products.index')
-                         ->with('success', 'Account created! Welcome, ' . $user->name);
+            ->with('success', 'Account created! Welcome, ' . $user->name);
     }
 
     // ─── Login ────────────────────────────────────────────────
@@ -55,7 +59,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -64,13 +68,16 @@ class AuthController extends Controller
             // Regenerate session ID to prevent session fixation attacks
             $request->session()->regenerate();
 
+            // Merge guest cart into user cart here
+            app(CartService::class)->mergeSessionCart();
+
             \Log::channel('security')->info('User logged in', [
-                'user_id'     => Auth::id(),
-                'email'       => Auth::user()->email,
+                'user_id' => Auth::id(),
+                'email' => Auth::user()->email,
                 'remember_me' => $request->boolean('remember'),
-                'ip'          => $request->ip(),
-                'user_agent'  => $request->userAgent(),
-                'timestamp'   => now()->toIso8601String(),
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'timestamp' => now()->toIso8601String(),
             ]);
 
             // Redirect to originally requested URL or dashboard
@@ -78,10 +85,10 @@ class AuthController extends Controller
         }
 
         \Log::channel('security')->warning('Failed login attempt', [
-            'email'      => $request->email, 
-            'ip'         => $request->ip(),
+            'email' => $request->email,
+            'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'timestamp'  => now()->toIso8601String(),
+            'timestamp' => now()->toIso8601String(),
         ]);
 
         // Failed — send back with a single generic error 
@@ -104,13 +111,13 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         \Log::channel('security')->info('User logged out', [
-            'user_id'   => $userId,
-            'email'     => $email,
-            'ip'        => $request->ip(),
+            'user_id' => $userId,
+            'email' => $email,
+            'ip' => $request->ip(),
             'timestamp' => now()->toIso8601String(),
         ]);
 
         return redirect()->route('login')
-                         ->with('success', 'You have been logged out.');
+            ->with('success', 'You have been logged out.');
     }
 }

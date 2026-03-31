@@ -18,23 +18,32 @@
             <a class="navbar-brand" href="#">{{ config('admin.name') }}</a>
             <div class="navbar-nav">
                 <a class="nav-link" href="{{ route('products.index') }}">Products</a>
-                @if(auth()->user()->role == 'customer')
+                @if(!auth()->check() || auth()->user()->role === 'customer')
                     <a class="nav-link position-relative" href="{{ route('cart.index') }}">
                         <i class="bi bi-cart"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ array_sum(array_column(session('cart', []), 'qty')) }}
+                            {{ $cart_count }}
                         </span>
                     </a>
                 @endif
                 @admin
                 <a class="nav-link" href="{{ route('products.create') }}">Create</a>
                 @endadmin
+                @auth
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-inline">
                     @csrf
                     <button type="submit" class="nav-link btn btn-link">
                         LogOut
                     </button>
                 </form>
+                @endauth
+                @guest
+                <form id="login-form" action="{{ route('login') }}" method="get" class="d-inline">
+                    <button type="submit" class="nav-link btn btn-link">
+                        LogIn
+                    </button>
+                </form>
+                @endguest
             </div>
         </div>
     </nav>

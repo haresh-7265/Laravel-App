@@ -54,9 +54,22 @@
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded text-center">
                                 <small class="text-muted d-block">Price</small>
-                                <strong class="fs-4 text-success">
-                                    @currency($product->price)
-                                </strong>
+                                @if(!empty($product->discount_price) && $product->discount_price < $product->price)
+                                    {{-- Has discount --}}
+                                    <span class="text-decoration-line-through text-muted me-1">
+                                        @currency($product->price)
+                                    </span>
+                                    <strong class="text-success fs-4">
+                                        @currency($product->discount_price)
+                                    </strong>
+                                    <span class="badge bg-success ms-1" style="font-size: 10px;">
+                                        {{ round(($product->price - $product->discount_price) / $product->price * 100) }}% OFF
+                                    </span>
+                                @else
+                                    <strong class="text-success fs-4">
+                                        @currency($product->price)
+                                    </strong>
+                                @endif
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -69,32 +82,32 @@
                         </div>
                     </div>
 
-                    @if (auth()->user()->role == 'customer')
+                    @if (!auth()->check() || auth()->user()->role == 'customer')
                         <hr>
 
-{{-- Add to Cart --}}
-@if($product->stock > 0)
-    <form action="{{ route('cart.add', $product->slug) }}" method="POST" class="d-flex gap-2 align-items-center">
-        @csrf
-
-        {{-- Quantity --}}
-        <input type="number" 
-               name="qty" 
-               value="1" 
-               min="1" 
-               max="{{ $product->stock }}"
-               class="form-control w-25">
-
-        {{-- Button --}}
-        <button type="submit" class="btn btn-success">
-            🛒 Add to Cart
-        </button>
-    </form>
-@else
-    <button class="btn btn-secondary" disabled>
-        Out of Stock
-    </button>
-@endif
+                    {{-- Add to Cart --}}
+                    @if($product->stock > 0)
+                        <form action="{{ route('cart.add', $product->slug) }}" method="POST" class="d-flex gap-2 align-items-center">
+                            @csrf
+                        
+                            {{-- Quantity --}}
+                            <input type="number" 
+                                   name="quantity" 
+                                   value="1" 
+                                   min="1" 
+                                   max="{{ $product->stock }}"
+                                   class="form-control w-25">
+                        
+                            {{-- Button --}}
+                            <button type="submit" class="btn btn-success">
+                                🛒 Add to Cart
+                            </button>
+                        </form>
+                    @else
+                        <button class="btn btn-secondary" disabled>
+                            Out of Stock
+                        </button>
+                    @endif
                     @endif
 
                     @admin

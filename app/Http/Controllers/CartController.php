@@ -2,100 +2,100 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ProductOutOfStockException;
 use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
+    public function __construct(
+        private CartService $cart
+    ) {}
+
+    // ─── Show Cart ────────────────────────────────────────────
 
     public function index()
     {
-        $cart = session('cart', []);
-        if (empty($cart)) {
-            return view('cart.index', compact('cart'))->with('warning', 'Cart is empty');
+        $items = $this->cart->get();
+        $total = $this->cart->totalPrice();
+        $count = $this->cart->count();
+
+        if (request()->expectsJson()) {
+            return response()->json(compact('items', 'total', 'count'));
         }
 
-        return view('cart.index', compact('cart'));
+        return view('cart.index', compact('items', 'total', 'count'));
     }
+
+    // ─── Add to Cart ──────────────────────────────────────────
+
     public function add(Request $request, Product $product)
     {
-        $cart = session('cart', []);
+        $request->validate([
+            'quantity' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ]);
 
-        $qty = $request->input('qty', 1);
+        $this->cart->add($product, $request->input('quantity', 1));
 
-        if ($product->stock < $qty) {
-            throw new ProductOutOfStockException(
-                productName: $product->name,
-                productId: $product->id,
-                requestedQuantity: $qty,
-                availableQuantity: $product->stock,
-                message: "Product '{$product->name}' is out of stock." 
-            );
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => "{$product->name} added to cart.",
+                'count'   => $this->cart->count(),
+                'total'   => $this->cart->totalPrice(),
+            ]);
         }
 
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['qty'] += $qty;
-            session()->put('cart', $cart);
-
-            return redirect()->back()
-                ->with('warning', "'{$product->name}' is already in your cart — quantity updated to {$cart[$product->id]['qty']}.");
-        }
-
-        $cart[$product->id] = [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'image' => $product->image,
-            'qty' => $qty,
-        ];
-        session()->put('cart', $cart);
-
-        return redirect()->back()
-            ->with('success', "'{$product->name}' added to your cart.");
+        return back()->with('success', "{$product->name} added to cart.");
     }
 
-    public function remove(int $id)
+    // ─── Update Quantity ──────────────────────────────────────
+
+    public function update(Request $request, int $productId)
     {
-        $cart = session('cart', []);
+        $request->validate([
+            'quantity' => ['required', 'integer', 'min:0', 'max:100'],
+        ]);
 
-        if (!isset($cart[$id])) {
-            return redirect()->route('cart.index')
-                ->with('warning', 'Product not found in your cart.');
+        $this->cart->update($productId, $request->quantity);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Cart updated.',
+                'count'   => $this->cart->count(),
+                'total'   => $this->cart->total(),
+            ]);
         }
 
-        $name = $cart[$id]['name'];
-        $cart[$id]['qty']--;
-
-        if ($cart[$id]['qty'] <= 0) {
-            unset($cart[$id]);
-            session()->put('cart', $cart);
-            return redirect()->route('cart.index')
-                ->with('info', "'{$name}' removed from your cart.");
-        }
-
-        session()->put('cart', $cart);
-        return redirect()->route('cart.index')
-            ->with('info', "'{$name}' quantity reduced to {$cart[$id]['qty']}.");
+        return back()->with('success', 'Cart updated.');
     }
 
-    public function delete(int $id)
+    // ─── Remove Item ──────────────────────────────────────────
+
+    public function remove(int $productId)
     {
-        $cart = session('cart', []);
-        $name = $cart[$id]['name'] ?? "Product #{$id}";
+        $this->cart->remove($productId);
 
-        unset($cart[$id]);
-        session()->put('cart', $cart);
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Item removed.',
+                'count'   => $this->cart->count(),
+                'total'   => $this->cart->total(),
+            ]);
+        }
 
-        return redirect()->route('cart.index')
-            ->with('danger', "'{$name}' has been deleted from your cart.");
+        return back()->with('success', 'Item removed from cart.');
     }
+
+    // ─── Clear Cart ───────────────────────────────────────────
 
     public function clear()
     {
-        session()->forget('cart');
+        $this->cart->clear();
 
-        return redirect()->route('cart.index')
-            ->with('info', 'Your cart has been cleared.');
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Cart cleared.']);
+        }
+
+        return back()->with('success', 'Cart cleared.');
     }
 }

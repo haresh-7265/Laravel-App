@@ -3,10 +3,10 @@
 use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:customer'])->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-    Route::delete('/cart/remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
-    Route::delete('/cart/delete/{product}', [CartController::class, 'delete'])->name('cart.delete');
-    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+Route::middleware('role:guest,customer')->prefix('cart')->name('cart.')->group(function () {
+    Route::get('/',                      [CartController::class, 'index'])->name('index');
+    Route::post('/add/{product}',        [CartController::class, 'add'])->name('add');
+    Route::patch('/update/{productId}',  [CartController::class, 'update'])->name('update');
+    Route::delete('/remove/{productId}', [CartController::class, 'remove'])->name('remove');
+    Route::delete('/clear',              [CartController::class, 'clear'])->name('clear');
 });
