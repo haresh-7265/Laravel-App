@@ -152,6 +152,14 @@ return [
             'days'   => 180,       
             'replace_placeholders' => true,
         ],
+
+        // Custom: db-query 
+         'db-query' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/DB/db-query.log'),
+            'level'  => 'debug',
+            'days'   => 7,
+        ],
     ],
 
 ];

@@ -15,11 +15,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Guest
-Route::get('products', [ProductController::class, 'index'])->name('products.index');
-Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
-Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
-
 // Admin only
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
@@ -29,6 +24,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::get('products/export', [ProductController::class, 'exportCsv'])->name('products.export');
 });
+
+// Guest
+Route::get('products', [ProductController::class, 'index'])->name('products.index');
+Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/cart.php';

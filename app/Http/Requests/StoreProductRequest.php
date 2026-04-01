@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidDiscountPrice;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProductRequest extends FormRequest
@@ -10,7 +11,7 @@ class StoreProductRequest extends FormRequest
      * Determine if the user is authorized to make this request.
      */
 
-    protected $stopOnFirstFailure = true;
+    // protected $stopOnFirstFailure = true;
     public function authorize(): bool
     {
         return true;
@@ -28,7 +29,7 @@ class StoreProductRequest extends FormRequest
             'slug' => ['required', 'alpha_dash', 'unique:products'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0', 'max:999999.99'],
-            'discount_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
+            'discount_price' => ['nullable', 'numeric', new ValidDiscountPrice((float) $this->input('price', 0))],
             'stock' => ['required', 'integer', 'min:0'],
             'category_id' => ['required', 'exists:categories,id'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -62,8 +63,6 @@ class StoreProductRequest extends FormRequest
 
             // Discount Price
             'discount_price.numeric' => 'Discount price must be a valid number.',
-            'discount_price.min' => 'Discount price cannot be negative.',
-            'discount_price.lt' => 'Discount price must be less than the original price.',
 
             // Stock
             'stock.required' => 'Stock quantity is required.',
