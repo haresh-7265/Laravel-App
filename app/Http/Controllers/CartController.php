@@ -62,7 +62,7 @@ class CartController extends Controller
             return response()->json([
                 'message' => 'Cart updated.',
                 'count'   => $this->cart->count(),
-                'total'   => $this->cart->total(),
+                'total'   => $this->cart->totalPrice(),
             ]);
         }
 
@@ -79,7 +79,7 @@ class CartController extends Controller
             return response()->json([
                 'message' => 'Item removed.',
                 'count'   => $this->cart->count(),
-                'total'   => $this->cart->total(),
+                'total'   => $this->cart->totalPrice(),
             ]);
         }
 

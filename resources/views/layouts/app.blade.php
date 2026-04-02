@@ -19,6 +19,11 @@
             <a class="navbar-brand" href="#">{{ config('admin.name') }}</a>
             <div class="navbar-nav">
                 <a class="nav-link" href="{{ route('products.index') }}">Products</a>
+                @auth
+                    @if(auth()->user()->role === 'customer')
+                        <a class="nav-link" href="{{ route('orders.index') }}">MyOrders</a>
+                    @endif
+                @endauth
                 @if(!auth()->check() || auth()->user()->role === 'customer')
                     <a class="nav-link position-relative" href="{{ route('cart.index') }}">
                         <i class="bi bi-cart"></i>
@@ -28,6 +33,7 @@
                     </a>
                 @endif
                 @admin
+                <a class="nav-link" href="{{ route('admin.orders.index') }}">Orders</a>
                 <a class="nav-link" href="{{ route('products.create') }}">Create</a>
                 @endadmin
                 @auth

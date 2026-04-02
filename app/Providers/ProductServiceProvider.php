@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Services\CartService;
+use App\Services\OrderService;
 use App\Services\ProductService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,8 @@ class ProductServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(CartService::class);
+
+        $this->app->singleton(OrderService::class);
     }
 
     /**
@@ -40,6 +43,7 @@ class ProductServiceProvider extends ServiceProvider
 
                 Log::channel('db-query')->info('DB Query', [
                     'sql' => $query->sql,
+                    'bindings' => $query->bindings,
                     'user_id' => auth()->check() ? auth()->id() : 'guest',
                     'time' => $query->time . 'ms',
                 ]);

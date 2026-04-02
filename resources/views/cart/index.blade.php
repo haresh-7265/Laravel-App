@@ -158,7 +158,8 @@
                                     {{--  Decrease — update quantity by current - 1 --}}
                                     <form action="{{ route('cart.update', $item['product_id']) }}"
                                           method="POST">
-                                        @csrf @method('PATCH')
+                                        @csrf 
+                                        @method('PATCH')
                                         <input type="hidden"
                                                name="quantity"
                                                value="{{ $item['quantity'] - 1 }}">
@@ -176,7 +177,8 @@
                                     {{--  Increase — update quantity by current + 1 --}}
                                     <form action="{{ route('cart.update', $item['product_id']) }}"
                                           method="POST">
-                                        @csrf @method('PATCH')
+                                        @csrf 
+                                        @method('PATCH')
                                         <input type="hidden"
                                                name="quantity"
                                                value="{{ $item['quantity'] + 1 }}">
@@ -213,7 +215,8 @@
                                 {{--  Remove item --}}
                                 <form action="{{ route('cart.remove', $item['product_id']) }}"
                                       method="POST">
-                                    @csrf @method('DELETE')
+                                    @csrf 
+                                    @method('DELETE')
                                     <button type="submit"
                                             class="btn btn-sm btn-outline-danger ms-1"
                                             title="Remove item"
@@ -328,6 +331,11 @@
                     </div>
 
                 </div>
+                {{-- Checkout Button --}}
+                    <a href="{{ route('orders.checkout') }}"
+                       class="btn btn-primary w-100 fw-semibold">
+                        <i class="bi bi-lock me-2"></i>Proceed to Checkout
+                    </a>
             </div>
 
         </div>
