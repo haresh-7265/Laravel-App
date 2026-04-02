@@ -39,6 +39,8 @@ class OrderService
             $discount = $subtotal - $total;
 
             // Create order
+            $paymentMethod = $shippingData['payment_method'] ?? 'cod';
+            $paymentStatus = $paymentMethod=='cod' ? 'unpaid' : 'paid';
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => 'ORD-' . strtoupper(uniqid()),
@@ -46,8 +48,8 @@ class OrderService
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'total' => $total,
-                'payment_method' => $shippingData['payment_method'] ?? 'cod',
-                'payment_status' => 'unpaid',
+                'payment_method' => $paymentMethod,
+                'payment_status' => $paymentStatus,
                 'shipping_name' => $shippingData['name'],
                 'shipping_email' => $shippingData['email'],
                 'shipping_phone' => $shippingData['phone'],
