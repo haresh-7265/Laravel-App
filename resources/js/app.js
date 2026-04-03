@@ -1,7 +1,7 @@
-import './bootstrap';
-import './products';
+import "./bootstrap";
+import "./products";
 
-import Alpine from 'alpinejs';
+import Alpine from "alpinejs";
 
 window.Alpine = Alpine;
 

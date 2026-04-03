@@ -9,7 +9,7 @@
         <h2>Product Details</h2>
         <div>
             @admin
-            <a href="{{ route('products.edit', $product->slug) }}" class="btn btn-warning">Edit</a>
+            <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">Edit</a>
             @endadmin
             <a href="{{ route('products.index') }}" class="btn btn-secondary">Back</a>
         </div>
@@ -87,7 +87,7 @@
 
                     {{-- Add to Cart --}}
                     @if($product->stock > 0)
-                        <form action="{{ route('cart.add', $product->slug) }}" method="POST" class="d-flex gap-2 align-items-center">
+                        <form action="{{ route('cart.add', $product) }}" method="POST" class="d-flex gap-2 align-items-center" id="cart-form">
                             @csrf
                         
                             {{-- Quantity --}}
@@ -130,12 +130,12 @@
 
                     {{-- Actions --}}
                     <div class="d-flex gap-2">
-                        <a href="{{ route('products.edit', $product->slug) }}"
+                        <a href="{{ route('products.edit', $product) }}"
                            class="btn btn-warning">
                             Edit Product
                         </a>
 
-                        <form action="{{ route('products.destroy', $product->slug) }}"
+                        <form action="{{ route('products.destroy', $product) }}"
                               method="POST"
                               onsubmit="return confirm('Are you sure you want to delete this product?')">
                             @csrf
@@ -152,3 +152,7 @@
     </div>
 
 @endsection
+
+@push('scripts')
+    @vite('resources/js/cart.js')
+@endpush

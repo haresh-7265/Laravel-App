@@ -9,51 +9,13 @@
     <title>@yield('title', config('admin.name'))</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     @yield('style')
     @stack('styles')
-    @vite(['resources/js/app.js'])
+    @vite(['resources/js/app.js', "resources/js/helpers.js"])
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">{{ config('admin.name') }}</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{{ route('products.index') }}">Products</a>
-                @auth
-                    @if(auth()->user()->role === 'customer')
-                        <a class="nav-link" href="{{ route('orders.index') }}">MyOrders</a>
-                    @endif
-                @endauth
-                @if(!auth()->check() || auth()->user()->role === 'customer')
-                    <a class="nav-link position-relative" href="{{ route('cart.index') }}">
-                        <i class="bi bi-cart"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{ $cart_count }}
-                        </span>
-                    </a>
-                @endif
-                @admin
-                <a class="nav-link" href="{{ route('admin.orders.index') }}">Orders</a>
-                <a class="nav-link" href="{{ route('products.create') }}">Create</a>
-                @endadmin
-                @auth
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="nav-link btn btn-link">
-                        LogOut
-                    </button>
-                </form>
-                @endauth
-                @guest
-                <form id="login-form" action="{{ route('login') }}" method="get" class="d-inline">
-                    <button type="submit" class="nav-link btn btn-link">
-                        LogIn
-                    </button>
-                </form>
-                @endguest
-            </div>
-        </div>
-    </nav>
+    @include('partials.navbar')
 
     <div class="container mt-4">
 

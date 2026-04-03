@@ -33,6 +33,7 @@ class ProductServiceProvider extends ServiceProvider
     {
 
         if (\App::environment('local', 'development')) {
+            Log::channel('db-query')->info('===============================================');
             $listening = false; // ✅ flag to prevent re-entry
 
             DB::listen(function ($query) use (&$listening) {
@@ -68,7 +69,7 @@ class ProductServiceProvider extends ServiceProvider
             $view->with('categories', Category::all());
         });
 
-        \View::composer('layouts.app', function ($view) {
+        \View::composer('partials.navbar', function ($view) {
             $cartService = app(CartService::class);
             $user = auth()->user();
             $cartCount = 0;
