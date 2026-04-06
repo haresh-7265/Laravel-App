@@ -4,6 +4,8 @@ use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Mail\CouponMail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -97,4 +99,20 @@ Route::get('/unsubscribe/{user}', function (Request $request, $user) {
 // Display session data
 Route::get('/session-data', function () {
     return session()->all(); // shows all session data
+});
+
+// Coupon Email preview
+// routes/web.php
+
+Route::get('/preview/coupon-mail', function () {
+    $user = User::whereHas('coupons')->inRandomOrder()->firstOrFail();
+
+    $coupon = $user->coupons()
+        ->withPivot('usage_limit')
+        ->inRandomOrder()
+        ->firstOrFail();
+
+    $usageLimit = $coupon->pivot->usage_limit;
+
+    return new CouponMail($user, $coupon, $usageLimit);
 });

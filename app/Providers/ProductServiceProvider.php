@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Services\CartService;
+use App\Services\CouponService;
 use App\Services\OrderService;
 use App\Services\ProductService;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,8 @@ class ProductServiceProvider extends ServiceProvider
         $this->app->singleton(CartService::class);
 
         $this->app->singleton(OrderService::class);
+
+        $this->app->singleton(CouponService::class);
     }
 
     /**
