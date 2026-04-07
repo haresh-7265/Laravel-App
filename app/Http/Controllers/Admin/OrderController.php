@@ -83,12 +83,7 @@ class OrderController extends Controller
             return back()->with('warning', "Cannot move order from {$order->status} to {$request->status}.");
         }
 
-        // Route cancellation through the service (restores stock)
-        if ($request->status === 'cancelled') {
-            $this->orderService->cancelOrder($order);
-        } else {
-            $order->update(['status' => $request->status]);
-        }
+        $this->orderService->updateOrderStatus($order, $request->status);
 
         return back()->with('success', 'Order status updated successfully.');
     }

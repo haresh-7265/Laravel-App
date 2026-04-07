@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\OrderStatusUpdated;
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -40,7 +41,7 @@ class OrderService
 
             // Create order
             $paymentMethod = $shippingData['payment_method'] ?? 'cod';
-            $paymentStatus = $paymentMethod=='cod' ? 'unpaid' : 'paid';
+            $paymentStatus = $paymentMethod == 'cod' ? 'unpaid' : 'paid';
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => 'ORD-' . strtoupper(uniqid()),
@@ -84,12 +85,31 @@ class OrderService
 
     public function cancelOrder(Order $order): void
     {
-        DB::transaction(function () use ($order) {
+        DB::transaction(function () use (&$order) {
             $order->update(['status' => 'cancelled']);
 
             foreach ($order->items as $item) {
                 $item->product()->increment('stock', $item->quantity);
             }
         });
+
+        $this->broadcastStatus($order);
+    }
+
+    public function updateOrderStatus(Order $order, string $status): void
+    {
+        if ($status === 'cancelled') {
+            $this->cancelOrder($order);
+            return;
+        }
+        $order->update(['status' => $status]);
+        $this->broadcastStatus($order);
+
+    }
+
+    // Centralized broadcasting logic
+    protected function broadcastStatus(Order $order): void
+    {
+        OrderStatusUpdated::dispatch($order->id, $order->status);
     }
 }

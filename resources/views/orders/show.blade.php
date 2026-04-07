@@ -3,6 +3,7 @@
 @section('title', 'Order ' . $order->order_number)
 
 @section('content')
+<input type="hidden" value="{{ $order->id }}" id="orderId">
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
@@ -27,8 +28,9 @@
                 <small class="text-muted">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</small>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span class="badge bg-{{ $badge }} fs-6 px-3 py-2">{{ ucfirst($order->status) }}</span>
+                <span id="orderStatusBadge"  class="badge bg-{{ $badge }} fs-6 px-3 py-2">{{ ucfirst($order->status) }}</span>
 
+                <div id="cancelBtn">
                 @if($canCancel)
                 <form method="POST" action="{{ route('orders.cancel', $order) }}"
                       onsubmit="return confirm('Are you sure you want to cancel this order?')">
@@ -39,12 +41,13 @@
                     </button>
                 </form>
                 @endif
+                </div>
             </div>
         </div>
 
         {{-- Progress Tracker --}}
         @if($order->status !== 'cancelled')
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-sm mb-4" id="orderProgressCard">
             <div class="card-body">
                 <h6 class="fw-bold mb-4">Order Progress</h6>
                 @php
@@ -58,39 +61,43 @@
                     $currentIndex = array_search($order->status, $stepKeys);
                     if ($currentIndex === false) $currentIndex = -1;
                 @endphp
+
                 <div class="d-flex align-items-center">
                     @foreach($steps as $key => $step)
-                    @php $index = array_search($key, $stepKeys); @endphp
-                    <div class="text-center" style="flex:1">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1
-                            {{ $currentIndex >= $index ? 'bg-primary text-white' : 'bg-light text-muted' }}"
-                            style="width:42px;height:42px;">
-                            <i class="bi {{ $step['icon'] }}"></i>
+                        @php $index = array_search($key, $stepKeys); @endphp
+
+                        <div class="text-center" style="flex:1">
+                            <div id="step-circle-{{ $index }}"
+                                class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1
+                                    {{ $currentIndex >= $index ? 'bg-primary text-white' : 'bg-light text-muted' }}"
+                                style="width:42px;height:42px;">
+                                <i class="bi {{ $step['icon'] }}"></i>
+                            </div>
+                            <div id="step-label-{{ $index }}"
+                                class="small {{ $currentIndex >= $index ? 'text-primary fw-semibold' : 'text-muted' }}">
+                                {{ $step['label'] }}
+                            </div>
                         </div>
-                        <div class="small {{ $currentIndex >= $index ? 'text-primary fw-semibold' : 'text-muted' }}">
-                            {{ $step['label'] }}
-                        </div>
-                    </div>
-                    @if(!$loop->last)
-                    <div class="flex-fill mx-1"
-                        style="height:3px;background:{{ $currentIndex > $index ? '#0d6efd' : '#dee2e6' }}">
-                    </div>
-                    @endif
+
+                        @if(!$loop->last)
+                            <div id="step-connector-{{ $index }}"
+                                class="flex-fill mx-1"
+                                style="height:3px;background:{{ $currentIndex > $index ? '#0d6efd' : '#dee2e6' }}">
+                            </div>
+                        @endif
                     @endforeach
                 </div>
 
-                @if($canCancel)
-                <p class="text-muted small text-center mb-0 mt-3">
-                    <i class="bi bi-info-circle me-1"></i>
-                    You can cancel this order until it has been shipped.
-                </p>
-                @endif
+                <div id="cancelOrderWrapper">
+                    @if($canCancel)
+                        <p class="text-muted small text-center mb-0 mt-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            You can cancel this order until it has been shipped.
+                        </p>
+                    @endif
+                </div>
+
             </div>
-        </div>
-        @else
-        <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
-            <i class="bi bi-x-circle-fill fs-5"></i>
-            <span>This order has been <strong>cancelled</strong>.</span>
         </div>
         @endif
 
@@ -272,3 +279,9 @@
     </div>
 </div>
 @endsection
+
+@if(!in_array($order->status, ['cancelled', 'delivered']))
+    @push('scripts')
+        @vite('resources/js/customer/orderStatus.js')
+    @endpush
+@endif
