@@ -78,7 +78,6 @@ class OrderService
             // Clear cart after order
             $this->cartService->clear();
 
-            // update stock
             return $order;
         });
     }

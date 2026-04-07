@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderPlaced;
 use App\Http\Controllers\Controller;
 use App\Services\OrderService;
 use App\Models\Order;
@@ -34,6 +35,19 @@ class OrderController extends Controller
         ]);
 
         $order = $this->orderService->placeOrder($request->all());
+
+        $orderNumber = $order->order_number;
+        $itemsCount = $order->items()->sum('quantity');
+        $customerName = auth()->user()->name;
+        $orderTotal = $order->total;
+
+        // broadcast to admin dashboard 
+        OrderPlaced::dispatch(
+            $customerName,
+            $orderTotal,
+            $itemsCount,
+            $orderNumber
+        );
 
         return redirect()
             ->route('orders.show', $order)
