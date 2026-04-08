@@ -26,8 +26,16 @@ $(document).ready(function () {
             },
         });
     });
-});
 
+    let productId = $("#productId").val();
+
+    window.Echo.channel(`product.${productId}`).listen(
+        ".ProductStockChanged",
+        function (e) {
+            updateStockUI(e);
+        },
+    );
+});
 
 const CSRF = $('meta[name="csrf-token"]').attr("content") ?? "";
 
@@ -38,9 +46,9 @@ function request(url, method = "POST", body = {}) {
         method,
         contentType: "application/json",
         dataType: "json",
-        headers     : {
-            "X-CSRF-TOKEN"     : CSRF,
-            "X-Requested-With" : "XMLHttpRequest",
+        headers: {
+            "X-CSRF-TOKEN": CSRF,
+            "X-Requested-With": "XMLHttpRequest",
         },
         data: method !== "GET" ? JSON.stringify(body) : undefined,
     });
@@ -84,10 +92,10 @@ $("#cart-items-list").on("click", '[data-action="qty"]', function (e) {
     })
         .done((data) => {
             applyCartResponse(data);
-            showAlert(data.message, data.status)
+            showAlert(data.message, data.status);
         })
         .fail(() => {
-            showAlert("Could not update cart", "danger")
+            showAlert("Could not update cart", "danger");
             $row.removeClass("item-loading");
         });
 });
@@ -106,7 +114,6 @@ $("#cart-items-list").on("click", '[data-action="remove"]', function (e) {
         .done((data) => {
             setTimeout(() => applyCartResponse(data), 350);
             showAlert(data.message, data.status);
-            
         })
         .fail(() => {
             showAlert("Could not remove item", "danger");
@@ -130,3 +137,28 @@ $("#clear-cart-btn").on("click", function () {
             $btn.prop("disabled", false);
         });
 });
+
+
+function updateStockUI(data) {
+
+    let stock = data.stock; 
+
+    // 🔹 Update stock badge
+    $('#stockCount')
+        .text(stock > 0 ? stock+' units' : 'Out of Stock')
+        .removeClass('text-primary text-danger')
+        .addClass(stock > 0 ? 'text-primary' : 'text-danger');
+
+    // 🔹 Disable/Enable button
+    if (stock <= 0) {
+        $('#addToCartBtn')
+            .prop('disabled', true);
+        $('#cartWrapper').hide();
+        $('#outOfStockBtn').show();
+    } else {
+        $('#addToCartBtn')
+            .prop('disabled', false);
+        $('#cartWrapper').show();
+        $('#outOfStockBtn').hide();
+    }
+}

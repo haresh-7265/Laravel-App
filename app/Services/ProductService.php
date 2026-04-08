@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\ProductStockChanged;
 use App\Models\Product;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
@@ -73,6 +74,10 @@ class ProductService
             }
 
             $product->update($data);
+
+            if($original['stock'] !== $product->stock){
+                ProductStockChanged::dispatch($product->id,$product->stock);
+            }
 
             Log::channel('product')->info('Product updated', [
                 'product_id' => $product->id,

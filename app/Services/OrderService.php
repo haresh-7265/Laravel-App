@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\OrderStatusUpdated;
+use App\Events\ProductStockChanged;
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -72,8 +73,16 @@ class OrderService
                     'subtotal' => $item['quantity'] * ($item['discount_price'] ?? $item['price']),
                 ]);
 
-                Product::where('id', $item['product_id'])
-                    ->decrement('stock', $item['quantity']);
+                $product = Product::findOrFail($item['product_id']);
+
+                $product->decrement('stock', $item['quantity']);
+
+                // refresh updated value
+                $product->refresh();
+
+                DB::afterCommit(function () use ($product) {
+                    ProductStockChanged::dispatch($product->id, $product->stock);
+                });
             }
 
             // Clear cart after order
@@ -89,7 +98,16 @@ class OrderService
             $order->update(['status' => 'cancelled']);
 
             foreach ($order->items as $item) {
-                $item->product()->increment('stock', $item->quantity);
+
+                $product = $item->product; // actual Product model
+
+                $product->increment('stock', $item->quantity);
+
+                $product->refresh();
+
+                DB::afterCommit(function () use ($product) {
+                    ProductStockChanged::dispatch($product->id, $product->stock);
+                });
             }
         });
 

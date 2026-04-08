@@ -4,6 +4,7 @@
 
 @section('content')
 
+<input type="hidden" id="productId" value="{{ $product->id }}">
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Product Details</h2>
@@ -75,7 +76,7 @@
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded text-center">
                                 <small class="text-muted d-block">Stock</small>
-                                <strong class="fs-4 {{ $product->stock > 0 ? 'text-primary' : 'text-danger' }}">
+                                <strong class="fs-4 {{ $product->stock > 0 ? 'text-primary' : 'text-danger' }}" id="stockCount">
                                     {{ $product->stock > 0 ? $product->stock . ' units' : 'Out of Stock' }}
                                 </strong>
                             </div>
@@ -86,7 +87,9 @@
                         <hr>
 
                     {{-- Add to Cart --}}
-                    @if($product->stock > 0)
+
+                    @php $outOfStock = $product->stock <= 0; @endphp
+                    <div id="cartWrapper" style="display: {{ $outOfStock ? 'none' : '' }};">
                         <form action="{{ route('cart.add', $product) }}" method="POST" class="d-flex gap-2 align-items-center" id="cart-form">
                             @csrf
                         
@@ -99,15 +102,15 @@
                                    class="form-control w-25">
                         
                             {{-- Button --}}
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success" id="addToCartBtn">
                                 🛒 Add to Cart
                             </button>
                         </form>
-                    @else
-                        <button class="btn btn-secondary" disabled>
+                    </div>
+                        <button class="btn btn-secondary" id="outOfStockBtn" disabled style="display: {{ $outOfStock ? '' : 'none' }};">
                             Out of Stock
                         </button>
-                    @endif
+                    
                     @endif
 
                     @admin

@@ -72,7 +72,7 @@
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1 small">Browsing now</p>
-                        <h4 class="fw-bold mb-0" id="online-count">0</h4>
+                        <h4 class="fw-bold mb-0" id="online-count" style="color: greenyellow;">0</h4>
                     </div>
                     <div class="bg-success bg-opacity-10 text-success rounded-circle p-3">
                         <i class="bi bi-people fs-5"></i>
