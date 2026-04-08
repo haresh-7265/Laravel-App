@@ -55,6 +55,11 @@
                             <i class="bi bi-plus-circle me-1"></i>Create
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.online-customers') }}">
+                            <i class="bi bi-people me-1"></i>Online Customers
+                        </a>
+                    </li>
                 @endadmin
 
                 <li class="nav-item ms-lg-2">

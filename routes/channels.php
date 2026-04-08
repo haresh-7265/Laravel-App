@@ -16,3 +16,13 @@ Broadcast::channel('order.{orderId}', function ($user, $orderId) {
         ->where('user_id', $user->id)
         ->exists();
 });
+
+Broadcast::channel('store.browsing', function ($user) {
+    // return user data to populate presence channel
+    return [
+        'id'   => $user->id,
+        'name' => $user->name,
+        'role' => $user->role,
+        'page' => parse_url(request()->headers->get('referer', '/'), PHP_URL_PATH),
+    ];
+});
