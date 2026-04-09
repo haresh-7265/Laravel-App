@@ -48,6 +48,11 @@
 
                 @admin
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('admin.orders.index') }}">Orders</a>
                     </li>
                     <li class="nav-item">

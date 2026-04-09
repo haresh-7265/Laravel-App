@@ -2,10 +2,20 @@
 
 namespace App\Models;
 
+use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    protected static function booted(): void
+    {
+        $flush = fn() => app(CacheService::class)->forgetDashboard();
+
+        static::created($flush);
+        static::updated($flush);
+        static::deleted($flush);
+    }
+
     protected $fillable = [
         'user_id', 'order_number', 'status', 'subtotal',
         'discount', 'total', 'payment_method', 'payment_status',

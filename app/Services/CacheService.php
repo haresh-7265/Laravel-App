@@ -11,6 +11,7 @@ class CacheService
     {
         Cache::forget("product.{$slug}");
         $this->forgetProductPages();
+        $this->forgetDashboard();
     }
 
     public function forgetProductPages(): void
@@ -28,6 +29,14 @@ class CacheService
     public function forgetCategories(): void
     {
         Cache::forget("categoies");
+    }
+
+    // ─── Admin Dashboard Cache ────────────────────────────
+    public function forgetDashboard(): void
+    {
+        Cache::forget('admin.dashboard.stats');
+        Cache::forget('admin.dashboard.recent_orders');
+        Cache::forget('admin.dashboard.low_stock');
     }
 
     // ─── Flush Everything ────────────────────────────
