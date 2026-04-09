@@ -7,7 +7,6 @@
 @include('partials.recently-viewed', ['recentlyViewed' => $recentlyViewed])
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="mb-0">Total products: {{ $total_products }}</h1>
     @admin
         <x-export-filter-popup/>
     @endadmin
@@ -27,6 +26,9 @@
             </div>
         @endforelse
     </div>
+
+{{-- Render pagination links --}}
+{{ $products->links() }}
 
 @section('footer')
 <footer class="bg-dark text-white mt-auto py-3">

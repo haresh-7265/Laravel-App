@@ -5,18 +5,29 @@ namespace App\Services;
 use App\Events\ProductStockChanged;
 use App\Models\Product;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Stmt\TryCatch;
 
 class ProductService
 {
-    // GET ALL
-    public function getAll()
+    // GET paginated products
+    public function getPaginatedProducts(int $page, int $perPage = 10)
     {
+        $cacheKey = "products.page.{$page}";
 
-        return Product::with('category')->get();
+        // Track all keys in a master list
+        $keys = Cache::get('products.page.keys', []);
+        if (!in_array($cacheKey, $keys)) {
+            $keys[] = $cacheKey;
+            Cache::put('products.page.keys', $keys, now()->addHours(24));
+        }
+
+        return Cache::remember($cacheKey, now()->addHour(), function () use ($perPage) {
+            return Product::with('category')
+                ->paginate($perPage);
+        });
     }
 
     // CREATE
@@ -75,8 +86,8 @@ class ProductService
 
             $product->update($data);
 
-            if($original['stock'] !== $product->stock){
-                ProductStockChanged::dispatch($product->id,$product->stock);
+            if ($original['stock'] !== $product->stock) {
+                ProductStockChanged::dispatch($product->id, $product->stock);
             }
 
             Log::channel('product')->info('Product updated', [

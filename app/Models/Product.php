@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
 {
@@ -37,5 +39,23 @@ class Product extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return Cache::remember(
+            "product.{$value}",
+            now()->addMinutes(30),
+            fn() => $this->where($field ?? $this->getRouteKeyName(), $value)->firstOrFail()
+        );
+    }
+
+    protected static function booted(): void
+    {
+        $flush = fn($product) => app(CacheService::class)->forgetProduct($product->slug);
+
+        static::created($flush);
+        static::updated($flush);
+        static::deleted($flush);
     }
 }

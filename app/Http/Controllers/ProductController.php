@@ -18,7 +18,7 @@ class ProductController extends Controller
      */
     public function index(Request $request, RecentlyViewedService $recentlyViewedService)
     {
-        $products = Products::getAll();
+        $products = Products::getPaginatedProducts(page: $request->input('page', 1));
         $total_products = count($products);
         $recentlyViewed = $recentlyViewedService->get();
         $page_title = 'Product-list';
