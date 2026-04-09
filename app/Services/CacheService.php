@@ -39,6 +39,17 @@ class CacheService
         Cache::forget('admin.dashboard.low_stock');
     }
 
+    // ─── Cart Cache ─────────────────────────────────────
+    public function forgetCart(?int $userId = null): void
+    {
+        $userId = $userId ?? auth()->id();
+
+        if ($userId) {
+            Cache::forget("cart.items.{$userId}");
+            Cache::forget("cart.summary.{$userId}");
+        }
+    }
+
     // ─── Flush Everything ────────────────────────────
     public function flushAll(): void
     {

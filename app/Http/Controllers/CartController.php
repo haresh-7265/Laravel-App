@@ -19,8 +19,9 @@ class CartController extends Controller
     public function index()
     {
         $items = $this->cart->get();
-        $total = $this->cart->totalPrice();
-        $count = $this->cart->count();
+        $cartSummary = $this->cart->getSummary();
+        $total = $cartSummary['total'];
+        $count = $cartSummary['count'];
 
         if (request()->expectsJson()) {
             return $this->cartJson();
@@ -100,8 +101,9 @@ class CartController extends Controller
     private function cartJson(string $status = 'success', string $message = 'OK'): JsonResponse
     {
         $items = $this->cart->get();
-        $total = $this->cart->totalPrice();
-        $count = $this->cart->count();
+        $cartSummary = $this->cart->getSummary();
+        $total = $cartSummary['total'];
+        $count = $cartSummary['count'];
 
         return response()->json([
             'status'        => $status,
