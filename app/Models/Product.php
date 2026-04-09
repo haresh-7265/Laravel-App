@@ -43,7 +43,7 @@ class Product extends Model
 
     public function resolveRouteBinding($value, $field = null)
     {
-        return Cache::remember(
+        return Cache::tags(['products'])->remember(
             "product.{$value}",
             now()->addMinutes(30),
             fn() => $this->where($field ?? $this->getRouteKeyName(), $value)->firstOrFail()

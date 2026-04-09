@@ -37,7 +37,7 @@ class CartService
     {
         $userId = auth()->id();
 
-        return Cache::remember("cart.items.{$userId}", now()->addMinutes(10), function () use ($userId) {
+        return Cache::tags(['customer', "cart.user.{$userId}"])->remember("cart.items.{$userId}", now()->addMinutes(10), function () use ($userId) {
             return Cart::with('product')
                 ->where('user_id', $userId)
                 ->get()
@@ -291,9 +291,10 @@ class CartService
 
         $userId = auth()->id();
 
-        return Cache::remember("cart.summary.{$userId}", now()->addMinutes(10), function () {
-            return $this->computeSummary();
-        });
+        return Cache::tags(['cart', "cart.user.{$userId}"])
+            ->remember("cart.summary.{$userId}", now()->addMinutes(10), function () {
+                return $this->computeSummary();
+            });
     }
 
     private function computeSummary(): array

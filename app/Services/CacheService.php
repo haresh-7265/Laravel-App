@@ -9,34 +9,25 @@ class CacheService
     // ─── Product Cache ───────────────────────────────
     public function forgetProduct(string $slug): void
     {
-        Cache::forget("product.{$slug}");
+        Cache::tags(['products'])->forget("product.{$slug}");
         $this->forgetProductPages();
-        $this->forgetDashboard();
     }
 
     public function forgetProductPages(): void
     {
-        $keys = Cache::get('products.page.keys', []);
-
-        foreach ($keys as $key) {
-            Cache::forget($key);
-        }
-
-        Cache::forget('products.page.keys');
+        Cache::tags(['products.pages'])->flush();
     }
 
     // ─── Category Cache ──────────────────────────────
     public function forgetCategories(): void
     {
-        Cache::forget("categoies");
+        Cache::tags(['categories'])->flush();
     }
 
     // ─── Admin Dashboard Cache ────────────────────────────
     public function forgetDashboard(): void
     {
-        Cache::forget('admin.dashboard.stats');
-        Cache::forget('admin.dashboard.recent_orders');
-        Cache::forget('admin.dashboard.low_stock');
+        Cache::tags(['admin'])->flush();
     }
 
     // ─── Cart Cache ─────────────────────────────────────
@@ -45,14 +36,13 @@ class CacheService
         $userId = $userId ?? auth()->id();
 
         if ($userId) {
-            Cache::forget("cart.items.{$userId}");
-            Cache::forget("cart.summary.{$userId}");
+            Cache::tags(["cart.user.{$userId}"])->flush();
         }
     }
 
     // ─── Flush Everything ────────────────────────────
     public function flushAll(): void
     {
-        Cache::flush();
+        Cache::tags(['products', 'admin', 'customer'])->flush();
     }
 }

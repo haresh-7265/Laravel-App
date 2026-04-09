@@ -12,7 +12,7 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $stats = Cache::remember('admin.dashboard.stats', now()->addMinutes(10), function () {
+        $stats = Cache::tags(['admin', 'products'])->remember('admin.dashboard.stats', now()->addMinutes(10), function () {
             return [
                 'total_orders'      => Order::count(),
                 'total_revenue'     => Order::where('status', 'delivered')->sum('total'),
@@ -24,14 +24,14 @@ class AdminDashboardController extends Controller
             ];
         });
 
-        $recentOrders = Cache::remember('admin.dashboard.recent_orders', now()->addMinutes(10), function () {
+        $recentOrders = Cache::tags(['admin', 'products'])->remember('admin.dashboard.recent_orders', now()->addMinutes(10), function () {
             return Order::with('user')
                 ->latest()
                 ->take(5)
                 ->get();
         });
 
-        $lowStockProducts = Cache::remember('admin.dashboard.low_stock', now()->addMinutes(10), function () {
+        $lowStockProducts = Cache::tags(['admin', 'products'])->remember('admin.dashboard.low_stock', now()->addMinutes(10), function () {
             return Product::where('stock', '<=', 5)
                 ->orderBy('stock')
                 ->take(5)

@@ -17,14 +17,7 @@ class ProductService
     {
         $cacheKey = "products.page.{$page}";
 
-        // Track all keys in a master list
-        $keys = Cache::get('products.page.keys', []);
-        if (!in_array($cacheKey, $keys)) {
-            $keys[] = $cacheKey;
-            Cache::put('products.page.keys', $keys, now()->addHours(24));
-        }
-
-        return Cache::remember($cacheKey, now()->addHour(), function () use ($perPage) {
+        return Cache::tags(['products', 'products.pages'])->remember($cacheKey, now()->addHour(), function () use ($perPage) {
             return Product::with('category')
                 ->paginate($perPage);
         });

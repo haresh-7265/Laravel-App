@@ -74,7 +74,7 @@ class ProductServiceProvider extends ServiceProvider
         });
 
         \View::composer(['products._form', 'components.export-filter-popup'], function ($view) {
-            $categories = Cache::remember('categories', now()->addHours(2), fn() => Category::all());
+            $categories = Cache::tags(['products', 'categories'])->remember('categories', now()->addHours(2), fn() => Category::all());
             $view->with('categories', $categories);
         });
 
