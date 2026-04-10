@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +40,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('online-customers', function(){
             return view('admin.browsing');
         })->name('online-customers');
+        // cache performance monitor
+        Route::get('cache-monitor', [CacheMonitorController::class, 'index'])->name('cache-monitor');
+        Route::post('cache-clear', [CacheMonitorController::class, 'clearAll'])->name('cache-clear');
     });
 });
 

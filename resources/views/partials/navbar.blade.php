@@ -65,6 +65,11 @@
                             <i class="bi bi-people me-1"></i>Online Customers
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.cache-monitor') }}">
+                            <i class="bi bi-speedometer me-1"></i>Cache
+                        </a>
+                    </li>
                 @endadmin
 
                 <li class="nav-item ms-lg-2">

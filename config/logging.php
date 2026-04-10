@@ -160,6 +160,15 @@ return [
             'level'  => 'debug',
             'days'   => 7,
         ],
+
+        // Custom: cache performance monitoring
+        'cache' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/cache/cache.log'),
+            'level'  => 'debug',
+            'days'   => 7,
+            'replace_placeholders' => true,
+        ],
     ],
 
 ];
