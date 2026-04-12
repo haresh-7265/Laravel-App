@@ -42,10 +42,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Log::info('AppServiceProvider boot method');
 
-        // ─── Cache event logging ────────────────────────
-        $listener = new CacheEventListener();
-        Event::listen(CacheHit::class, [$listener, 'handleCacheHit']);
-        Event::listen(CacheMissed::class, [$listener, 'handleCacheMissed']);
+        // // ─── Cache event logging ────────────────────────
+        // $listener = new CacheEventListener();
+        // Event::listen(CacheHit::class, [$listener, 'handleCacheHit']);
+        // Event::listen(CacheMissed::class, [$listener, 'handleCacheMissed']);
 
         \Response::macro('success', function ($data = null, $message = 'Success', $code = 200) {
             return \Response::json([

@@ -13,17 +13,25 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request, RecentlyViewedService $recentlyViewedService)
     {
-        $products = Products::getPaginatedProducts(page: $request->input('page', 1));
-        $total_products = count($products);
         $recentlyViewed = $recentlyViewedService->get();
         $page_title = 'Product-list';
+        $filters = $request->query();
+        $hasFilters = collect($filters)->hasAny(['min_price', 'max_price', 'categories', 'in_stock', 'on_sale', 'sort']);
+
+        $products = Products::getPaginatedProducts(page: $request->input('page', 1), filters: $filters);
+        $total_products = $products->count();
+
+
         if ($request->acceptsHtml()) {
-            return view('products.index', compact('products', 'total_products', 'page_title', 'recentlyViewed'));
+            return view('products.index', compact(
+                'products',
+                'total_products',
+                'page_title',
+                'recentlyViewed',
+                'hasFilters'
+            ));
         }
         return response()->success($products, 'All products');
     }
@@ -41,7 +49,7 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $data = $request->except(['image','_token']);
+        $data = $request->except(['image', '_token']);
         $image = $request->file('image');
 
         Products::create($data, $image);
@@ -71,7 +79,7 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $data = $request->except(['image','_token','_method']);
+        $data = $request->except(['image', '_token', '_method']);
         $image = $request->file('image');
 
         Products::update($product, $data, $image);
@@ -105,10 +113,10 @@ class ProductController extends Controller
     {
         $request->validate([
             'category_id' => 'nullable|exists:categories,id',
-            'min_price'   => 'nullable|numeric|min:0',
-            'max_price'   => 'nullable|numeric|min:0|gte:min_price',
-            'min_stock'   => 'nullable|integer|min:0',
-            'max_stock'   => 'nullable|integer|min:0',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0|gte:min_price',
+            'min_stock' => 'nullable|integer|min:0',
+            'max_stock' => 'nullable|integer|min:0',
         ]);
 
         $filename = 'products_' . now()->format('Y-m-d_H-i-s') . '.csv';
@@ -116,10 +124,10 @@ class ProductController extends Controller
         return Excel::download(
             new ProductsExport(
                 categoryId: $request->category_id,
-                minPrice:   $request->min_price,
-                maxPrice:   $request->max_price,
-                minStock:   $request->min_stock,
-                maxStock:   $request->max_stock,
+                minPrice: $request->min_price,
+                maxPrice: $request->max_price,
+                minStock: $request->min_stock,
+                maxStock: $request->max_stock,
             ),
             $filename,
             \Maatwebsite\Excel\Excel::CSV
