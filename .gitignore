@@ -25,3 +25,4 @@ Thumbs.db
 /app/Http/Middleware/Authenticate.php
 /app/Http/Middleware/RedirectIfAuthenticated.php
 design.md
+test.php

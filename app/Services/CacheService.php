@@ -15,6 +15,7 @@ class CacheService
 
     public function forgetProductPages(): void
     {
+        Cache::tags(['products'])->forget('product.all');
         Cache::tags(['products.pages'])->flush();
     }
 
