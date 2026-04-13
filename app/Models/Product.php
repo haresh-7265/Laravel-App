@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Collections\ProductCollection;
 use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -57,5 +58,10 @@ class Product extends Model
         static::created($flush);
         static::updated($flush);
         static::deleted($flush);
+    }
+
+    public function newCollection(array $models = []): ProductCollection
+    {
+        return new ProductCollection($models);
     }
 }

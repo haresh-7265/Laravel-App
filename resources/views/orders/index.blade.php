@@ -207,7 +207,6 @@
                 </a>
             </div>
         </div>
-        {{ $order->link }}
         @empty
 
         {{-- Empty State --}}
