@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CacheMonitorController;
@@ -37,12 +38,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
         // online customer route
-        Route::get('online-customers', function(){
+        Route::get('online-customers', function () {
             return view('admin.browsing');
         })->name('online-customers');
         // cache performance monitor
         Route::get('cache-monitor', [CacheMonitorController::class, 'index'])->name('cache-monitor');
         Route::post('cache-clear', [CacheMonitorController::class, 'clearAll'])->name('cache-clear');
+        // sales route
+        Route::get('/sales-analytics', [SalesAnalyticsController::class, 'index'])->name('sales-analytics');
+        Route::get('/sales-analytics/export', [SalesAnalyticsController::class, 'exportCsv'])->name('sales-analytics.export');
     });
 });
 

@@ -70,6 +70,11 @@
                             <i class="bi bi-speedometer me-1"></i>Cache
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}" href="{{ route('admin.sales-analytics') }}">
+                            <i class="bi bi-graph-up-arrow me-1"></i>Sales
+                        </a>
+                    </li>
                 @endadmin
 
                 <li class="nav-item ms-lg-2">
