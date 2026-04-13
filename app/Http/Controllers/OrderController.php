@@ -57,11 +57,9 @@ class OrderController extends Controller
     // Customer order listing
     public function index()
     {
-        $orders = Order::where('user_id', auth()->id())
-            ->latest()
-            ->get();
+        $stats = $this->orderService->getCustomerOrdersAndStats(auth()->id());
 
-        return view('orders.index', compact('orders'));
+        return view('orders.index', $stats);
     }
 
     // Customer order detail

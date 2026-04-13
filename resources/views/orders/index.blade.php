@@ -13,6 +13,126 @@
             </a>
         </div>
 
+        {{-- Order Statistics --}}
+        @if($totalOrders > 0)
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-primary text-white h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-white text-primary rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-box-seam fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white-50">Total Orders</h6>
+                            <h4 class="mb-0 fw-bold">{{ $totalOrders }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-success text-white h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-white text-success rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-currency-dollar fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white-50">Total Spent</h6>
+                            <h4 class="mb-0 fw-bold">@currency($totalSpent)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-info text-white h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-white text-info rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-calculator fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white-50">Average Value</h6>
+                            <h4 class="mb-0 fw-bold">@currency($averageOrderValue)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            {{-- Order Status Breakdown --}}
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-4 pb-0">
+                        <h6 class="fw-bold"><i class="bi bi-pie-chart me-2"></i>Orders by Status</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            @php
+                                $badgeMap = [
+                                    'pending'    => 'warning',
+                                    'processing' => 'primary',
+                                    'shipped'    => 'info',
+                                    'delivered'  => 'success',
+                                    'cancelled'  => 'danger',
+                                ];
+                            @endphp
+                            @foreach($ordersByStatus as $status => $count)
+                                @php $badge = $badgeMap[$status] ?? 'secondary'; @endphp
+                                <div class="border rounded px-3 py-2 d-flex align-items-center flex-grow-1">
+                                    <span class="badge bg-{{ $badge }} me-2" style="width: 10px; height: 10px; border-radius: 50%; padding: 0;">&nbsp;</span>
+                                    <span class="text-capitalize flex-grow-1">{{ $status }}</span>
+                                    <strong class="ms-2 fs-5">{{ $count }}</strong>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Top Ordered Products --}}
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-0 pt-4 pb-0">
+                        <h6 class="fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Favorite Products</h6>
+                    </div>
+                    <div class="card-body">
+                        @if($topProducts->isEmpty())
+                            <p class="text-muted text-center py-2 mb-0">No product history available.</p>
+                        @else
+                            <div class="d-flex flex-column gap-2">
+                                @foreach($topProducts as $item)
+                                    <div class="d-flex align-items-center p-2 border rounded">
+                                        @if($item->product && $item->product->image)
+                                            <img src="{{ asset('storage/' . $item->product->image) }}" class="rounded object-fit-cover me-3 border" style="width: 40px; height: 40px;" alt="{{ $item->product->name ?? 'Product' }}">
+                                        @else
+                                            <div class="rounded bg-light text-muted d-flex justify-content-center align-items-center me-3 border" style="width: 40px; height: 40px;">
+                                                <i class="bi bi-image fs-5"></i>
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0 fw-bold text-truncate" style="max-width: 180px; font-size: 0.9rem;">
+                                                @if($item->product)
+                                                    <a href="{{ route('products.show', $item->product) }}" class="text-dark text-decoration-none">
+                                                        {{ $item->product->name }}
+                                                    </a>
+                                                @else
+                                                    Unknown Product
+                                                @endif
+                                            </h6>
+                                            <small class="text-muted" style="font-size: 0.75rem;">Purchased <strong>{{ $item->total_quantity }}</strong> times</small>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h5 class="fw-bold mb-3">Order History</h5>
+        @endif
+
         @forelse($orders as $order)
         <div class="card mb-3 shadow-sm">
 
@@ -87,6 +207,7 @@
                 </a>
             </div>
         </div>
+        {{ $order->link }}
         @empty
 
         {{-- Empty State --}}

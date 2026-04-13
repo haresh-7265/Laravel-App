@@ -5,12 +5,8 @@
             {{ config('admin.name') }}
         </a>
 
-        <button class="navbar-toggler border-0" type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#mainNavbar"
-            aria-controls="mainNavbar"
-            aria-expanded="false"
-            aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -34,63 +30,61 @@
                         <a class="nav-link px-3" href="{{ route('cart.index') }}">
                             <span class="position-relative d-inline-block">
                                 <i class="bi bi-cart fs-5"></i>
-                            
-                                    <span
-                                    id="cart-badge" 
+
+                                <span id="cart-badge"
                                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                                     style="font-size: 0.65rem;">
-                                        {{ $cart_count > 0 ? ($cart_count > 99 ? '99+' : $cart_count) : '0' }}
-                                    </span>
+                                    {{ $cart_count > 0 ? ($cart_count > 99 ? '99+' : $cart_count) : '0' }}
+                                </span>
                             </span>
                         </a>
                     </li>
                 @endif
 
                 @admin
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.dashboard') }}">
-                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.orders.index') }}">Orders</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('products.create') }}">
-                            <i class="bi bi-plus-circle me-1"></i>Create
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.online-customers') }}">
-                            <i class="bi bi-people me-1"></i>Online Customers
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.cache-monitor') }}">
-                            <i class="bi bi-speedometer me-1"></i>Cache
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}" href="{{ route('admin.sales-analytics') }}">
-                            <i class="bi bi-graph-up-arrow me-1"></i>Sales
-                        </a>
-                    </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.orders.index') }}">Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('products.create') }}">
+                        <i class="bi bi-plus-circle me-1"></i>Create
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.online-customers') }}">
+                        <i class="bi bi-people me-1"></i>Online Customers
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.cache-monitor') }}">
+                        <i class="bi bi-speedometer me-1"></i>Cache
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.sales-analytics') ? 'active' : '' }}"
+                        href="{{ route('admin.sales-analytics') }}">
+                        <i class="bi bi-graph-up-arrow me-1"></i>Sales
+                    </a>
+                </li>
                 @endadmin
 
                 <li class="nav-item ms-lg-2">
                     @auth
                         <form action="{{ route('logout') }}" method="POST" class="d-inline m-0">
                             @csrf
-                            <button type="submit"
-                                class="btn btn-sm btn-outline-danger px-3">
+                            <button type="submit" class="btn btn-sm btn-outline-danger px-3">
                                 Log out
                             </button>
                         </form>
                     @endauth
 
                     @guest
-                        <a href="{{ route('login') }}"
-                            class="btn btn-sm btn-outline-light px-3">
+                        <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light px-3">
                             Log in
                         </a>
                     @endguest

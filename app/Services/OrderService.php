@@ -130,4 +130,40 @@ class OrderService
     {
         OrderStatusUpdated::dispatch($order->id, $order->status);
     }
+
+    public function getCustomerOrdersAndStats(int $userId): array
+    {
+        $orders = Order::where('user_id', $userId)
+            ->latest()
+            ->get();
+
+        $totalOrders = $orders->count();
+
+        $totalSpent = $orders->where('status', '!=', 'cancelled')->sum('total');
+
+        $averageOrderValue = $totalOrders > 0 
+            ? $orders->where('status', '!=', 'cancelled')->avg('total') 
+            : 0;
+
+        $topProducts = OrderItem::whereHas('order', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->with('product')
+            ->selectRaw('product_id, sum(quantity) as total_quantity')
+            ->groupBy('product_id')
+            ->orderByDesc('total_quantity')
+            ->take(3)
+            ->get();
+
+        $ordersByStatus = $orders->groupBy('status')->map->count();
+
+        return [
+            'orders' => $orders,
+            'totalOrders' => $totalOrders,
+            'totalSpent' => $totalSpent,
+            'averageOrderValue' => $averageOrderValue,
+            'topProducts' => $topProducts,
+            'ordersByStatus' => $ordersByStatus
+        ];
+    }
 }
