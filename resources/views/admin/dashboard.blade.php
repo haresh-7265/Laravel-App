@@ -58,39 +58,39 @@
 {{-- ═══════ STAT CARDS ═══════ --}}
 <div class="row g-3 mb-4">
 
-    {{-- Total Orders --}}
-    <div class="col-6 col-lg-4 col-xxl">
-        <div class="card stat-card bg-primary bg-gradient text-white">
+    {{-- Today's Orders --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card bg-primary bg-gradient text-white h-100">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="stat-icon bg-white bg-opacity-25">
                     <i class="bi bi-cart-check"></i>
                 </div>
                 <div>
-                    <div class="stat-value">{{ number_format($stats['total_orders']) }}</div>
-                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value">{{ number_format($stats['today_orders']) }}</div>
+                    <div class="stat-label">Today's Orders</div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Total Revenue --}}
-    <div class="col-6 col-lg-4 col-xxl">
-        <div class="card stat-card bg-success bg-gradient text-white">
+    {{-- This Month's Revenue --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card bg-success bg-gradient text-white h-100">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="stat-icon bg-white bg-opacity-25">
                     <i class="bi bi-currency-rupee"></i>
                 </div>
                 <div>
-                    <div class="stat-value">₹{{ number_format($stats['total_revenue'], 2) }}</div>
-                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">@currency($stats['monthly_revenue'])</div>
+                    <div class="stat-label">This Month's Revenue</div>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- New Customers Today --}}
-    <div class="col-6 col-lg-4 col-xxl">
-        <div class="card stat-card bg-info bg-gradient text-white">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card bg-info bg-gradient text-white h-100">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="stat-icon bg-white bg-opacity-25">
                     <i class="bi bi-person-plus"></i>
@@ -103,24 +103,9 @@
         </div>
     </div>
 
-    {{-- Pending Orders --}}
-    <div class="col-6 col-lg-6 col-xxl">
-        <div class="card stat-card bg-warning bg-gradient text-dark">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="stat-icon bg-white bg-opacity-25">
-                    <i class="bi bi-hourglass-split"></i>
-                </div>
-                <div>
-                    <div class="stat-value">{{ number_format($stats['pending_orders']) }}</div>
-                    <div class="stat-label">Pending Orders</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Low Stock Products --}}
-    <div class="col-12 col-lg-6 col-xxl">
-        <div class="card stat-card bg-danger bg-gradient text-white">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card bg-danger bg-gradient text-white h-100">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="stat-icon bg-white bg-opacity-25">
                     <i class="bi bi-exclamation-triangle"></i>
@@ -169,7 +154,7 @@
                                             </a>
                                         </td>
                                         <td>{{ $order->user->name ?? 'N/A' }}</td>
-                                        <td>₹{{ number_format($order->total, 2) }}</td>
+                                        <td>@currency($order->total)</td>
                                         <td>
                                             @php
                                                 $badgeMap = [
@@ -225,7 +210,7 @@
                                                 {{ $product->stock }}
                                             </span>
                                         </td>
-                                        <td>₹{{ number_format($product->price, 2) }}</td>
+                                        <td>@currency($product->getFinalPriceAttribute())</td>
                                     </tr>
                                 @endforeach
                             </tbody>
