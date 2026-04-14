@@ -73,7 +73,7 @@ class ProductServiceProvider extends ServiceProvider
             return "<?php echo config('admin.currency') .' '. number_format((float)$amount, 2); ?>";
         });
 
-        \View::composer(['products._form', 'components.export-filter-popup', 'products.index'], function ($view) {
+        \View::composer(['products._form', 'components.export-filter-popup', 'components.product-filter','products.index'], function ($view) {
             $categories = Cache::tags(['products', 'categories'])->remember('categories', now()->addHours(2), fn() => Category::all());
             $view->with('categories', $categories);
         });

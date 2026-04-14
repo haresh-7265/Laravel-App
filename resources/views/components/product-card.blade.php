@@ -1,75 +1,92 @@
 @props(['product'])
-<div class="card h-100 shadow-sm border-0 product-card">
 
-    {{-- Product Image --}}
-    <div style="position: relative; overflow: hidden;">
-        <img src="{{ $product->image ? asset('storage/'. $product->image) : asset('storage/products/default.jpg') }}"
+<div class="group w-full max-w-sm bg-white rounded-2xl border border-gray-100 overflow-hidden transition-transform duration-300 hover:-translate-y-1 font-sans">
+
+    {{-- Image --}}
+    <div class="relative h-52 overflow-hidden bg-gray-50">
+        <img src="{{ $product->image ? asset('storage/'.$product->image) : asset('storage/products/default.jpg') }}"
              alt="{{ $product->name }}"
-             class="card-img-top"
-             style="height: 220px; object-fit: cover; transition: transform 0.3s ease;">
-
+             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
 
         {{-- Category Badge --}}
-        <span class="badge bg-primary"
-              style="position: absolute; top: 10px; left: 10px;">
+        <span class="absolute top-3 left-3 text-[11px] font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-blue-50 text-blue-800">
             {{ $product->category->name }}
         </span>
+
+        {{-- Discount Pill --}}
+        @if(!empty($product->discount_price) && $product->discount_price < $product->price)
+            <span class="absolute top-3 right-3 text-[11px] font-semibold px-3 py-1 rounded-full bg-green-50 text-green-800">
+                {{ round(($product->price - $product->discount_price) / $product->price * 100) }}% off
+            </span>
+        @endif
+
+        {{-- Out of Stock Overlay --}}
+        @if($product->stock <= 0)
+            <div class="absolute inset-0 bg-white/50 flex items-center justify-center">
+                <span class="text-xs font-semibold uppercase tracking-widest text-red-800">Out of stock</span>
+            </div>
+        @endif
     </div>
 
-    <div class="card-body d-flex flex-column">
+    {{-- Body --}}
+    <div class="flex flex-col gap-2 p-4">
 
         {{-- Name --}}
-        <h5 class="card-title fw-bold mb-1">{{ $product->name }}</h5>
+        <h3 class="text-[17px] font-semibold text-gray-900 leading-snug tracking-tight">
+            {{ $product->name }}
+        </h3>
 
         {{-- Description --}}
-        <p class="card-text text-muted small mb-3"
-           style="display: -webkit-box; -webkit-line-clamp: 2;
-                  -webkit-box-orient: vertical; overflow: hidden;">
-            {{ Str::limit($product->description ?? 'No description available.', 30, '...') }}
+        <p class="text-[13px] text-gray-400 leading-relaxed line-clamp-2">
+            {{ Str::limit($product->description ?? 'No description available.', 30, '...', true) }}
         </p>
 
-        {{-- Price & Stock --}}
-        <div class="d-flex justify-content-between align-items-center mb-3 mt-auto">
-            <div>
-                @if(!empty($product->discount_price) && $product->discount_price < $product->price)
-                    {{-- Has discount --}}
-                    <span class="text-decoration-line-through text-muted me-1">
-                        @currency($product->price)
-                    </span>
-                    <strong class="text-success fs-5">
-                        @currency($product->discount_price)
-                    </strong>
-                    <span class="badge bg-success ms-1" style="font-size: 10px;">
-                        {{ round(($product->price - $product->discount_price) / $product->price * 100) }}% OFF
-                    </span>
-                @else
-                    <strong class="text-success fs-5">
-                        @currency($product->price)
-                    </strong>
-                @endif
-            </div>
+        {{-- Price --}}
+        <div class="flex items-baseline gap-2 mt-1">
+            @if(!empty($product->discount_price) && $product->discount_price < $product->price)
+                <span class="text-[13px] text-gray-300 line-through">@currency($product->price)</span>
+                <span class="text-[22px] font-semibold text-gray-900 tracking-tight">@currency($product->discount_price)</span>
+            @else
+                <span class="text-[22px] font-semibold text-gray-900 tracking-tight">@currency($product->price)</span>
+            @endif
         </div>
-        <small class="{{ $product->stock > 0 ? 'text-primary' : 'text-danger' }} mb-1">
-            {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of Stock' }}
-        </small>
+
+        {{-- Divider --}}
+        <div class="border-t border-gray-100 my-1"></div>
+
+        {{-- Stock Status --}}
+        <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full flex-shrink-0 {{ $product->stock > 0 ? 'bg-green-500' : 'bg-red-400' }}"></span>
+            <span class="text-[12px] font-medium {{ $product->stock > 0 ? 'text-green-800' : 'text-red-700' }}">
+                {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of stock' }}
+            </span>
+        </div>
 
         {{-- Actions --}}
-        <div class="d-flex gap-2">
-            <a href="{{ route('products.show', $product->slug) }}"
-               class="btn btn-outline-primary btn-sm flex-fill">View</a>
+        <div class="flex gap-2 mt-1">
+            <a href="{{ route('products.show', $product) }}"
+               class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80 {{ $product->stock <= 0 ? 'opacity-40 pointer-events-none' : '' }}">
+                View
+            </a>
 
             @can('edit-product')
-                <a href="{{ route('products.edit', $product->slug) }}"
-                   class="btn btn-warning btn-sm flex-fill">Edit</a>
+                <a href="{{ route('products.edit', $product) }}"
+                   class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors">
+                    Edit
+                </a>
             @endcan
 
             @can('delete-product')
-                <form action="{{ route('products.destroy', $product->id) }}"
+                <form action="{{ route('products.destroy', $product) }}"
                       method="POST"
-                      onsubmit="return confirm('Delete this product?')">
+                      onsubmit="return confirm('Delete this product?')"
+                      style="display:contents;">
                     @csrf
                     @method('DELETE')
-                    <button class="btn btn-danger btn-sm">Delete</button>
+                    <button type="submit"
+                            class="w-10 text-[13px] font-medium rounded-xl bg-red-50 text-red-700 border border-red-100 hover:bg-red-100 transition-colors">
+                        ✕
+                    </button>
                 </form>
             @endcan
         </div>

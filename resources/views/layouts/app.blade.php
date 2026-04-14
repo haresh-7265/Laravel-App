@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     @yield('style')
     @stack('styles')
-    @vite(['resources/js/app.js', "resources/js/helpers.js"])
+    @vite(['resources/js/app.js', "resources/js/helpers.js", "resources/css/app.css"])
     @admin
     @vite(['resources/js/admin/app.js'])
     @endadmin
