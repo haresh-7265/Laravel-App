@@ -8,12 +8,27 @@ use App\Models\Product;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
+    public function getAll()
+    {
+        return Cache::tags(['products', 'products.list'])->remember('product.all', now()->addHour(), fn() => Product::all());
+    }
+
+    public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
+    {
+        return Concurrency::run([
+            'featured' => fn() => Cache::tags(['products', 'products.list'])->remember('products.featured', now()->addHour(), fn() => $this->getAll()->featured()),
+            'newArrivals' => fn() => Cache::tags(['products','products.list'])->remember('products.new', now()->addHour(), fn() => Product::latest()->take(8)->get()),
+            'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember('products.onsale', now()->addHour(), fn() => $this->getAll()->onSale()),
+            'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage),
+        ]);
+    }
     // GET paginated products
     public function getPaginatedProducts(int $page, array $filters, int $perPage = 10)
     {
@@ -25,7 +40,7 @@ class ProductService
             'perPage' => $perPage,
         ]));
 
-        return Cache::tags(['products', 'products.pages'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters) {
+        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters) {
             $ids = $this->apply($filters)->toArray();
             $products = Product::with('category')
                 ->whereIn('id', $ids)
@@ -238,7 +253,7 @@ class ProductService
     public function apply(array $filters): Collection
     {
         // ─── 1. Load all products with category (single DB query) ──
-        $products = Cache::tags(['products'])->remember('product.all', now()->addHour(),fn()=>Product::all());
+        $products = $this->getAll();
 
         // ─── 2. Price range filter — filter() ──────────────────────
         if (!empty($filters['min_price'])) {

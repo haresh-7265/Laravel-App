@@ -23,16 +23,20 @@ class ProductCollection extends Collection
     // Filter featured products
     public function featured(): static
     {
-        return $this->filter(
-            fn($product) => in_array('featured', $product->tags ?? [])
-        )->values();
+        return $this->filter(function ($product) {
+            $tags = is_array($product->tags)
+                ? $product->tags
+                : (json_decode($product->tags, true) ?? []);
+
+            return in_array('featured', $tags);
+        })->values();
     }
 
     // Filter products that have a discount
     public function onSale(): static
     {
         return $this->filter(
-            fn($product) => !is_null($product->discount_price) && $product->discount_price > 0 && $product->discount_price > $product->price
+            fn($product) => !is_null($product->discount_price) && $product->discount_price > 0 
         )->values();
     }
 

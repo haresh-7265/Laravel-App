@@ -2,17 +2,6 @@
 
 @section('title','Products')
 
-@section('style')
-<style>
-    /* Results summary */
-    .results-summary {
-        font-size: .85rem;
-        color: #6c757d;
-    }
-    .results-summary strong { color: #212529; }
-</style>
-@endsection
-
 @section('content')
 
 @include('partials.recently-viewed', ['recentlyViewed' => $recentlyViewed])
@@ -25,13 +14,59 @@
     {{-- ═══════ RIGHT: PRODUCT GRID ═══════ --}}
     <div class="col-lg-9">
 
+        {{-- ═══════ HOMEPAGE SECTIONS (Concurrent Data) ═══════ --}}
+            @if($featured->isNotEmpty())
+            <div class="mb-5">
+                <h3 class="mb-3">Featured Products</h3>
+
+                <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
+                    @foreach($featured as $p)
+                        <div style="min-width: 280px; flex: 0 0 auto; scroll-snap-align: start;">
+                            <x-product-card :product="$p" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+
+            @if($newArrivals->isNotEmpty())
+            <div class="mb-5">
+                <h3 class="mb-3">New Arrivals</h3>
+
+                <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
+                    @foreach($newArrivals as $p)
+                        <div style="min-width: 280px; flex: 0 0 auto; scroll-snap-align: start;">
+                            <x-product-card :product="$p" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+
+            @if($onSale->isNotEmpty())
+            <div class="mb-5">
+                <h3 class="mb-3">On Sale</h3>
+
+                <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
+                    @foreach($onSale as $p)
+                        <div style="min-width: 280px; flex: 0 0 auto; scroll-snap-align: start;">
+                            <x-product-card :product="$p" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+
+            <hr class="mb-5">
+
+            <h3 class="mb-3">All Products</h3>
+
         {{-- Results header --}}
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
             <div>
-                <span class="results-summary">
-                    Showing <strong>{{ $products->count() }}</strong> of
-                    <strong>{{ $total_products }}</strong> products
-                </span>
 
                 {{-- Active filter badges --}}
                 @if($hasFilters ?? false)

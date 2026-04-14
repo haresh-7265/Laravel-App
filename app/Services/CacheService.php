@@ -10,13 +10,12 @@ class CacheService
     public function forgetProduct(string $slug): void
     {
         Cache::tags(['products'])->forget("product.{$slug}");
-        $this->forgetProductPages();
+        $this->forgetProductList();
     }
 
-    public function forgetProductPages(): void
+    public function forgetProductList(): void
     {
-        Cache::tags(['products'])->forget('product.all');
-        Cache::tags(['products.pages'])->flush();
+        Cache::tags(['products.list'])->flush();
     }
 
     // ─── Category Cache ──────────────────────────────

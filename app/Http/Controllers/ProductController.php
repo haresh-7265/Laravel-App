@@ -20,17 +20,17 @@ class ProductController extends Controller
         $filters = $request->query();
         $hasFilters = collect($filters)->hasAny(['min_price', 'max_price', 'categories', 'in_stock', 'on_sale', 'sort']);
 
-        $products = Products::getPaginatedProducts(page: $request->input('page', 1), filters: $filters);
-        $total_products = $products->count();
-
+        extract(Products::getHomepageProducts($request->input('page', 1), $filters));
 
         if ($request->acceptsHtml()) {
             return view('products.index', compact(
                 'products',
-                'total_products',
                 'page_title',
                 'recentlyViewed',
-                'hasFilters'
+                'hasFilters',
+                'featured',
+                'newArrivals',
+                'onSale'
             ));
         }
         return response()->success($products, 'All products');
