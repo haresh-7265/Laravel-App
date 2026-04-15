@@ -138,36 +138,60 @@ return [
         // Custom: order channel
         'order' => [
             'driver' => 'daily',
-            'path'   => storage_path('logs/orders/order.log'),
-            'level'  => env('LOG_LEVEL', 'debug'),
-            'days'   => 90,   
+            'path' => storage_path('logs/orders/order.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 90,
             'replace_placeholders' => true,
         ],
 
         // Custom: security channel
-         'security' => [
+        'security' => [
             'driver' => 'daily',
-            'path'   => storage_path('logs/security/security.log'),
-            'level'  => 'info',
-            'days'   => 180,       
+            'path' => storage_path('logs/security/security.log'),
+            'level' => 'info',
+            'days' => 180,
             'replace_placeholders' => true,
         ],
 
         // Custom: db-query 
-         'db-query' => [
+        'db-query' => [
             'driver' => 'daily',
-            'path'   => storage_path('logs/DB/db-query.log'),
-            'level'  => 'debug',
-            'days'   => 7,
+            'path' => storage_path('logs/DB/db-query.log'),
+            'level' => 'debug',
+            'days' => 7,
         ],
 
         // Custom: cache performance monitoring
         'cache' => [
             'driver' => 'daily',
-            'path'   => storage_path('logs/cache/cache.log'),
-            'level'  => 'debug',
-            'days'   => 7,
+            'path' => storage_path('logs/cache/cache.log'),
+            'level' => 'debug',
+            'days' => 7,
             'replace_placeholders' => true,
+        ],
+
+        // track request
+        'request' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/request/request.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
+        // customer channel
+        'customer' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/user/customer.log'),
+            'level' => 'info',
+            'days' => 7,
+        ],
+
+        // admin chanel
+        'admin' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/user/admin.log'),
+            'level' => 'info',
+            'days' => 7,
         ],
     ],
 

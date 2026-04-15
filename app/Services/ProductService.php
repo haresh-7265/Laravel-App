@@ -23,9 +23,9 @@ class ProductService
     public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
     {
         return Concurrency::run([
-            'featured' => fn() => Cache::tags(['products', 'products.list'])->remember('products.featured', now()->addHour(), fn() => $this->getAll()->featured()),
+            'featured' => fn() => Cache::tags(['products', 'products.list'])->remember('products.featured', now()->addHour(), fn() => $this->getAll()->featured()->take(8)),
             'newArrivals' => fn() => Cache::tags(['products','products.list'])->remember('products.new', now()->addHour(), fn() => Product::latest()->take(8)->get()),
-            'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember('products.onsale', now()->addHour(), fn() => $this->getAll()->onSale()),
+            'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember('products.onsale', now()->addHour(), fn() => $this->getAll()->onSale()->take(8)),
             'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage),
         ]);
     }
