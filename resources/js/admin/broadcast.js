@@ -15,8 +15,17 @@ export function listenForOrders() {
     });
 
     // Listen for the event
-    channel.listen(".OrderPlaced", (payload) => {
-        console.log("📦 OrderPlaced received", payload);
-        showOrderToast(payload);
-    });
+    channel
+        .listen(".order.placed", (payload) => {
+            showOrderToast(payload);
+        })
+        .listen(".order.shipped", (payload) => {
+            showOrderToast(payload);
+        })
+        .listen(".order.paid", (payload) => {
+            showOrderToast(payload);
+        })
+        .listen(".order.delivered", (payload) => {
+            showOrderToast(payload);
+        });
 }

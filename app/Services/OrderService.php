@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\OrderDelivered;
+use App\Events\OrderPlaced;
+use App\Events\OrderShipped;
 use App\Events\OrderStatusUpdated;
 use App\Events\ProductStockChanged;
 use App\Exceptions\ProductOutOfStockException;
@@ -85,6 +88,8 @@ class OrderService
                 });
             }
 
+            OrderPlaced::dispatch($order);
+
             // Clear cart after order
             $this->cartService->clear();
 
@@ -121,6 +126,10 @@ class OrderService
             return;
         }
         $order->update(['status' => $status]);
+        $order->refresh();
+
+        if($status==='shipped')OrderShipped::dispatch($order);
+        elseif($status==='delivered')OrderDelivered::dispatch($order);
         $this->broadcastStatus($order);
 
     }

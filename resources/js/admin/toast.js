@@ -1,12 +1,12 @@
 export function showOrderToast(data) {
 
     let html = `
-        <strong>🛒 New Order!</strong><br>
+        <strong>${data.message}</strong><br>
         Order: <b>${data.order_number}</b><br>
         Customer: ${data.customer_name}<br>
         Items: ${data.items_count}<br>
         Total: ₹${data.order_total}<br>
-        <small>${data.placed_at}</small>
+        <small>${data.time}</small>
     `;
 
     $('#toastBody').html(html);
