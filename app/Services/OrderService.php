@@ -2,11 +2,8 @@
 
 namespace App\Services;
 
-use App\Events\OrderDelivered;
-use App\Events\OrderPlaced;
-use App\Events\OrderShipped;
-use App\Events\OrderStatusUpdated;
-use App\Events\ProductStockChanged;
+use App\Events\Product\ProductStockChanged;
+use App\Events\Order\{OrderDelivered, OrderPlaced, OrderShipped, OrderStatusUpdated};
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;

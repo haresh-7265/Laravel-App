@@ -4,10 +4,10 @@ namespace App\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Broadcast;
-use app\Events\{OrderPlaced, OrderPaid, OrderDelivered, OrderShipped};
+use app\Events\Order\{OrderPlaced, OrderPaid, OrderDelivered, OrderShipped};
 use Throwable;
 
-class NotifyAdmin
+class NotifyAdmin implements ShouldQueue
 {
     public function handle(object $event): void
     {

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Events\ProductStockChanged;
+use App\Events\Product\ProductStockChanged;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Database\QueryException;

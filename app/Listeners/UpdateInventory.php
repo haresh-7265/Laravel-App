@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\OrderPaid;
+use App\Events\Order\OrderPaid;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class UpdateInventory implements ShouldQueue

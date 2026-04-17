@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\Product\ProductViewed;
 use App\Exports\ProductsExport;
 use App\Facades\Products;
 use App\Http\Requests\StoreProductRequest;
@@ -15,7 +16,7 @@ class ProductController extends Controller
 {
     public function index(Request $request, RecentlyViewedService $recentlyViewedService)
     {
-        $recentlyViewed = $recentlyViewedService->get();
+        $recentlyViewed = $recentlyViewedService->get(auth()?->id(), session()->getId());
         $page_title = 'Product-list';
         $filters = $request->query();
         $hasFilters = collect($filters)->hasAny(['min_price', 'max_price', 'categories', 'in_stock', 'on_sale', 'sort']);
@@ -60,9 +61,9 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product, RecentlyViewedService $recentlyViewedService)
+    public function show(Product $product)
     {
-        $recentlyViewedService->track($product->id);
+        ProductViewed::dispatch($product, auth()->user(), session()->id());
         return view('products.show')->with('product', $product);
     }
 

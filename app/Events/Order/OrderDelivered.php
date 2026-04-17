@@ -1,17 +1,15 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\Order;
 
 use App\Models\Order;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderShipped
+class OrderDelivered
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public readonly Order $order)
-    {
-    }
+    public function __construct(public readonly Order $order) {}
 }

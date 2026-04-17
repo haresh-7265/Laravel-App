@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\Product\ProductAddedToCart;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Exceptions\ProductOutOfStockException;
@@ -87,6 +88,13 @@ class CartService
         } else {
             $this->addToSession($product, $quantity);
         }
+
+        ProductAddedToCart::dispatch(
+            product: $product,
+            user: auth()->user(),
+            quantity: $quantity,
+            price: $product->getFinalPriceAttribute(),
+        );
 
         $this->cacheService->forgetCart();
 

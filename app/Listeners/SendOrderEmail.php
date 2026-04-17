@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Mail\OrderMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use app\Events\Order\{OrderPlaced, OrderPaid, OrderDelivered, OrderShipped};
 use Throwable;
 
 class SendOrderEmail implements ShouldQueue
@@ -13,7 +14,7 @@ class SendOrderEmail implements ShouldQueue
 
     public function handle(object $event): void
     {
-        $order = $event->getOrder();
+        $order = $event->order;
 
         $event = match(true) {
             $event instanceof OrderPlaced    => 'placed',

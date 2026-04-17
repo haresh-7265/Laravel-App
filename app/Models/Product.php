@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Collections\ProductCollection;
 use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
@@ -30,6 +31,16 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function averageRating(): float
+    {
+        return $this->reviews()->avg('rating') ?? 0;
     }
 
     public function getFinalPriceAttribute()

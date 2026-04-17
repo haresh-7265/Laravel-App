@@ -60,7 +60,7 @@ return [
 
         'single' => [
             'driver' => 'single',
-            'path' => storage_path('logs/requestLifecycle.log'),
+            'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
@@ -193,6 +193,14 @@ return [
             'level' => 'info',
             'days' => 7,
         ],
+
+        // analitics channel
+        'analitics' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/analytics.log'),
+            'level' => 'info',
+        ],
+
     ],
 
 ];

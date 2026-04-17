@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace App\Events\Product;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
