@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Models\Order;
+use App\Models\Product;
+use App\Observers\OrderObserver;
+use App\Observers\ProductObserver;
 use App\Services\CacheService;
 use App\Services\CartService;
 use App\Services\CouponService;
@@ -89,5 +93,8 @@ class ProductServiceProvider extends ServiceProvider
         });
 
         Paginator::useBootstrapFive();
+
+        Product::observe(ProductObserver::class);
+        Order::observe(OrderObserver::class);
     }
 }

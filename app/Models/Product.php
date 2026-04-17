@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Collections\ProductCollection;
-use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
@@ -69,11 +68,7 @@ class Product extends Model
 
     protected static function booted(): void
     {
-        $flush = fn($product) => app(CacheService::class)->forgetProduct($product->slug);
-
-        static::created($flush);
-        static::updated($flush);
-        static::deleted($flush);
+    
     }
 
     public function newCollection(array $models = []): ProductCollection

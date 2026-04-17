@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Events\Product\ProductStockChanged;
-use App\Events\Order\{OrderDelivered, OrderPlaced, OrderShipped, OrderStatusUpdated};
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -80,12 +78,7 @@ class OrderService
                 // refresh updated value
                 $product->refresh();
 
-                DB::afterCommit(function () use ($product) {
-                    ProductStockChanged::dispatch($product->id, $product->stock);
-                });
             }
-
-            OrderPlaced::dispatch($order);
 
             // Clear cart after order
             $this->cartService->clear();
@@ -107,13 +100,9 @@ class OrderService
 
                 $product->refresh();
 
-                DB::afterCommit(function () use ($product) {
-                    ProductStockChanged::dispatch($product->id, $product->stock);
-                });
             }
         });
 
-        $this->broadcastStatus($order);
     }
 
     public function updateOrderStatus(Order $order, string $status): void
@@ -125,17 +114,8 @@ class OrderService
         $order->update(['status' => $status]);
         $order->refresh();
 
-        if($status==='shipped')OrderShipped::dispatch($order);
-        elseif($status==='delivered')OrderDelivered::dispatch($order);
-        $this->broadcastStatus($order);
-
     }
 
-    // Centralized broadcasting logic
-    protected function broadcastStatus(Order $order): void
-    {
-        OrderStatusUpdated::dispatch($order->id, $order->status);
-    }
 
     public function getCustomerOrdersAndStats(int $userId): array
     {

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Events\Product\ProductStockChanged;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Database\QueryException;
@@ -62,14 +61,6 @@ class ProductService
 
             $product = Product::create($data);
 
-            Log::channel('product')->info('Product created', [
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'category_id' => $product->category_id,
-                'has_image' => !is_null($product->image),
-                'created_by' => auth()->id(),
-            ]);
-
             return $product;
 
         } catch (QueryException $e) {
@@ -99,8 +90,6 @@ class ProductService
     {
         try {
 
-            $original = $product->getOriginal();
-
             if ($image) {
                 $this->deleteImage($product->image);
                 $data['image'] = $this->uploadImage($image);
@@ -108,18 +97,8 @@ class ProductService
 
             $product->update($data);
 
-            if ($original['stock'] !== $product->stock) {
-                ProductStockChanged::dispatch($product->id, $product->stock);
-            }
+            return $product->refresh();
 
-            Log::channel('product')->info('Product updated', [
-                'product_id' => $product->id,
-                'changes' => $product->getChanges(),
-                'original' => $original,
-                'updated_by' => auth()->id(),
-            ]);
-
-            return $product;
         } catch (QueryException $e) {
             Log::channel('product')->error('Failed to update product', [
                 'product_id' => $product->id,
@@ -144,17 +123,9 @@ class ProductService
     public function delete(Product $product): bool
     {
         try {
-            $snapshot = $product->only(['id', 'name', 'price', 'category_id', 'image', 'stock']);
 
             $this->deleteImage($product->image);
             $product->delete();
-
-            Log::channel('product')->warning('Product deleted', [
-                'product_id' => $snapshot['id'],
-                'product_name' => $snapshot['name'],
-                'deleted_by' => auth()->id(),
-                'product_data' => $snapshot,
-            ]);
 
             return true;
 
