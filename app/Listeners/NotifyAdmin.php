@@ -32,7 +32,7 @@ class NotifyAdmin implements ShouldQueue
             Broadcast::private('admin.orders')
                 ->as($eventName)
                 ->with($data)
-                ->send();
+                ->sendNow();
         }
     }
 

@@ -38,6 +38,11 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
+    public function waitlistUsers()
+    {
+        return $this->belongsToMany(User::class, 'product_waitlist')->withTimestamps();
+    }
+
     public function averageRating(): float
     {
         return $this->reviews()->avg('rating') ?? 0;
@@ -74,5 +79,10 @@ class Product extends Model
     public function newCollection(array $models = []): ProductCollection
     {
         return new ProductCollection($models);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

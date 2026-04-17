@@ -9,10 +9,10 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        OrderPlaced::class => [SendOrderEmail::class, NotifyAdmin::class, LogEvent::class],
-        OrderPaid::class => [SendOrderEmail::class, NotifyAdmin::class, UpdateInventory::class, LogEvent::class],
-        OrderShipped::class => [SendOrderEmail::class, NotifyAdmin::class, LogEvent::class],
-        OrderDelivered::class => [SendOrderEmail::class, NotifyAdmin::class, LogEvent::class],
+        OrderPlaced::class      => [NotifyAdmin::class, LogEvent::class, SendOrderEmail::class],
+        OrderPaid::class        => [NotifyAdmin::class, UpdateInventory::class, LogEvent::class, SendOrderEmail::class],
+        OrderShipped::class     => [NotifyAdmin::class, LogEvent::class, SendOrderEmail::class],
+        OrderDelivered::class   => [NotifyAdmin::class, LogEvent::class, SendOrderEmail::class],
     ];
 
     protected $subscribe = [

@@ -17,14 +17,14 @@ class ProductService
 {
     public function getAll()
     {
-        return Cache::tags(['products', 'products.list'])->remember('product.all', now()->addHour(), fn() => Product::all());
+        return Cache::tags(['products', 'products.list'])->remember('product.all', now()->addHour(), fn() => Product::active()->get());
     }
 
     public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
     {
         return Concurrency::run([
             'featured' => fn() => Cache::tags(['products', 'products.list'])->remember('products.featured', now()->addHour(), fn() => $this->getAll()->featured()->take(8)),
-            'newArrivals' => fn() => Cache::tags(['products','products.list'])->remember('products.new', now()->addHour(), fn() => Product::latest()->take(8)->get()),
+            'newArrivals' => fn() => Cache::tags(['products', 'products.list'])->remember('products.new', now()->addHour(), fn() => Product::active()->latest()->take(8)->get()),
             'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember('products.onsale', now()->addHour(), fn() => $this->getAll()->onSale()->take(8)),
             'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage),
         ]);
@@ -42,7 +42,8 @@ class ProductService
 
         return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters) {
             $ids = $this->apply($filters)->toArray();
-            $products = Product::with('category')
+            $products = Product::active()
+                ->with('category')
                 ->whereIn('id', $ids)
                 ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
                 ->paginate($perPage)
@@ -184,6 +185,7 @@ class ProductService
             $results = Product::query()
                 ->when($filters['category'] ?? null, fn($q, $v) => $q->where('category_id', $v))
                 ->when($filters['price'] ?? null, fn($q, $v) => $q->where('price', $v))
+                ->active()
                 ->get();
 
             if ($results->isEmpty()) {

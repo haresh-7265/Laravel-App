@@ -54,6 +54,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, ShouldAuto
             'Stock Value (₹)',
             'Tags',
             'Created At',
+            'is Active'
         ];
     }
 
@@ -82,6 +83,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, ShouldAuto
             number_format($stockValue, 2),
             $product->tags ? implode(', ', $product->tags) : '-',
             $product->created_at->format('Y-m-d'),
+            $product->is_active ? 'Yes': 'No',
         ];
     }
 
