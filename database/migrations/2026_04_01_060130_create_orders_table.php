@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->decimal('total', 10, 2);
             $table->string('payment_method')->default('cod');
             $table->enum('payment_status', ['paid', 'unpaid'])->default('unpaid');
+            $table->string('invoice_path')->nullable();
             $table->text('notes')->nullable();
             // Shipping address
             $table->string('shipping_name');

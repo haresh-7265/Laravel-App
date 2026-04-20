@@ -8,7 +8,9 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Mail\CouponMail;
+use App\Models\Order;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -129,4 +131,20 @@ Route::get('/preview/coupon-mail', function () {
     $usageLimit = $coupon->pivot->usage_limit;
 
     return new CouponMail($user, $coupon, $usageLimit);
+});
+
+Route::get('/pdf', function () {
+    $order = Order::findOrFail(1);
+    $pdf = Pdf::loadView('invoices.invoice', compact('order'));
+
+    $filename = "invoices/invoice-{$order->order_number}.pdf";
+
+    Storage::disk('public')->put($filename, $pdf->output());
+
+    $order->update(['invoice_path' => $filename]);
+
+    return response()->file(Storage::disk('public')->path($filename), [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="invoice-' . $order->id . '.pdf"',
+    ]);
 });

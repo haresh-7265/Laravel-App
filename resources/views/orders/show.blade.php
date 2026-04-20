@@ -40,6 +40,11 @@
                         <i class="bi bi-x-circle me-1"></i> Cancel Order
                     </button>
                 </form>
+                @elseif ($order->invoice_path)
+                <a href="{{ asset('storage/' . $order->invoice_path) }}" target="_blank"
+                    class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-download me-1"></i> Download Invoice
+                </a>
                 @endif
                 </div>
             </div>
