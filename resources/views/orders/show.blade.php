@@ -41,10 +41,13 @@
                     </button>
                 </form>
                 @elseif ($order->invoice_path)
-                <a href="{{ route('orders.invoice', $order) }}"
+                <a href="{{ $signedUrl }}"
                     class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-download me-1"></i> Download Invoice
                 </a>
+                <p class="text-muted mt-1 mb-0" style="font-size:12px">
+                    <i class="bi bi-clock me-1"></i> Link expires after 10 minutes
+                </p>
                 @endif
                 </div>
             </div>

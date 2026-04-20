@@ -65,7 +65,7 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('my-orders', [CustomerOrderController::class, 'index'])->name('orders.index');
     Route::get('my-orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
     Route::patch('my-orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
-    Route::get('my-orders/{order}/invoice', [CustomerOrderController::class, 'downloadInvoice'])->name('orders.invoice');
+    Route::get('invoices/{order}/download', [CustomerOrderController::class, 'downloadInvoice'])->name('invoices.download');
 });
 
 require __DIR__ . '/auth.php';

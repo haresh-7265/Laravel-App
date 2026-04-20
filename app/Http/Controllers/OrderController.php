@@ -7,6 +7,7 @@ use App\Services\OrderService;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class OrderController extends Controller
 {
@@ -57,7 +58,9 @@ class OrderController extends Controller
 
         $order->load('items.product');
 
-        return view('orders.show', compact('order'));
+        $signedUrl = $this->generateSignedUrl($order);
+
+        return view('orders.show', compact('order', 'signedUrl'));
     }
 
     // cancel the order
@@ -77,12 +80,14 @@ class OrderController extends Controller
             ->with('success', 'Your order has been cancelled');
     }
 
-    public function downloadInvoice(Order $order)
+    public function downloadInvoice(Request $request, Order $order)
     {
-        // verify order belongs to auth user
-        if ($order->user_id !== auth()->id()) {
-            abort(403, 'This invoice does not belong to you.');
+
+        // validate signature — abort if expired or tampered
+        if (!$request->hasValidSignature()) {
+            abort(403, 'Link expired or invalid.');
         }
+
 
         $path = $order->invoice_path;
 
@@ -95,5 +100,21 @@ class OrderController extends Controller
             $path,
             'Invoice-' . $order->order_number . '.pdf'
         );
+    }
+
+    private function generateSignedUrl(Order $order)
+    {
+        // verify order belongs to auth user
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $signedUrl = URL::temporarySignedRoute(
+            'invoices.download',
+            now()->addMinutes(10),
+            ['order' => $order]
+        );
+
+        return $signedUrl;
     }
 }

@@ -113,7 +113,7 @@ class CacheMonitorService
      */
     private function extractJsonField(string $line, string $field): string
     {
-        if (preg_match('/\{.*\}/', $line, $m)) {
+        if (preg_match('/\{(?:[^{}]|(?R))*\}/', $line, $m)) {
             $json = json_decode($m[0], true);
             return $json[$field] ?? 'unknown';
         }
