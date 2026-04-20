@@ -3,14 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Events\Product\ProductViewed;
-use App\Exports\ProductsExport;
 use App\Facades\Products;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Services\RecentlyViewedService;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -110,28 +108,27 @@ class ProductController extends Controller
     }
 
     // export csv file
-    public function exportCsv(Request $request)
+    public function exportCsv()
     {
-        $request->validate([
-            'category_id' => 'nullable|exists:categories,id',
-            'min_price' => 'nullable|numeric|min:0',
-            'max_price' => 'nullable|numeric|min:0|gte:min_price',
-            'min_stock' => 'nullable|integer|min:0',
-            'max_stock' => 'nullable|integer|min:0',
+        $products = Product::select('id', 'name', 'price', 'stock')->get();
+
+        return response()->streamDownload(function () use ($products) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, ['ID', 'Name', 'Price', 'Stock']);
+
+            foreach ($products as $product) {
+                fputcsv($handle, [
+                    $product->id,
+                    $product->name,
+                    $product->price,
+                    $product->stock,
+                ]);
+            }
+
+            fclose($handle);
+        }, 'products-' . now()->format('Y-m-d') . '.csv', [
+            'Content-Type' => 'text/csv',
         ]);
-
-        $filename = 'products_' . now()->format('Y-m-d_H-i-s') . '.csv';
-
-        return Excel::download(
-            new ProductsExport(
-                categoryId: $request->category_id,
-                minPrice: $request->min_price,
-                maxPrice: $request->max_price,
-                minStock: $request->min_stock,
-                maxStock: $request->max_stock,
-            ),
-            $filename,
-            \Maatwebsite\Excel\Excel::CSV
-        );
     }
 }

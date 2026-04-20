@@ -71,6 +71,10 @@
                     <a href="{{ route('admin.sales-analytics') }}" class=" {{ request()->routeIs('admin.sales-analytics') ? 'text-blue-400' : '' }}">
                         <i class="bi bi-graph-up-arrow"></i> Sales
                     </a>
+
+                    <a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.index') ? 'text-blue-400' : '' }}">
+                        <i class="bi bi-receipt"></i> Invoices
+                    </a>
                 @endadmin
 
                 <!-- Auth -->

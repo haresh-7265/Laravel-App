@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\OrderService;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -74,5 +75,25 @@ class OrderController extends Controller
         return redirect()
             ->route('orders.show', $order)
             ->with('success', 'Your order has been cancelled');
+    }
+
+    public function downloadInvoice(Order $order)
+    {
+        // verify order belongs to auth user
+        if ($order->user_id !== auth()->id()) {
+            abort(403, 'This invoice does not belong to you.');
+        }
+
+        $path = $order->invoice_path;
+
+        // check file exists
+        if ($path && !Storage::disk('public')->exists($path)) {
+            return back()->with('danger', 'Invoice not found. Please contact support.');
+        }
+
+        return Storage::disk('public')->download(
+            $path,
+            'Invoice-' . $order->order_number . '.pdf'
+        );
     }
 }

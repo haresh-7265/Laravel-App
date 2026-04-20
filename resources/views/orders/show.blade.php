@@ -41,7 +41,7 @@
                     </button>
                 </form>
                 @elseif ($order->invoice_path)
-                <a href="{{ asset('storage/' . $order->invoice_path) }}" target="_blank"
+                <a href="{{ route('orders.invoice', $order) }}"
                     class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-download me-1"></i> Download Invoice
                 </a>

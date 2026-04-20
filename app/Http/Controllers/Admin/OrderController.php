@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -97,5 +98,21 @@ class OrderController extends Controller
         $order->update(['payment_status' => $request->payment_status]);
 
         return back()->with('success', 'Payment status updated successfully.');
+    }
+
+    public function invoices()
+    {
+        $files = Storage::disk('public')->files('invoices');
+
+        $invoices = collect($files)->map(function ($path) {
+            return [
+                'filename' => basename($path),
+                'path' => $path,
+                'size' => Storage::disk('public')->size($path),
+                'lastModified' => Storage::disk('public')->lastModified($path),
+            ];
+        });
+
+        return view('admin.invoices', compact('invoices'));
     }
 }

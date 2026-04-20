@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::get('invoices', [AdminOrderController::class, 'invoices'])->name('invoices.index');
         // online customer route
         Route::get('online-customers', function () {
             return view('admin.browsing');
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('my-orders', [CustomerOrderController::class, 'index'])->name('orders.index');
     Route::get('my-orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
     Route::patch('my-orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
+    Route::get('my-orders/{order}/invoice', [CustomerOrderController::class, 'downloadInvoice'])->name('orders.invoice');
 });
 
 require __DIR__ . '/auth.php';
@@ -118,7 +120,6 @@ Route::get('/session-data', function () {
 });
 
 // Coupon Email preview
-// routes/web.php
 
 Route::get('/preview/coupon-mail', function () {
     $user = User::whereHas('coupons')->inRandomOrder()->firstOrFail();
