@@ -21,7 +21,7 @@
 
             {{-- Product Image --}}
             <div class="col-md-4">
-                <img src="{{ $product->image ? asset('storage/'. $product->image) : asset('storage/products/default.jpg') }}"
+                <img src="{{ $product->image ? Storage::url($product->image) : Storage::url('products/default.png') }}"
                      alt="{{ $product->name }}"
                      class="img-fluid rounded-start"
                      style="width: 100%; height: 350px; object-fit: cover;">

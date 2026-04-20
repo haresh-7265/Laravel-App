@@ -4,7 +4,7 @@
 
     {{-- Image --}}
     <div class="relative h-52 overflow-hidden bg-gray-50">
-        <img src="{{ $product->image ? asset('storage/'.$product->image) : asset('storage/products/default.jpg') }}"
+        <img src="{{ $product->image ? Storage::url($product->image) : Storage::url('products/default.png') }}"
              alt="{{ $product->name }}"
              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
 

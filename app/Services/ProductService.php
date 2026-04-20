@@ -8,7 +8,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Concurrency;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
@@ -91,8 +90,7 @@ class ProductService
         try {
 
             if ($image) {
-                $this->deleteImage($product->image);
-                $data['image'] = $this->uploadImage($image);
+                $data['image'] = $this->uploadImage($image, $data['slug'] ?? $product->slug);
             }
 
             $product->update($data);
@@ -123,8 +121,6 @@ class ProductService
     public function delete(Product $product): bool
     {
         try {
-
-            $this->deleteImage($product->image);
             $product->delete();
 
             return true;
@@ -185,28 +181,12 @@ class ProductService
         }
     }
 
-    // DELETE image
-    private function deleteImage(?string $path): void
-    {
-        try {
-            if ($path && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-
-            }
-        } catch (\Exception $e) {
-            Log::channel('product')->error('Failed to delete product image', [
-                'path' => $path,
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
-            ]);
-        }
-    }
 
     // Upload image
-    private function uploadImage(UploadedFile $image): string
+    private function uploadImage(UploadedFile $image, $slug): string
     {
         try {
-            $path = $image->store('products', 'public');
+            $path = $image->storeAs('products', $slug . '.' . $image->extension(), 'public');
 
             return $path;
         } catch (\Exception $e) {
