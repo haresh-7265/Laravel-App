@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -50,6 +51,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         // sales route
         Route::get('/sales-analytics', [SalesAnalyticsController::class, 'index'])->name('sales-analytics');
         Route::get('/sales-analytics/export', [SalesAnalyticsController::class, 'exportCsv'])->name('sales-analytics.export');
+        Route::prefix('files')->name('files.')->group(function () {
+            Route::get('/', [FileManagerController::class, 'index'])->name('index');
+            Route::post('/archive', [FileManagerController::class, 'archive'])->name('archive');
+            Route::post('/cleanup', [FileManagerController::class, 'cleanup'])->name('cleanup');
+        });
     });
 });
 

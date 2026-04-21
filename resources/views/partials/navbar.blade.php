@@ -75,6 +75,10 @@
                     <a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.index') ? 'text-blue-400' : '' }}">
                         <i class="bi bi-receipt"></i> Invoices
                     </a>
+
+                    <a href="{{ route('admin.files.index') }}" class="{{ request()->routeIs('admin.files.index') ? 'text-blue-400' : '' }}">
+                    <i class="bi bi-bar-chart-line"></i> Reports
+                    </a>
                 @endadmin
 
                 <!-- Auth -->
