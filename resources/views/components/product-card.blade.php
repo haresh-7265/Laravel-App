@@ -26,6 +26,13 @@
                 <span class="text-xs font-semibold uppercase tracking-widest text-red-800">Out of stock</span>
             </div>
         @endif
+
+        {{-- {{ image filesize }} --}}
+        @admin
+        <span class="absolute bottom-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
+            {{ $product->image_size }}
+        </span>
+        @endadmin
     </div>
 
     {{-- Body --}}

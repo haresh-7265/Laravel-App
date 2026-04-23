@@ -6,6 +6,8 @@ use App\Collections\ProductCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 
 class Product extends Model
 {
@@ -79,5 +81,9 @@ class Product extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function getImageSizeAttribute(){
+        return Number::fileSize(Storage::disk('public')->size($this->image ?? 'products/default.png'));
     }
 }

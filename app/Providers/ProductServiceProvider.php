@@ -7,6 +7,7 @@ use App\Observers\{OrderObserver, ProductObserver};
 use App\Services\{CacheService, CartService, CouponService, OrderService, ProductService};
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\{Cache, DB, Log};
+use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
 class ProductServiceProvider extends ServiceProvider
@@ -34,6 +35,8 @@ class ProductServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        Number::useCurrency(config('admin.currency_code'));
 
         if (\App::environment('local', 'development')) {
             Log::channel('db-query')->info('===============================================');
@@ -65,7 +68,7 @@ class ProductServiceProvider extends ServiceProvider
         });
 
         \Blade::directive('currency', function ($amount) {
-            return "<?php echo config('admin.currency') .' '. number_format((float)$amount, 2); ?>";
+            return "<?php echo Number::currency($amount); ?>";
         });
 
         \View::composer(['products._form', 'components.export-filter-popup', 'components.product-filter','products.index'], function ($view) {

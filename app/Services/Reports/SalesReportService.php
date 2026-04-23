@@ -4,6 +4,7 @@ namespace App\Services\Reports;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Number;
 
 class SalesReportService
 {
@@ -46,8 +47,8 @@ class SalesReportService
     public function summaryRows(array $data): array
     {
         return [
-            ['Total Revenue', config('admin.currency') . $data['total_revenue']],
-            ['Total Discounts', config('admin.currency') . $data['total_discount']],
+            ['Total Revenue', Number::currency($data['total_revenue'])],
+            ['Total Discounts', Number::currency($data['total_discount'])],
             ['Order Count', $data['order_count']],
             ['Top Product', $data['top_products'][0]['name'] ?? 'N/A'],
         ];

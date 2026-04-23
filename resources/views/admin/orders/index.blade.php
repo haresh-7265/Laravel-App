@@ -198,6 +198,9 @@
                         <td class="small text-muted">
                             {{ $order->created_at->format('d M Y') }}
                             <small class="d-block">{{ $order->created_at->format('h:i A') }}</small>
+                            <div class="text-[11px] text-gray-400">
+                                {{ $order->created_at->diffForHumans() }}
+                            </div>
                         </td>
 
                         <td>

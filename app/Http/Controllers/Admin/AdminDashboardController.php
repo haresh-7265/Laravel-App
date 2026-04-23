@@ -15,21 +15,23 @@ class AdminDashboardController extends Controller
     {
         $stats = Cache::tags(['admin', 'products'])->remember('admin.dashboard.stats', now()->addMinutes(10), function () {
             [$todayOrders, $monthRevenue, $newCustomers, $lowStockCount] = Concurrency::run([
-                fn () => Order::whereDate('created_at', today())->count(),
-                fn () => Order::where('status', 'delivered')
-                            ->whereYear('created_at', now()->year)
-                            ->whereMonth('created_at', now()->month)
-                            ->sum('total'),
-                fn () => User::where('role', 'customer')
-                            ->whereDate('created_at', today())
-                            ->count(),
-                fn () => Product::where('stock', '<=', 5)->count(),
+                fn() => Order::whereDate('created_at', today())->count(),
+                fn() => Order::where('status', 'delivered')
+                    ->whereBetween('created_at', [
+                        now()->startOfMonth(),
+                        now()->endOfMonth()
+                    ])
+                    ->sum('total'),
+                fn() => User::where('role', 'customer')
+                    ->whereDate('created_at', today())
+                    ->count(),
+                fn() => Product::where('stock', '<=', 5)->count(),
             ]);
 
             return [
-                'today_orders'    => $todayOrders,
+                'today_orders' => $todayOrders,
                 'monthly_revenue' => $monthRevenue,
-                'new_customers'   => $newCustomers,
+                'new_customers' => $newCustomers,
                 'low_stock_count' => $lowStockCount,
             ];
         });

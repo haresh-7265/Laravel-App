@@ -101,9 +101,9 @@
                                 @if($appliedCoupon['type'] === 'percentage')
                                     {{ $appliedCoupon['value'] }}% off
                                 @else
-                                    ₹{{ number_format($appliedCoupon['value'], 2) }} off
+                                    @currency($appliedCoupon['value']) off
                                 @endif
-                                — saving ₹{{ number_format($couponDiscountAmount, 2) }}
+                                — saving @currency($couponDiscountAmount)
                             </small>
                         </div>
                     </div>

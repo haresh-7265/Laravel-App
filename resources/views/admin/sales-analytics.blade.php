@@ -20,9 +20,9 @@
     {{-- Metric Cards --}}
     <div class="row g-3 mb-4">
         @foreach([
-            ['Total revenue',    config('admin.currency') . number_format($totalRevenue)],
+            ['Total revenue',     CurrencyHelper::currencyAbbreviated($totalRevenue)],
             ['Total orders',     number_format($totalOrders)],
-            ['Avg order value',  config('admin.currency') . number_format($avgOrderValue)],
+            ['Avg order value',  CurrencyHelper::currencyAbbreviated($avgOrderValue)],
             ['Unique customers', number_format($uniqueCustomers)],
         ] as [$label, $value])
         <div class="col-6 col-md-3">
@@ -192,10 +192,17 @@
 {{-- Chart.js Scripts --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
+
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: @json(config('admin.currency_code'))
+    }).format(value);
+};
+
 const monthlyLabels  = @json($monthlySales->keys());
 const monthlyRevenue = @json($monthlySales->pluck('revenue'));
 const monthlyAvg     = @json($monthlySales->pluck('avg'));
-const currency = @json(config('admin.currency'))
 
 new Chart(document.getElementById('monthlyChart'), {
     type: 'bar',
@@ -228,8 +235,8 @@ new Chart(document.getElementById('monthlyChart'), {
         plugins: { legend: { display: false } },
         scales: {
             x: { grid: { display: false }, ticks: { font: { size: 11 }, autoSkip: false } },
-            y: { ticks: { callback: v => currency + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) }, grid: { color: 'rgba(0,0,0,0.05)' } },
-            y1: { position: 'right', ticks: { callback: v => currency +v, color: '#10b981', font: { size: 11 } }, grid: { display: false } }
+            y: { ticks: { callback: v => formatCurrency(v) }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y1: { position: 'right', ticks: { callback: v => formatCurrency(v), color: '#10b981', font: { size: 11 } }, grid: { display: false } }
         }
     }
 });

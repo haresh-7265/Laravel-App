@@ -7,6 +7,7 @@ use App\Services\CartService;
 use App\Services\CouponService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Number;
 
 class CartController extends Controller
 {
@@ -52,7 +53,7 @@ class CartController extends Controller
     }
 
     // ─── Update Quantity ──────────────────────────────────────
-    public function update(Request $request, int $productId): JsonResponse
+    public function update(Request $request, int $productId)
     {
         $request->validate([
             'quantity' => ['required', 'integer', 'min:0', 'max:100'],
@@ -75,7 +76,7 @@ class CartController extends Controller
     }
 
     // ─── Remove Item ──────────────────────────────────────────
-    public function remove(int $productId): JsonResponse
+    public function remove(int $productId)
     {
         $this->cart->remove($productId);
 
@@ -87,7 +88,7 @@ class CartController extends Controller
     }
 
     // ─── Clear Cart ───────────────────────────────────────────
-    public function clear(): JsonResponse
+    public function clear()
     {
         $this->cart->clear();
 
@@ -123,7 +124,7 @@ class CartController extends Controller
         // Bust cache so summary recalculates
         app(\App\Services\CacheService::class)->forgetCart();
 
-        return $this->cartJson('success', "Coupon '{$result['coupon']->code}' applied! You save ₹" . number_format($result['discount'], 2));
+        return $this->cartJson('success', "Coupon '{$result['coupon']->code}' applied! You save " . Number::currency($result['discount']));
     }
 
     // ─── Remove Coupon ────────────────────────────────────────
