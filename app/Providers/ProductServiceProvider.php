@@ -2,20 +2,11 @@
 
 namespace App\Providers;
 
-use App\Models\Category;
-use App\Models\Order;
-use App\Models\Product;
-use App\Observers\OrderObserver;
-use App\Observers\ProductObserver;
-use App\Services\CacheService;
-use App\Services\CartService;
-use App\Services\CouponService;
-use App\Services\OrderService;
-use App\Services\ProductService;
+use App\Models\{Category, Order, Product};
+use App\Observers\{OrderObserver, ProductObserver};
+use App\Services\{CacheService, CartService, CouponService, OrderService, ProductService};
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Cache, DB, Log};
 use Illuminate\Support\ServiceProvider;
 
 class ProductServiceProvider extends ServiceProvider

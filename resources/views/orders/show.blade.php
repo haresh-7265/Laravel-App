@@ -150,11 +150,19 @@
                                 {{ ucfirst($order->payment_status) }}
                             </span>
                         </div>
-                        @if($order->discount > 0)
+                        @if($order->discount > 0 || $order->coupon_discount > 0)
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted small">You Saved</span>
                             <span class="fw-semibold small text-success">
-                                <i class="bi bi-tag me-1"></i>@currency($order->discount)
+                                <i class="bi bi-tag me-1"></i>@currency($order->discount + $order->coupon_discount)
+                            </span>
+                        </div>
+                        @endif
+                        @if($order->coupon_code)
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Coupon Used</span>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle">
+                                <i class="bi bi-ticket-perforated me-1"></i>{{ $order->coupon_code }}
                             </span>
                         </div>
                         @endif
@@ -253,6 +261,15 @@
                                 <i class="bi bi-tag me-1"></i>Discount
                             </td>
                             <td class="text-success">&minus; @currency($order->discount)</td>
+                        </tr>
+                        @endif
+                        @if($order->coupon_discount > 0)
+                        <tr>
+                            <td colspan="3" class="text-end text-success pe-3">
+                                <i class="bi bi-ticket-perforated me-1"></i>Coupon
+                                <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ $order->coupon_code }}</span>
+                            </td>
+                            <td class="text-success">&minus; @currency($order->coupon_discount)</td>
                         </tr>
                         @endif
                         <tr>

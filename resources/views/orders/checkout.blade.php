@@ -4,7 +4,12 @@
 
 @section('content')
 
-@php $cartService = app(\App\Services\CartService::class); @endphp
+@php
+    $cartService = app(\App\Services\CartService::class);
+    $summary = $cartService->getSummary();
+    $appliedCoupon = $summary['coupon'] ?? null;
+    $couponDiscount = $summary['coupon_discount'] ?? 0;
+@endphp
 
 {{-- Empty Cart Check --}}
 @if($cartService->count() === 0)
@@ -190,13 +195,25 @@
                                     <span class="text-muted">Subtotal</span>
                                     <span>@currency($cartService->totalPrice())</span>
                                 </div>
+
+                                {{-- Coupon Discount --}}
+                                @if($appliedCoupon && $couponDiscount > 0)
+                                <div class="d-flex justify-content-between mb-2 small">
+                                    <span class="text-success">
+                                        <i class="bi bi-ticket-perforated me-1"></i>Coupon
+                                        <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ $appliedCoupon['code'] }}</span>
+                                    </span>
+                                    <span class="text-success fw-semibold">− @currency($couponDiscount)</span>
+                                </div>
+                                @endif
+
                                 <div class="d-flex justify-content-between mb-2 small">
                                     <span class="text-muted">Shipping</span>
                                     <span class="text-success fw-semibold">Free</span>
                                 </div>
                                 <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-2">
                                     <span>Total</span>
-                                    <span class="fs-5">@currency($cartService->totalPrice())</span>
+                                    <span class="fs-5">@currency($cartService->totalPrice() - $couponDiscount)</span>
                                 </div>
                             </div>
 

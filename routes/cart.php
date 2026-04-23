@@ -10,3 +10,9 @@ Route::middleware('role:guest,customer')->prefix('cart')->name('cart.')->group(f
     Route::delete('/remove/{productId}', [CartController::class, 'remove'])->name('remove');
     Route::delete('/clear',              [CartController::class, 'clear'])->name('clear');
 });
+
+// Coupon routes — auth required (customers only)
+Route::middleware(['auth', 'role:customer'])->prefix('cart/coupon')->name('cart.coupon.')->group(function () {
+    Route::post('/apply',  [CartController::class, 'applyCoupon'])->name('apply');
+    Route::delete('/remove', [CartController::class, 'removeCoupon'])->name('remove');
+});

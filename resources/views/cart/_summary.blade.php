@@ -1,14 +1,17 @@
 {{-- resources/views/cart/_summary.blade.php --}}
 @php
     $freeShippingThreshold = (float) config('admin.freeShippingThreshold');
-    $shippingCost          = $total >= $freeShippingThreshold ? 0 : 50;
-    $grandTotal            = $total + $shippingCost;
-    $remaining             = max(0, $freeShippingThreshold - $total);
+    $shippingCost = $total >= $freeShippingThreshold ? 0 : 50;
+    $couponDiscountAmount = $couponDiscount ?? 0;
+    $grandTotal = $total - $couponDiscountAmount + $shippingCost;
+    $remaining = max(0, $freeShippingThreshold - $total);
 
-    $totalOriginal = collect($items)->sum(fn($i) =>
+    $totalOriginal = collect($items)->sum(
+        fn($i) =>
         ($i['original_price'] ?? $i['price']) * $i['quantity']
     );
     $totalSavings = $totalOriginal - $total;
+    $appliedCoupon = $coupon ?? null;
 @endphp
 
 <h5 class="fw-bold mb-3">Order Summary</h5>
@@ -49,6 +52,17 @@
     </div>
 @endif
 
+{{-- Coupon Discount --}}
+@if($appliedCoupon && $couponDiscountAmount > 0)
+    <div class="d-flex justify-content-between mb-2 small" id="coupon-discount-row">
+        <span class="text-success">
+            <i class="bi bi-ticket-perforated me-1"></i>Coupon
+            <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ $appliedCoupon['code'] }}</span>
+        </span>
+        <span class="text-success fw-medium">− @currency($couponDiscountAmount)</span>
+    </div>
+@endif
+
 {{-- Shipping --}}
 <div class="d-flex justify-content-between mb-2 text-muted small">
     <span><i class="bi bi-truck me-1"></i>Shipping</span>
@@ -70,6 +84,54 @@
         Spend <strong>@currency($remaining)</strong> more for free shipping
     </div>
 @endif
+
+{{-- ═══ Coupon Input / Applied Badge ═══ --}}
+@auth
+    <div class="coupon-section mb-3" id="coupon-section">
+        @if($appliedCoupon)
+            {{-- Applied coupon badge --}}
+            <div class="coupon-applied-badge" id="coupon-applied">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <div>
+                            <span class="fw-semibold text-success">{{ $appliedCoupon['code'] }}</span>
+                            <br>
+                            <small class="text-muted">
+                                @if($appliedCoupon['type'] === 'percentage')
+                                    {{ $appliedCoupon['value'] }}% off
+                                @else
+                                    ₹{{ number_format($appliedCoupon['value'], 2) }} off
+                                @endif
+                                — saving ₹{{ number_format($couponDiscountAmount, 2) }}
+                            </small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0" id="remove-coupon-btn"
+                        data-url="{{ route('cart.coupon.remove') }}" title="Remove coupon">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+        @else
+            {{-- Coupon input --}}
+            <div id="coupon-input-wrap">
+                <label class="form-label small fw-semibold text-muted mb-1">
+                    <i class="bi bi-ticket-perforated me-1"></i>Have a coupon?
+                </label>
+                <div class="input-group coupon-input-group">
+                    <input type="text" id="coupon-code-input" class="form-control form-control-sm"
+                        placeholder="Enter coupon code" maxlength="50" autocomplete="off" />
+                    <button type="button" class="btn btn-sm btn-primary" id="apply-coupon-btn"
+                        data-url="{{ route('cart.coupon.apply') }}">
+                        Apply
+                    </button>
+                </div>
+                <div id="coupon-feedback" class="small mt-1" style="display:none;"></div>
+            </div>
+        @endif
+    </div>
+@endauth
 
 <hr class="summary-divider">
 

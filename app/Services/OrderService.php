@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\ProductOutOfStockException;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -10,8 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function __construct(private CartService $cartService)
-    {
+    public function __construct(
+        private CartService $cartService,
+        private CouponService $couponService
+    ) {
     }
 
     public function placeOrder(array $shippingData): Order
@@ -38,6 +41,30 @@ class OrderService
             $subtotal = collect($cartItems)->sum(fn($item) => $item['original_price'] * $item['quantity']);
             $discount = $subtotal - $total;
 
+            // ─── Coupon handling ───────────────────────────────
+            $couponCode = null;
+            $couponDiscount = 0;
+            $appliedCoupon = $this->cartService->getAppliedCoupon();
+
+            if ($appliedCoupon) {
+                $coupon = Coupon::find($appliedCoupon['coupon_id']);
+
+                if ($coupon) {
+                    // Re-validate one last time before placing order
+                    $validation = $this->couponService->validate($coupon->code, auth()->user(), $total);
+
+                    if ($validation['success']) {
+                        $couponCode = $coupon->code;
+                        $couponDiscount = $validation['discount'];
+
+                        // Redeem — increment used_count
+                        $this->couponService->redeem($coupon, auth()->user());
+                    }
+                }
+            }
+
+            $finalTotal = $total - $couponDiscount;
+
             // Create order
             $paymentMethod = $shippingData['payment_method'] ?? 'cod';
             $paymentStatus = $paymentMethod == 'cod' ? 'unpaid' : 'paid';
@@ -47,7 +74,9 @@ class OrderService
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'discount' => $discount,
-                'total' => $total,
+                'coupon_code' => $couponCode,
+                'coupon_discount' => $couponDiscount,
+                'total' => $finalTotal,
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
                 'shipping_name' => $shippingData['name'],
@@ -80,7 +109,7 @@ class OrderService
 
             }
 
-            // Clear cart after order
+            // Clear cart after order (also clears applied coupon)
             $this->cartService->clear();
 
             return $order;

@@ -474,11 +474,11 @@
                         <div class="totals-value">@currency($order->subtotal)</div>
                     </div>
                 </div>
-                @if($order->discount > 0)
+                @if($order->discount > 0 || $order->coupon_discount > 0)
                 <div class="totals-row">
                     <div class="totals-row-inner">
                         <div class="totals-label" style="color:#7a9e6e;">Discount</div>
-                        <div class="totals-value green">– @currency($order->discount)</div>
+                        <div class="totals-value green">– @currency($order->discount + $order->coupon_discount)</div>
                     </div>
                 </div>
                 @endif

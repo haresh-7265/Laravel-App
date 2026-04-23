@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\OrderService;
+use Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -55,7 +56,9 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load('items.product', 'user');
-        return view('admin.orders.show', compact('order'));
+        $productNames = Arr::pluck($order->items->toArray(), 'product_name');
+        $summary = "Items: " . implode(', ', $productNames);
+        return view('admin.orders.show', compact('order', 'summary'));
     }
 
     public function updateStatus(Request $request, Order $order)

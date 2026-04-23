@@ -28,7 +28,7 @@ class GenerateInvoicePDF implements ShouldQueue
     public function failed(OrderShipped $event, \Throwable $e): void
     {
         // log it
-        Log::channel('analytics')->error("Invoice PDF failed for order #{$event->order->id}", [
+        Log::channel('order')->error("Invoice PDF failed for order #{$event->order->id}", [
             'error' => $e->getMessage(),
         ]);
 

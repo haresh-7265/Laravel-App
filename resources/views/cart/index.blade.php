@@ -77,10 +77,17 @@
         ══════════════════════════════════ --}}
         <div class="col-lg-4">
             <div class="summary-card p-4" id="order-summary">
+                @php
+                    $cartSummary = app(\App\Services\CartService::class)->getSummary();
+                    $coupon = $cartSummary['coupon'] ?? null;
+                    $couponDiscount = $cartSummary['coupon_discount'] ?? 0;
+                @endphp
                 @include('cart._summary', [
                     'items' => $items ?? [],
                     'total' => $total ?? 0,
                     'count' => $count ?? 0,
+                    'coupon' => $coupon,
+                    'couponDiscount' => $couponDiscount,
                 ])
             </div>
 

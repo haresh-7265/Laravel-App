@@ -162,7 +162,7 @@
                         <td>
                             <div class="d-flex align-items-center gap-1">
                                 @foreach($order->items->take(2) as $item)
-                                    @if($item->ima)
+                                    @if($item->product->image)
                                     <img src="{{ asset('storage/' . $item->product->image) }}"
                                         class="rounded border object-fit-cover"
                                         style="width:32px;height:32px;"

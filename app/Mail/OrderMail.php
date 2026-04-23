@@ -6,14 +6,13 @@ use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\{Attachment, Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 
 class OrderMail extends Mailable
 {
     use Queueable, SerializesModels;
-    
+
     public function __construct(
         public readonly Order $order,
         public string $event // 'placed' | 'shipped' | 'paid' | 'delivered'
@@ -29,11 +28,22 @@ class OrderMail extends Mailable
             'delivered' => 'Order Delivered - #' . $this->order->order_number,
         ];
 
-        return new Envelope(subject: $subjects[$this->event], to:$this->order->shipping_email);
+        return new Envelope(subject: $subjects[$this->event], to: $this->order->shipping_email);
     }
 
     public function content(): Content
     {
         return new Content(markdown: 'emails.orders.order'); // single view
+    }
+
+    public function attachments(): array
+    {
+        $attachments = [];
+
+        if ($this->event == 'delivered' && $this->order->invoice_path) {
+            $attachments[] = Attachment::fromStorageDisk('public', $this->order->invoice_path)->withMime('application/pdf');
+        }
+
+        return $attachments;
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Services\RecentlyViewedService;
+use Arr;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -16,7 +17,14 @@ class ProductController extends Controller
     {
         $recentlyViewed = $recentlyViewedService->get(auth()?->id(), session()->getId());
         $page_title = 'Product-list';
-        $filters = $request->query();
+        $filters = Arr::only($request->query(), [
+            'min_price',
+            'max_price',
+            'categories',
+            'in_stock',
+            'on_sale',
+            'sort',
+        ]);
         $hasFilters = collect($filters)->hasAny(['min_price', 'max_price', 'categories', 'in_stock', 'on_sale', 'sort']);
 
         extract(Products::getHomepageProducts($request->input('page', 1), $filters));
@@ -48,7 +56,16 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $data = $request->except(['image', '_token']);
+        $data = Arr::only($request->all(), [
+            'name',
+            'slug',
+            'price',
+            'discount_price',
+            'description',
+            'stock',
+            'category_id',
+            'tags',
+        ]);
         $image = $request->file('image');
 
         Products::create($data, $image);
@@ -78,7 +95,11 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $data = $request->except(['image', '_token', '_method']);
+        $data = Arr::except($request->all(), [
+            '_token',
+            '_method',
+            'image'
+        ]);
         $image = $request->file('image');
 
         Products::update($product, $data, $image);

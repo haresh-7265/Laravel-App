@@ -24,6 +24,7 @@
         <h4 class="fw-bold mb-0 mt-1">
             <i class="bi bi-bag-check me-1"></i> {{ $order->order_number }}
         </h4>
+        <p>{{ str($summary)->limit(80, '...', true) }}</p>
     </div>
 
     {{-- Update Status Form --}}
@@ -83,9 +84,9 @@
             <div class="ms-auto text-end">
                 <small class="text-muted d-block">Order Total</small>
                 <span class="fw-bold fs-5">@currency($order->subtotal)</span>
-                @if($order->discount > 0)
+                @if($order->discount > 0 || $order->coupon_discount > 0)
                     <small class="text-success d-block">
-                        <i class="bi bi-tag me-1"></i>Saved @currency($order->discount)
+                        <i class="bi bi-tag me-1"></i>Saved @currency($order->discount + $order->coupon_discount)
                     </small>
                 @endif
             </div>
@@ -244,6 +245,16 @@
                         </td>
                         <td class="text-success py-2">&minus; @currency($order->discount)</td>
                     </tr>
+                    @endif
+
+                    @if($order->coupon_discount > 0)
+                        <tr>
+                            <td colspan="3" class="text-end text-success pe-3">
+                                <i class="bi bi-ticket-perforated me-1"></i>Coupon
+                                <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ $order->coupon_code }}</span>
+                            </td>
+                            <td class="text-success">&minus; @currency($order->coupon_discount)</td>
+                        </tr>
                     @endif
 
                     <tr class="table-light border-top border-2">

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\Product\ProductAddedToCart;
 use App\Models\Cart;
+use App\Models\Coupon;
 use App\Models\Product;
 use App\Exceptions\ProductOutOfStockException;
 use Illuminate\Support\Facades\Cache;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Session;
 class CartService
 {
     private string $sessionKey = 'cart';
+    private string $couponSessionKey = 'applied_coupon';
 
     public function __construct(
         private CacheService $cacheService
@@ -217,6 +219,9 @@ class CartService
             Session::forget($this->sessionKey);
         }
 
+        // Also clear any applied coupon
+        $this->removeCoupon();
+
         $this->cacheService->forgetCart();
     }
 
@@ -278,6 +283,40 @@ class CartService
     }
 
     // ─────────────────────────────────────────────────────────
+    // COUPON MANAGEMENT
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Store applied coupon in session
+     */
+    public function applyCoupon(Coupon $coupon, float $discount): void
+    {
+        Session::put($this->couponSessionKey, [
+            'coupon_id'   => $coupon->id,
+            'code'        => $coupon->code,
+            'type'        => $coupon->type,
+            'value'       => $coupon->value,
+            'discount'    => $discount,
+        ]);
+    }
+
+    /**
+     * Remove applied coupon from session
+     */
+    public function removeCoupon(): void
+    {
+        Session::forget($this->couponSessionKey);
+    }
+
+    /**
+     * Get applied coupon data from session
+     */
+    public function getAppliedCoupon(): ?array
+    {
+        return Session::get($this->couponSessionKey);
+    }
+
+    // ─────────────────────────────────────────────────────────
     // HELPERS
     // ─────────────────────────────────────────────────────────
 
@@ -309,9 +348,31 @@ class CartService
     {
         $items = collect($this->get());
 
+        $total = $items->sum(fn($item) => $item['price'] * $item['quantity']);
+        $count = $items->sum(fn($item) => $item['quantity']);
+
+        // Include coupon data in summary
+        $coupon = $this->getAppliedCoupon();
+        $couponDiscount = 0;
+
+        if ($coupon) {
+            // Recalculate discount with current cart total
+            $couponModel = Coupon::find($coupon['coupon_id']);
+            if ($couponModel && $total >= $couponModel->min_order_amount) {
+                $couponDiscount = $couponModel->calculateDiscount($total);
+            } else {
+                // Coupon no longer valid for current cart — auto-remove
+                $this->removeCoupon();
+                $coupon = null;
+            }
+        }
+
         return [
-            'total' => $items->sum(fn($item) => $item['price'] * $item['quantity']),
-            'count' => $items->sum(fn($item) => $item['quantity']),
+            'total'           => $total,
+            'count'           => $count,
+            'coupon'          => $coupon,
+            'coupon_discount' => $couponDiscount,
+            'final_total'     => $total - $couponDiscount,
         ];
     }
 

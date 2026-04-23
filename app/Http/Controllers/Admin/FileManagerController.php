@@ -21,7 +21,7 @@ class FileManagerController extends Controller
                 'age_days'     => now()->diffInDays(
                                     \Carbon\Carbon::createFromTimestamp(
                                         Storage::disk($this->disk)->lastModified($path)
-                                    )
+                                    ), true
                                 ),
             ])
             ->sortByDesc('lastModified')

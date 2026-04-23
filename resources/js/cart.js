@@ -138,6 +138,79 @@ $("#clear-cart-btn").on("click", function () {
         });
 });
 
+/* ═══════════════════════════════════════════════════════════
+   COUPON — Apply & Remove
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Apply Coupon ── */
+$(document).on("click", "#apply-coupon-btn", function () {
+    const $btn = $(this);
+    const $input = $("#coupon-code-input");
+    const $feedback = $("#coupon-feedback");
+    const code = $input.val().trim();
+
+    if (!code) {
+        showCouponFeedback($feedback, "Please enter a coupon code.", "danger");
+        $input.focus();
+        return;
+    }
+
+    // Loading state
+    $btn.prop("disabled", true).html(
+        '<span class="spinner-border spinner-border-sm me-1"></span>Applying...'
+    );
+    $input.prop("disabled", true);
+    $feedback.hide();
+
+    request($btn.data("url"), "POST", { coupon_code: code })
+        .done((data) => {
+            applyCartResponse(data);
+            showAlert(data.message, data.status);
+        })
+        .fail((xhr) => {
+            const msg =
+                xhr.responseJSON?.message ?? "Could not apply coupon.";
+            showCouponFeedback($feedback, msg, "danger");
+            showAlert(msg, "danger");
+        })
+        .always(() => {
+            $btn.prop("disabled", false).html("Apply");
+            $input.prop("disabled", false);
+        });
+});
+
+/* ── Apply on Enter key ── */
+$(document).on("keydown", "#coupon-code-input", function (e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        $("#apply-coupon-btn").trigger("click");
+    }
+});
+
+/* ── Remove Coupon ── */
+$(document).on("click", "#remove-coupon-btn", function () {
+    const $btn = $(this);
+    $btn.prop("disabled", true);
+
+    request($btn.data("url"), "DELETE")
+        .done((data) => {
+            applyCartResponse(data);
+            showAlert(data.message, data.status);
+        })
+        .fail(() => {
+            showAlert("Could not remove coupon", "danger");
+            $btn.prop("disabled", false);
+        });
+});
+
+/* ── Coupon feedback helper ── */
+function showCouponFeedback($el, message, type) {
+    $el.html(message)
+        .removeClass("text-success text-danger")
+        .addClass(type === "success" ? "text-success" : "text-danger")
+        .slideDown(200);
+}
+
 
 function updateStockUI(data) {
 
