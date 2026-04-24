@@ -48,6 +48,9 @@
                 @endif
 
                 @admin
+                    <a href="{{ route('fakestore.index') }}" class=" {{ request()->routeIs('fakestore.index') ? 'text-blue-400' : '' }}">
+                        Fake Store
+                    </a>
                     <a href="{{ route('admin.dashboard') }}" class=" {{ request()->routeIs('admin.dashboard') ? 'text-blue-400' : '' }}">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>

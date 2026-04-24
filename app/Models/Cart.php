@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Cart extends Model
 {
@@ -36,10 +37,10 @@ class Cart extends Model
     // Image URL — works for both public and private disks
     public function getImageUrlAttribute(): string
     {
-        if (! $this->product->image) {
-            return asset('storage/products/default.jpg');
+        if (!$this->product->image) {
+            return Storage::disk('public')->url('products/default.png');
         }
 
-        return asset('storage/' . $this->product->image);
+        return Storage::url($this->product->image);
     }
 }

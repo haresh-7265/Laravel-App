@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
+use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CacheMonitorController;
@@ -33,6 +34,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::get('products/export', [ProductController::class, 'exportCsv'])->name('products.export');
+    //fakestore products route
+    Route::get('/fakestore/products', [FakeStoreController::class, 'index'])->name('fakestore.index');
     // orders route
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');

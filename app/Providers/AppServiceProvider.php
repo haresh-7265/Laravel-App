@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
+use App\Services\FakeStoreService;
 use App\Services\Greeter;
 use App\Services\PaymentService;
 use App\Services\TestService1;
@@ -33,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('greeter', function () {
             return new Greeter();
         });
+
+        $this->app->singleton(FakeStoreService::class);
     }
 
     /**
