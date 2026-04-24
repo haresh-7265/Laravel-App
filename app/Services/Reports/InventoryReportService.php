@@ -2,7 +2,6 @@
 namespace App\Services\Reports;
 
 use App\Models\Product;
-use Illuminate\Support\Number;
 
 class InventoryReportService
 {
@@ -51,7 +50,7 @@ class InventoryReportService
         return [
             ['Low Stock Items', count($data['low_stock_items'])],
             ['Out of Stock', $data['out_of_stock_count']],
-            ['Total Inventory Value', Number::currency($data['total_value'])],
+            ['Total Inventory Value', format_price($data['total_value'])],
         ];
     }
 

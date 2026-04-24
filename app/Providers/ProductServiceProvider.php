@@ -68,7 +68,7 @@ class ProductServiceProvider extends ServiceProvider
         });
 
         \Blade::directive('currency', function ($amount) {
-            return "<?php echo Number::currency($amount); ?>";
+            return "<?php echo format_price($amount); ?>";
         });
 
         \View::composer(['products._form', 'components.export-filter-popup', 'components.product-filter','products.index'], function ($view) {

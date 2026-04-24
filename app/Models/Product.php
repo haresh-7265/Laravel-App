@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Number;
 
 class Product extends Model
 {
@@ -84,6 +83,6 @@ class Product extends Model
     }
 
     public function getImageSizeAttribute(){
-        return Number::fileSize(Storage::disk('public')->size($this->image ?? 'products/default.png'));
+        return human_file_size(Storage::disk('public')->size($this->image ?? 'products/default.png'));
     }
 }

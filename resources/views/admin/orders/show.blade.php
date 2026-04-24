@@ -5,20 +5,20 @@
 @section('content')
 
 @php
-    $statusMap = [
-        'pending'    => ['color' => 'warning', 'icon' => 'bi-clock'],
-        'processing' => ['color' => 'primary', 'icon' => 'bi-gear'],
-        'shipped'    => ['color' => 'info',    'icon' => 'bi-truck'],
-        'delivered'  => ['color' => 'success', 'icon' => 'bi-check-circle'],
-        'cancelled'  => ['color' => 'danger',  'icon' => 'bi-x-circle'],
-    ];
-    $badge = $statusMap[$order->status] ?? ['color' => 'secondary', 'icon' => 'bi-circle'];
+    $icon = match($order->status){
+        'pending'    => 'bi-clock',
+        'processing' => 'bi-gear',
+        'shipped'    => 'bi-truck',
+        'delivered'  => 'bi-check-circle',
+        'cancelled'  => 'bi-x-circle',
+        default      => 'bi-circle'
+    };
 @endphp
 
 {{-- Page Header --}}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <a href="{{ route('admin.orders.index') }}" class="text-muted text-decoration-none small">
+        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary btn-sm sticky top-20 z-50">
             <i class="bi bi-arrow-left me-1"></i> Back to Orders
         </a>
         <h4 class="fw-bold mb-0 mt-1">
@@ -59,13 +59,13 @@
 </div>
 
 {{-- Status + Meta Bar --}}
-<div class="card shadow-sm mb-4 border-start border-4 border-{{ $badge['color'] }}">
+<div class="card shadow-sm mb-4 border-start border-4 border-{{ order_status_badge($order->status) }}">
     <div class="card-body py-3">
         <div class="d-flex flex-wrap gap-4 align-items-center">
             <div>
                 <small class="text-muted d-block">Order Status</small>
-                <span class="badge bg-{{ $badge['color'] }} fs-6 mt-1">
-                    <i class="bi {{ $badge['icon'] }} me-1"></i>
+                <span class="badge bg-{{ order_status_badge($order->status) }} fs-6 mt-1">
+                    <i class="bi {{ $icon }} me-1"></i>
                     {{ ucfirst($order->status) }}
                 </span>
             </div>

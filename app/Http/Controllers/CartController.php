@@ -124,7 +124,7 @@ class CartController extends Controller
         // Bust cache so summary recalculates
         app(\App\Services\CacheService::class)->forgetCart();
 
-        return $this->cartJson('success', "Coupon '{$result['coupon']->code}' applied! You save " . Number::currency($result['discount']));
+        return $this->cartJson('success', "Coupon '{$result['coupon']->code}' applied! You save " . format_price($result['discount']));
     }
 
     // ─── Remove Coupon ────────────────────────────────────────

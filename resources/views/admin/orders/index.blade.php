@@ -129,16 +129,6 @@
                 </thead>
                 <tbody>
                     @foreach($orders as $order)
-                    @php
-                        $statusMap = [
-                            'pending'    => 'warning',
-                            'processing' => 'primary',
-                            'shipped'    => 'info',
-                            'delivered'  => 'success',
-                            'cancelled'  => 'danger',
-                        ];
-                        $badge = $statusMap[$order->status] ?? 'secondary';
-                    @endphp
                     <tr>
                         <td class="ps-4 text-muted small">{{ $loop->iteration }}</td>
 
@@ -190,7 +180,7 @@
                         </td>
 
                         <td>
-                            <span class="badge bg-{{ $badge }}">
+                            <span class="badge bg-{{ order_status_badge($order->status) }}">
                                 {{ ucfirst($order->status) }}
                             </span>
                         </td>

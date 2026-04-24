@@ -3,7 +3,6 @@ namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Support\Number;
 
 class ValidDiscountPrice implements ValidationRule
 {
@@ -18,7 +17,7 @@ class ValidDiscountPrice implements ValidationRule
         }
 
         if ($value >= $this->price) {
-            $fail('Discount price must be less than original price ' . Number::currency($this->price) . '.');
+            $fail('Discount price must be less than original price ' . format_price($this->price) . '.');
         }
     }
 }

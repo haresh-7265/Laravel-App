@@ -156,16 +156,7 @@
                                         <td>{{ $order->user->name ?? 'N/A' }}</td>
                                         <td>@currency($order->total)</td>
                                         <td>
-                                            @php
-                                                $badgeMap = [
-                                                    'pending'    => 'warning',
-                                                    'processing' => 'primary',
-                                                    'shipped'    => 'info',
-                                                    'delivered'  => 'success',
-                                                    'cancelled'  => 'danger',
-                                                ];
-                                            @endphp
-                                            <span class="badge bg-{{ $badgeMap[$order->status] ?? 'secondary' }}">
+                                            <span class="badge bg-{{ order_status_badge($order->status) }}">
                                                 {{ ucfirst($order->status) }}
                                             </span>
                                         </td>

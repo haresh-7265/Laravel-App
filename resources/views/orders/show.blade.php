@@ -6,16 +6,11 @@
 <input type="hidden" value="{{ $order->id }}" id="orderId">
 <div class="row justify-content-center">
     <div class="col-lg-10">
-
+        <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm sticky top-20 z-50">
+            <i class="bi bi-arrow-left me-1"></i> Back to My Orders
+        </a>
+        <br>
         @php
-            $badgeMap = [
-                'pending'    => 'warning',
-                'processing' => 'primary',
-                'shipped'    => 'info',
-                'delivered'  => 'success',
-                'cancelled'  => 'danger',
-            ];
-            $badge = $badgeMap[$order->status] ?? 'secondary';
 
             // Cancel allowed only before shipped
             $canCancel = in_array($order->status, ['pending', 'processing']);
@@ -28,7 +23,7 @@
                 <small class="text-muted">Placed on {{ $order->created_at->format('d M Y, h:i A') }}</small>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span id="orderStatusBadge"  class="badge bg-{{ $badge }} fs-6 px-3 py-2">{{ ucfirst($order->status) }}</span>
+                <span id="orderStatusBadge"  class="badge bg-{{ order_status_badge($order->status) }} fs-6 px-3 py-2">{{ ucfirst($order->status) }}</span>
 
                 <div id="cancelBtn">
                 @if($canCancel)
@@ -297,9 +292,6 @@
         </div>
         @endif
 
-        <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Back to My Orders
-        </a>
 
     </div>
 </div>

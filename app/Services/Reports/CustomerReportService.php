@@ -5,7 +5,6 @@ use App\Models\User;
 use App\Models\Order;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Number;
 
 class CustomerReportService
 {
@@ -80,7 +79,7 @@ class CustomerReportService
             ['New (Last 30 days)', $data['new_registrations']],
             ['Inactive (90d+)', count($data['inactive_users'] ?? [])],
             ['Top Buyer', $topBuyer['name'] ?? 'N/A'],
-            ['Top Buyer Spent',  Number::currency($topBuyer['total_spent'] ?? '0.00')],
+            ['Top Buyer Spent',  format_price($topBuyer['total_spent'] ?? '0.00')],
         ];
     }
 

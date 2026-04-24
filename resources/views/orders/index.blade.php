@@ -66,19 +66,9 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-wrap gap-2">
-                            @php
-                                $badgeMap = [
-                                    'pending'    => 'warning',
-                                    'processing' => 'primary',
-                                    'shipped'    => 'info',
-                                    'delivered'  => 'success',
-                                    'cancelled'  => 'danger',
-                                ];
-                            @endphp
                             @foreach($ordersByStatus as $status => $count)
-                                @php $badge = $badgeMap[$status] ?? 'secondary'; @endphp
                                 <div class="border rounded px-3 py-2 d-flex align-items-center flex-grow-1">
-                                    <span class="badge bg-{{ $badge }} me-2" style="width: 10px; height: 10px; border-radius: 50%; padding: 0;">&nbsp;</span>
+                                    <span class="badge bg-{{ order_status_badge($status) }} me-2" style="width: 10px; height: 10px; border-radius: 50%; padding: 0;">&nbsp;</span>
                                     <span class="text-capitalize flex-grow-1">{{ $status }}</span>
                                     <strong class="ms-2 fs-5">{{ $count }}</strong>
                                 </div>
@@ -159,17 +149,7 @@
                     </div>
                 </div>
 
-                @php
-                    $badgeMap = [
-                        'pending'    => 'warning',
-                        'processing' => 'primary',
-                        'shipped'    => 'info',
-                        'delivered'  => 'success',
-                        'cancelled'  => 'danger',
-                    ];
-                    $badge = $badgeMap[$order->status] ?? 'secondary';
-                @endphp
-                <span class="badge bg-{{ $badge }} fs-6">{{ ucfirst($order->status) }}</span>
+                <span class="badge bg-{{ order_status_badge($order->status) }} fs-6">{{ ucfirst($order->status) }}</span>
             </div>
 
             {{-- Order Items Preview --}}
