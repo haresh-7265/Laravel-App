@@ -132,7 +132,7 @@ class CartService
     {
         $cart = Session::get($this->sessionKey, []);
 
-        if (isset($cart[$product->id])) {
+        if (filled($cart[$product->id])) {
             //  Check stock against new total quantity
             $newQuantity = $cart[$product->id]['quantity'] + $quantity;
             $this->checkStock($product, $newQuantity);
@@ -178,7 +178,7 @@ class CartService
         } else {
             $cart = Session::get($this->sessionKey, []);
 
-            if (isset($cart[$productId])) {
+            if (filled($cart[$productId])) {
                 $cart[$productId]['quantity'] = $quantity;
                 $cart[$productId]['subtotal'] = $cart[$productId]['price'] * $quantity;
                 Session::put($this->sessionKey, $cart);
@@ -234,7 +234,7 @@ class CartService
         $sessionCart = Session::get($this->sessionKey, []);
 
         // Only merge if logged in AND is a customer
-        if (empty($sessionCart) || !auth()->check() || !auth()->user()->isCustomer()) {
+        if (blank($sessionCart) || !auth()->check() || !auth()->user()->isCustomer()) {
             return;
         }
 
@@ -378,7 +378,7 @@ class CartService
 
     public function isEmpty(): bool
     {
-        return empty($this->get());
+        return blank($this->get());
     }
 
     // ─── Stock check — throws exception if insufficient ───────

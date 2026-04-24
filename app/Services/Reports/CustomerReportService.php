@@ -103,7 +103,7 @@ class CustomerReportService
         $rows[] = ['Top Buyers (Last 5 by Spend)'];
         $rows[] = ['Name', 'Email', 'Total Orders', 'Total Spent'];
 
-        if (!empty($data['top_buyers'])) {
+        if (!blank($data['top_buyers'])) {
             foreach ($data['top_buyers'] as $buyer) {
                 $rows[] = [
                     $buyer['name'],
@@ -122,7 +122,7 @@ class CustomerReportService
         $rows[] = ['Inactive Customers (90+ Days)'];
         $rows[] = ['Name', 'Email', 'Last Order Date', 'Days Inactive'];
 
-        if (!empty($data['inactive_users'])) {
+        if (!blank($data['inactive_users'])) {
             foreach ($data['inactive_users'] as $user) {
                 $rows[] = [
                     $user['name'],

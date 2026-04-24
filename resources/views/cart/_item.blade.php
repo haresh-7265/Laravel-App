@@ -4,7 +4,7 @@
 
         {{-- Product Image --}}
         <div class="item-img-wrap">
-            @if(!empty($item['image_url']))
+            @if(!blank($item['image_url']))
                 <img src="{{ $item['image_url'] }}"
                      alt="{{ $item['name'] }}"
                      onerror="this.style.display='none'">
@@ -18,7 +18,7 @@
             <div class="fw-semibold text-truncate mb-1">{{ $item['name'] }}</div>
 
             <div class="text-muted small">
-                @if(!empty($item['original_price']) && $item['original_price'] > $item['price'])
+                @if(!blank($item['original_price']) && $item['original_price'] > $item['price'])
                     <span class="text-decoration-line-through me-1">@currency($item['original_price'])</span>
                     <strong class="text-success">@currency($item['price'])</strong>
                     <span class="badge bg-success ms-1" style="font-size:10px;">
@@ -65,7 +65,7 @@
 
         {{-- Line Subtotal --}}
         <div class="text-end flex-shrink-0" style="min-width:90px;">
-            @if(!empty($item['original_price']) && $item['original_price'] > $item['price'])
+            @if(!blank($item['original_price']) && $item['original_price'] > $item['price'])
                 <div class="text-decoration-line-through text-muted small">
                     @currency($item['original_price'] * $item['quantity'])
                 </div>

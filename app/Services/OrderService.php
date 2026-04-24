@@ -7,7 +7,9 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
@@ -68,7 +70,7 @@ class OrderService
             // Create order
             $paymentMethod = $shippingData['payment_method'] ?? 'cod';
             $paymentStatus = $paymentMethod == 'cod' ? 'unpaid' : 'paid';
-            $order = Order::create([
+            $order = tap(Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => 'ORD-' . strtoupper(uniqid()),
                 'status' => 'pending',
@@ -86,7 +88,17 @@ class OrderService
                 'shipping_city' => $shippingData['city'],
                 'shipping_state' => $shippingData['state'],
                 'shipping_pincode' => $shippingData['pincode'],
-            ]);
+            ]), function (Order $order) {
+                DB::afterCommit(function () use ($order) {
+                    Log::channel('order')->info('Order Placed', [
+                        'order_number' => $order->order_number,
+                        'total' => $order->total,
+                        'user_id' => $order->user_id,
+                        'payment_status' => $order->payment_status,
+                        'payment_method' => $order->payment_method
+                    ]);
+                });
+            });
 
             // Create order items + decrement stock
             foreach ($cartItems as $item) {
@@ -118,18 +130,24 @@ class OrderService
 
     public function cancelOrder(Order $order): void
     {
-        DB::transaction(function () use (&$order) {
+        DB::transaction(function () use ($order) {
+
+            $order->load('items.product');
+
             $order->update(['status' => 'cancelled']);
 
             foreach ($order->items as $item) {
-
-                $product = $item->product; // actual Product model
-
-                $product->increment('stock', $item->quantity);
-
-                $product->refresh();
-
+                $item->product->increment('stock', $item->quantity);
             }
+
+            DB::afterCommit(function () use ($order) {
+                Log::channel('order')->info('Order Cancelled', [
+                    'order_number' => $order->order_number,
+                    'canceled_by' => auth()->id() ?? 'system',
+                ]);
+            });
+
+            return true;
         });
 
     }
@@ -156,13 +174,13 @@ class OrderService
 
         $totalSpent = $orders->where('status', '!=', 'cancelled')->sum('total');
 
-        $averageOrderValue = $totalOrders > 0 
-            ? $orders->where('status', '!=', 'cancelled')->avg('total') 
+        $averageOrderValue = $totalOrders > 0
+            ? $orders->where('status', '!=', 'cancelled')->avg('total')
             : 0;
 
         $topProducts = OrderItem::whereHas('order', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
+            $query->where('user_id', $userId);
+        })
             ->with('product')
             ->selectRaw('product_id, sum(quantity) as total_quantity')
             ->groupBy('product_id')
@@ -180,5 +198,27 @@ class OrderService
             'topProducts' => $topProducts,
             'ordersByStatus' => $ordersByStatus
         ];
+    }
+
+    public function getShippingEstimate(Order $order): array
+    {
+        return rescue(
+            // Attempt — may throw network, timeout, or parsing exceptions
+            fn () => throw new Exception('estimation failed'),
+ 
+            // Fallback — returned whenever $callback throws
+            rescue: function (\Throwable $e) use ($order): array {
+                Log::warning('Shipping estimate unavailable', [
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage(),
+                ]);
+ 
+                // Return a safe, UI-friendly default
+                return [
+                    'days'  => null,
+                    'label' => 'Estimate unavailable — contact support',
+                ];
+            }
+        );
     }
 }

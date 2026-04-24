@@ -64,7 +64,7 @@ class CustomerActionSubscriber implements ShouldQueue
         // Need at least an email to send reminder
         $email = $event->user?->email;
 
-        if (empty($email)) {
+        if (blank($email)) {
             return; // guest with no email — skip
         }
 

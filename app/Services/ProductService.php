@@ -55,10 +55,18 @@ class ProductService
     {
         try {
             if ($image) {
-                $data['image'] = $this->uploadImage($image);
+                $data['image'] = $this->uploadImage($image, $data['slug']);
             }
 
-            $product = Product::create($data);
+            $product = tap(Product::create($data), function ($product) {
+                Log::channel('product')->info('Product created', [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'category_id' => $product->category_id,
+                    'has_image' => !is_null($product->image),
+                    'created_by' => auth()->id() ?? 'system',
+                ]);
+            });
 
             return $product;
 
@@ -93,9 +101,16 @@ class ProductService
                 $data['image'] = $this->uploadImage($image, $data['slug'] ?? $product->slug);
             }
 
-            $product->update($data);
 
-            return $product->refresh();
+            return tap($product, function ($product) use ($data) {
+                $product->update($data);
+
+                Log::channel('product')->info('Product updated', [
+                    'product_id' => $product->id,
+                    'changes' => $product->getChanges(),
+                    'updated_by' => auth()->id() ?? 'system',
+                ]);
+            })->refresh();
 
         } catch (QueryException $e) {
             Log::channel('product')->error('Failed to update product', [

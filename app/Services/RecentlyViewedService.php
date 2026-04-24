@@ -46,7 +46,7 @@ class RecentlyViewedService
 
         $ids = Cache::get($key, []);
 
-        if (empty($ids)) return collect();
+        if (blank($ids)) return collect();
 
         return Product::whereIn('id', $ids)
             ->get()

@@ -73,7 +73,7 @@ class SalesReportService
         $rows[] = ['Top 5 Products by Units Sold'];
         $rows[] = ['Product Name', 'Units Sold', 'Revenue'];
 
-        if (!empty($data['top_products'])) {
+        if (!blank($data['top_products'])) {
             foreach ($data['top_products'] as $product) {
                 $rows[] = [
                     $product['name'],

@@ -20,13 +20,13 @@ class ProductObserver
     public function created(Product $product): void
     {
         $this->clearProductCaches($product);
-        Log::channel('product')->info('Product created', [
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'category_id' => $product->category_id,
-            'has_image' => !is_null($product->image),
-            'created_by' => auth()->id() ?? 'system',
-        ]);
+        // Log::channel('product')->info('Product created', [
+        //     'product_id' => $product->id,
+        //     'product_name' => $product->name,
+        //     'category_id' => $product->category_id,
+        //     'has_image' => !is_null($product->image),
+        //     'created_by' => auth()->id() ?? 'system',
+        // ]);
     }
 
     public function updating(Product $product)
@@ -81,11 +81,11 @@ class ProductObserver
             }
         }
 
-        Log::channel('product')->info('Product updated', [
-            'product_id' => $product->id,
-            'changes' => $product->getChanges(),
-            'updated_by' => auth()->id() ?? 'system',
-        ]);
+        // Log::channel('product')->info('Product updated', [
+        //     'product_id' => $product->id,
+        //     'changes' => $product->getChanges(),
+        //     'updated_by' => auth()->id() ?? 'system',
+        // ]);
     }
 
     /**

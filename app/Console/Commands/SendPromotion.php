@@ -184,7 +184,7 @@ class SendPromotion extends Command
                 $this->ask("Coupon code", $suggested)
             ));
 
-            if (empty($code)) {
+            if (blank($code)) {
                 $this->components->error('Code cannot be empty.');
                 continue;
             }
@@ -200,7 +200,7 @@ class SendPromotion extends Command
                 $code = null;
             }
 
-        } while (empty($code));
+        } while (blank($code));
 
         return $code;
     }

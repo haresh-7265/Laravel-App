@@ -74,7 +74,7 @@ class InventoryReportService
         $rows[] = ['Low Stock Items'];
         $rows[] = ['Name', 'Stock', 'Price', 'Threshold'];
 
-        if (!empty($data['low_stock_items'])) {
+        if (!blank($data['low_stock_items'])) {
             foreach ($data['low_stock_items'] as $item) {
                 $rows[] = [
                     $item['name'],
@@ -93,7 +93,7 @@ class InventoryReportService
         $rows[] = ['Out of Stock Items'];
         $rows[] = ['Name', 'Price', 'Last Updated'];
 
-        if (!empty($data['out_of_stock_items'])) {
+        if (!blank($data['out_of_stock_items'])) {
             foreach ($data['out_of_stock_items'] as $item) {
                 $rows[] = [
                     $item['name'],
