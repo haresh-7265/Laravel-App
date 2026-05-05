@@ -31,11 +31,11 @@
 
             @if($item['stock'] <= 5 && $item['stock'] > 0)
                 <div class="text-warning small mt-1">
-                    <i class="bi bi-exclamation-circle me-1"></i>Only {{ $item['stock'] }} left
+                    <i class="bi bi-exclamation-circle me-1"></i>{{ __('Only :count left', ['count' => $item['stock']]) }}
                 </div>
             @elseif($item['stock'] === 0)
                 <div class="text-danger small mt-1">
-                    <i class="bi bi-x-circle me-1"></i>Out of stock
+                    <i class="bi bi-x-circle me-1"></i>{{ __('Out of stock') }}
                 </div>
             @endif
         </div>
@@ -46,7 +46,7 @@
                     data-action="qty"
                     data-url="{{ route('cart.update', $item['product_id']) }}"
                     data-qty="{{ $item['quantity'] - 1 }}"
-                    title="Decrease"
+                    title="{{ __('Decrease') }}"
                     {{ $item['quantity'] <= 1 ? 'disabled' : '' }}>
                 <i class="bi bi-dash"></i>
             </button>
@@ -57,7 +57,7 @@
                     data-action="qty"
                     data-url="{{ route('cart.update', $item['product_id']) }}"
                     data-qty="{{ $item['quantity'] + 1 }}"
-                    title="Increase"
+                    title="{{ __('Increase') }}"
                     {{ $item['quantity'] >= $item['stock'] ? 'disabled' : '' }}>
                 <i class="bi bi-plus"></i>
             </button>
@@ -81,7 +81,7 @@
                 data-action="remove"
                 data-url="{{ route('cart.remove', $item['product_id']) }}"
                 data-name="{{ $item['name'] }}"
-                title="Remove item">
+                title="{{ __('Remove item') }}">
             <i class="bi bi-trash3"></i>
         </button>
 

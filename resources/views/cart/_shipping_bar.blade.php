@@ -8,13 +8,13 @@
 @if($total >= $freeShippingThreshold)
     <div class="d-flex align-items-center gap-2 text-success">
         <i class="bi bi-truck fs-5"></i>
-        <span class="fw-semibold small">You get free shipping on this order!</span>
+        <span class="fw-semibold small">{{ __('You get free shipping on this order!') }}</span>
     </div>
 @else
     <div class="d-flex align-items-center justify-content-between mb-1">
         <span class="small text-muted">
             <i class="bi bi-truck me-1"></i>
-            Add <strong>@currency($remaining)</strong> more for free shipping
+            {{ __('Add :amount more for free shipping', ['amount' => '']) }}<strong>@currency($remaining)</strong>
         </span>
         <span class="small text-muted">
             @currency($total) / @currency($freeShippingThreshold)

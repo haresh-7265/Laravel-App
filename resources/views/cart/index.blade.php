@@ -10,11 +10,11 @@
     {{-- ── Page Title ── --}}
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 fw-bold mb-0">
-            <i class="bi bi-cart3 me-2 text-primary"></i>Your Cart
+            <i class="bi bi-cart3 me-2 text-primary"></i>{{ __('Your Cart') }}
         </h1>
         <span class="badge bg-primary rounded-pill fs-6" id="cart-count-badge"
               style="{{ empty($items) ? 'display:none' : '' }}">
-            <span id="cart-count-text">{{ $count ?? 0 }}</span> item(s)
+            <span id="cart-count-text">{{ $count ?? 0 }}</span> {{ __('item(s)') }}
         </span>
     </div>
 
@@ -23,13 +23,13 @@
         <div class="empty-cart-icon">
             <i class="bi bi-cart-x" style="font-size:36px; color:#94a3b8;"></i>
         </div>
-        <h4 class="fw-bold mb-2">Your cart is empty</h4>
+        <h4 class="fw-bold mb-2">{{ __('Your cart is empty') }}</h4>
         <p class="text-muted mb-4">
-            Looks like you haven't added anything yet.<br>
-            Browse our products and add something you like!
+            {{ __('Looks like you haven\'t added anything yet.') }}<br>
+            {{ __('Browse our products and add something you like!') }}
         </p>
         <a href="{{ route('products.index') }}" class="btn btn-primary px-4">
-            <i class="bi bi-grid me-2"></i>Browse Products
+            <i class="bi bi-grid me-2"></i>{{ __('Browse Products') }}
         </a>
     </div>
 
@@ -53,7 +53,7 @@
                 <button id="clear-cart-btn"
                         class="btn btn-sm btn-outline-danger"
                         data-url="{{ route('cart.clear') }}">
-                    <i class="bi bi-trash3 me-1"></i>Clear Cart
+                    <i class="bi bi-trash3 me-1"></i>{{ __('Clear Cart') }}
                 </button>
             </div>
 
@@ -67,7 +67,7 @@
 
             <div class="mt-3">
                 <a href="{{ route('products.index') }}" class="text-decoration-none text-muted small">
-                    <i class="bi bi-arrow-left me-1"></i>Continue Shopping
+                    <i class="bi bi-arrow-left me-1"></i>{{ __('Continue Shopping') }}
                 </a>
             </div>
         </div>
@@ -94,7 +94,7 @@
             <a href="{{ route('orders.checkout') }}"
                class="btn btn-primary w-100 fw-semibold mt-3"
                id="checkout-btn">
-                <i class="bi bi-lock me-2"></i>Proceed to Checkout
+                <i class="bi bi-lock me-2"></i>{{ __('Proceed to Checkout') }}
             </a>
         </div>
 

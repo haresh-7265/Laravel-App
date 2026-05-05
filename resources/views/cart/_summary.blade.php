@@ -14,7 +14,7 @@
     $appliedCoupon = $coupon ?? null;
 @endphp
 
-<h5 class="fw-bold mb-3">Order Summary</h5>
+<h5 class="fw-bold mb-3">{{ __('Order Summary') }}</h5>
 
 {{-- Per-item rows --}}
 @foreach ($items as $item)
@@ -40,14 +40,14 @@
 
 {{-- Subtotal --}}
 <div class="d-flex justify-content-between mb-2 text-muted small">
-    <span>Subtotal ({{ $count }} items)</span>
+    <span>{{ __('Subtotal') }} ({{ __(':count items', ['count' => $count]) }})</span>
     <span>@currency($total)</span>
 </div>
 
 {{-- Discount --}}
 @if($totalSavings > 0)
     <div class="d-flex justify-content-between mb-2 small">
-        <span class="text-success"><i class="bi bi-tag me-1"></i>Discount</span>
+        <span class="text-success"><i class="bi bi-tag me-1"></i>{{ __('Discount') }}</span>
         <span class="text-success fw-medium">− @currency($totalSavings)</span>
     </div>
 @endif
@@ -56,7 +56,7 @@
 @if($appliedCoupon && $couponDiscountAmount > 0)
     <div class="d-flex justify-content-between mb-2 small" id="coupon-discount-row">
         <span class="text-success">
-            <i class="bi bi-ticket-perforated me-1"></i>Coupon
+            <i class="bi bi-ticket-perforated me-1"></i>{{ __('Coupon') }}
             <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ $appliedCoupon['code'] }}</span>
         </span>
         <span class="text-success fw-medium">− @currency($couponDiscountAmount)</span>
@@ -65,9 +65,9 @@
 
 {{-- Shipping --}}
 <div class="d-flex justify-content-between mb-2 text-muted small">
-    <span><i class="bi bi-truck me-1"></i>Shipping</span>
+    <span><i class="bi bi-truck me-1"></i>{{ __('Shipping') }}</span>
     @if($shippingCost === 0)
-        <span class="text-success fw-medium">Free</span>
+        <span class="text-success fw-medium">{{ __('Free') }}</span>
     @else
         <span>@currency($shippingCost)</span>
     @endif
@@ -76,12 +76,12 @@
 {{-- Free shipping nudge --}}
 @if($total >= $freeShippingThreshold)
     <div class="discount-badge mb-3">
-        <i class="bi bi-gift me-1"></i>You've unlocked free shipping!
+        <i class="bi bi-gift me-1"></i>{{ __('You\'ve unlocked free shipping!') }}
     </div>
 @else
     <div class="discount-badge mb-3">
         <i class="bi bi-info-circle me-1"></i>
-        Spend <strong>@currency($remaining)</strong> more for free shipping
+        {{ __('Spend :amount more for free shipping', ['amount' => '']) }}<strong>@currency($remaining)</strong>
     </div>
 @endif
 
@@ -108,7 +108,7 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-danger border-0" id="remove-coupon-btn"
-                        data-url="{{ route('cart.coupon.remove') }}" title="Remove coupon">
+                        data-url="{{ route('cart.coupon.remove') }}" title="{{ __('Remove coupon') }}">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -116,12 +116,12 @@
         @else
             {{-- Coupon input --}}
             <div id="coupon-input-wrap">
-                <label class="form-label small fw-semibold text-muted mb-1">
-                    <i class="bi bi-ticket-perforated me-1"></i>Have a coupon?
-                </label>
+                    <label class="form-label small fw-semibold text-muted mb-1">
+                        <i class="bi bi-ticket-perforated me-1"></i>{{ __('Have a coupon?') }}
+                    </label>
                 <div class="input-group coupon-input-group">
                     <input type="text" id="coupon-code-input" class="form-control form-control-sm"
-                        placeholder="Enter coupon code" maxlength="50" autocomplete="off" />
+                        placeholder="{{ __('Enter coupon code') }}" maxlength="50" autocomplete="off" />
                     <button type="button" class="btn btn-sm btn-primary" id="apply-coupon-btn"
                         data-url="{{ route('cart.coupon.apply') }}">
                         Apply
@@ -137,6 +137,6 @@
 
 {{-- Grand Total --}}
 <div class="d-flex justify-content-between total-row">
-    <span>Total</span>
+    <span>{{ __('Total') }}</span>
     <span class="text-primary">@currency($grandTotal)</span>
 </div>

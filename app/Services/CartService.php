@@ -132,7 +132,7 @@ class CartService
     {
         $cart = Session::get($this->sessionKey, []);
 
-        if (filled($cart[$product->id])) {
+        if (isset($cart[$product->id])) {
             //  Check stock against new total quantity
             $newQuantity = $cart[$product->id]['quantity'] + $quantity;
             $this->checkStock($product, $newQuantity);

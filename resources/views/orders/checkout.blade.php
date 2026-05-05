@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Checkout')
+@section('title', __('Checkout'))
 
 @section('content')
 
@@ -16,10 +16,10 @@
 <div class="row justify-content-center">
     <div class="col-md-6 text-center py-5">
         <i class="bi bi-cart-x display-1 text-muted"></i>
-        <h5 class="mt-3 fw-bold">Your Cart is Empty</h5>
-        <p class="text-muted mb-4">Add some products to your cart before checkout.</p>
+        <h5 class="mt-3 fw-bold">{{ __('Your Cart is Empty') }}</h5>
+        <p class="text-muted mb-4">{{ __('Add some products to your cart before checkout.') }}</p>
         <a href="{{ route('products.index') }}" class="btn btn-dark">
-            <i class="bi bi-bag me-1"></i> Browse Products
+            <i class="bi bi-bag me-1"></i> {{ __('Browse Products') }}
         </a>
     </div>
 </div>
@@ -28,7 +28,7 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
-        <h4 class="fw-bold mb-4">Checkout</h4>
+        <h4 class="fw-bold mb-4">{{ __('Checkout') }}</h4>
 
         <form method="POST" action="{{ route('orders.store') }}">
             @csrf
@@ -40,13 +40,13 @@
                     {{-- Shipping Details --}}
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-light fw-bold">
-                            <i class="bi bi-geo-alt me-1"></i> Shipping Details
+                            <i class="bi bi-geo-alt me-1"></i> {{ __('Shipping Details') }}
                         </div>
                         <div class="card-body">
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Full Name</label>
+                                    <label class="form-label">{{ __('Full Name') }}</label>
                                     <input type="text" name="name"
                                         value="{{ old('name', auth()->user()->name) }}"
                                         class="form-control @error('name') is-invalid @enderror" />
@@ -54,7 +54,7 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Email</label>
+                                    <label class="form-label">{{ __('Email') }}</label>
                                     <input type="email" name="email"
                                         value="{{ old('email', auth()->user()->email) }}"
                                         class="form-control @error('email') is-invalid @enderror" />
@@ -62,45 +62,45 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Phone</label>
+                                    <label class="form-label">{{ __('Phone') }}</label>
                                     <input type="text" name="phone"
                                         value="{{ old('phone') }}"
-                                        placeholder="Enter phone number"
+                                        placeholder="{{ __('Enter phone number') }}"
                                         class="form-control @error('phone') is-invalid @enderror" />
                                     @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Pincode</label>
+                                    <label class="form-label">{{ __('Pincode') }}</label>
                                     <input type="text" name="pincode"
                                         value="{{ old('pincode') }}"
-                                        placeholder="Enter pincode"
+                                        placeholder="{{ __('Enter pincode') }}"
                                         class="form-control @error('pincode') is-invalid @enderror" />
                                     @error('pincode') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-12">
-                                    <label class="form-label">Address</label>
+                                    <label class="form-label">{{ __('Address') }}</label>
                                     <textarea name="address" rows="2"
-                                        placeholder="House no, Street, Area..."
+                                        placeholder="{{ __('House no, Street, Area...') }}"
                                         class="form-control @error('address') is-invalid @enderror">{{ old('address') }}</textarea>
                                     @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">City</label>
+                                    <label class="form-label">{{ __('City') }}</label>
                                     <input type="text" name="city"
                                         value="{{ old('city') }}"
-                                        placeholder="Enter city"
+                                        placeholder="{{ __('Enter city') }}"
                                         class="form-control @error('city') is-invalid @enderror" />
                                     @error('city') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">State</label>
+                                    <label class="form-label">{{ __('State') }}</label>
                                     <input type="text" name="state"
                                         value="{{ old('state') }}"
-                                        placeholder="Enter state"
+                                        placeholder="{{ __('Enter state') }}"
                                         class="form-control @error('state') is-invalid @enderror" />
                                     @error('state') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
@@ -112,7 +112,7 @@
                     {{-- Payment Method --}}
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-light fw-bold">
-                            <i class="bi bi-credit-card me-1"></i> Payment Method
+                            <i class="bi bi-credit-card me-1"></i> {{ __('Payment Method') }}
                         </div>
                         <div class="card-body">
                             <div class="d-flex flex-column gap-3">
@@ -122,8 +122,8 @@
                                     <input type="radio" name="payment_method" value="cod"
                                         class="form-check-input mt-0" checked />
                                     <div>
-                                        <p class="fw-semibold mb-0"><i class="bi bi-cash-coin me-1"></i> Cash on Delivery</p>
-                                        <small class="text-muted">Pay when you receive your order</small>
+                                        <p class="fw-semibold mb-0"><i class="bi bi-cash-coin me-1"></i> {{ __('Cash on Delivery') }}</p>
+                                        <small class="text-muted">{{ __('Pay when you receive your order') }}</small>
                                     </div>
                                 </label>
 
@@ -132,8 +132,8 @@
                                     <input type="radio" name="payment_method" value="online"
                                         class="form-check-input mt-0" />
                                     <div>
-                                        <p class="fw-semibold mb-0"><i class="bi bi-phone me-1"></i> Online Payment</p>
-                                        <small class="text-muted">Pay via UPI, Card, or Net Banking</small>
+                                        <p class="fw-semibold mb-0"><i class="bi bi-phone me-1"></i> {{ __('Online Payment') }}</p>
+                                        <small class="text-muted">{{ __('Pay via UPI, Card, or Net Banking') }}</small>
                                     </div>
                                 </label>
 
@@ -144,12 +144,12 @@
                     {{-- Notes --}}
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-light fw-bold">
-                            <i class="bi bi-chat-left-text me-1"></i> Order Notes
-                            <span class="fw-normal text-muted small">(Optional)</span>
+                            <i class="bi bi-chat-left-text me-1"></i> {{ __('Order Notes') }}
+                            <span class="fw-normal text-muted small">{{ __('(Optional)') }}</span>
                         </div>
                         <div class="card-body">
                             <textarea name="notes" rows="3"
-                                placeholder="Any special instructions for your order..."
+                                placeholder="{{ __('Any special instructions for your order...') }}"
                                 class="form-control">{{ old('notes') }}</textarea>
                         </div>
                     </div>
@@ -160,7 +160,7 @@
                 <div class="col-lg-4">
                     <div class="card shadow-sm sticky-top" style="top:20px">
                         <div class="card-header bg-light fw-bold">
-                            <i class="bi bi-receipt me-1"></i> Order Summary
+                            <i class="bi bi-receipt me-1"></i> {{ __('Order Summary') }}
                         </div>
                         <div class="card-body">
 
@@ -180,7 +180,7 @@
                                     @endif
                                     <div class="flex-fill">
                                         <p class="fw-medium mb-0 small">{{ $item['name'] }}</p>
-                                        <small class="text-muted">Qty: {{ $item['quantity'] }}</small>
+                                        <small class="text-muted">{{ __('Qty: :qty', ['qty' => $item['quantity']]) }}</small>
                                     </div>
                                     <span class="small fw-semibold">
                                         @currency(($item['discount_price'] ?? $item['price']) * $item['quantity'])
@@ -192,7 +192,7 @@
                             {{-- Totals --}}
                             <div class="border-top pt-3">
                                 <div class="d-flex justify-content-between mb-2 small">
-                                    <span class="text-muted">Subtotal</span>
+                                    <span class="text-muted">{{ __('Subtotal') }}</span>
                                     <span>@currency($cartService->totalPrice())</span>
                                 </div>
 
@@ -200,7 +200,7 @@
                                 @if($appliedCoupon && $couponDiscount > 0)
                                 <div class="d-flex justify-content-between mb-2 small">
                                     <span class="text-success">
-                                        <i class="bi bi-ticket-perforated me-1"></i>Coupon
+                                        <i class="bi bi-ticket-perforated me-1"></i>{{ __('Coupon') }}
                                         <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ $appliedCoupon['code'] }}</span>
                                     </span>
                                     <span class="text-success fw-semibold">− @currency($couponDiscount)</span>
@@ -208,22 +208,22 @@
                                 @endif
 
                                 <div class="d-flex justify-content-between mb-2 small">
-                                    <span class="text-muted">Shipping</span>
-                                    <span class="text-success fw-semibold">Free</span>
+                                    <span class="text-muted">{{ __('Shipping') }}</span>
+                                    <span class="text-success fw-semibold">{{ __('Free') }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-2">
-                                    <span>Total</span>
+                                    <span>{{ __('Total') }}</span>
                                     <span class="fs-5">@currency($cartService->totalPrice() - $couponDiscount)</span>
                                 </div>
                             </div>
 
                             <button type="submit" class="btn btn-dark w-100 mt-3">
-                                <i class="bi bi-bag-check me-1"></i> Place Order
+                                <i class="bi bi-bag-check me-1"></i> {{ __('Place Order') }}
                             </button>
 
                             <a href="{{ route('cart.index') }}"
                                 class="btn btn-outline-secondary w-100 mt-2 btn-sm">
-                                <i class="bi bi-arrow-left me-1"></i> Back to Cart
+                                <i class="bi bi-arrow-left me-1"></i> {{ __('Back to Cart') }}
                             </a>
 
                         </div>
