@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\ExternalApiController;
 use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\GithubController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CacheMonitorController;
@@ -80,6 +81,9 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/cart.php';
+
+// ─── Locale Switcher ───────────────────────────────
+Route::post('/locale', [LocaleController::class, 'switch'])->name('locale.switch');
 
 Route::get('res-string', function () {
     return "String Response";

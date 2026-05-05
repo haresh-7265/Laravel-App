@@ -81,7 +81,7 @@ class AuthController extends Controller
             ]);
 
             // Redirect to originally requested URL or dashboard
-            return redirect()->intended(route('products.index'));
+            return redirect()->intended(route('products.index'))->with('success', __('Welcome back, :name!', ['name' => auth()->user()->name]));
         }
 
         \Log::channel('security')->warning('Failed login attempt', [

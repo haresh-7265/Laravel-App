@@ -92,9 +92,6 @@
                             Log out
                         </button>
                     </form>
-                    <span class="text-gray-400 text-sm hidden lg:inline fixed right-5">
-                        {{ __('Welcome back, :name!', ['name' => auth()->user()->name]) }}
-                    </span>
                 @endauth
 
                 @guest
@@ -106,6 +103,41 @@
 
             </div>
         </div>
+
+        {{-- ═══ Language Switcher ═══ --}}
+        <div class="locale-switcher" style="position:fixed; bottom:20px; right:20px; z-index:9999;">
+            @php
+                $locales = [
+                    'en' => ['label' => 'EN', 'flag' => '🇬🇧'],
+                    'ar' => ['label' => 'AR', 'flag' => '🇸🇦'],
+                ];
+                $currentLocale = app()->getLocale();
+            @endphp
+
+            <div class="btn-group-vertical shadow-lg rounded overflow-hidden" role="group">
+                @foreach ($locales as $code => $meta)
+                    @if ($code === $currentLocale)
+                        <button type="button"
+                                class="btn btn-primary btn-sm px-3 py-2 fw-bold"
+                                disabled
+                                title="{{ $meta['label'] }}">
+                            {{ $meta['flag'] }} {{ $meta['label'] }}
+                        </button>
+                    @else
+                        <form action="{{ route('locale.switch') }}" method="POST" class="d-inline">
+                            @csrf
+                            <input type="hidden" name="locale" value="{{ $code }}">
+                            <button type="submit"
+                                    class="btn btn-light btn-sm px-3 py-2 fw-semibold w-100"
+                                    title="{{ $meta['label'] }}">
+                                {{ $meta['flag'] }} {{ $meta['label'] }}
+                            </button>
+                        </form>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
     </div>
 </nav>
 
