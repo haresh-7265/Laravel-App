@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
+use App\Services\ExternalApiService;
 use App\Services\FakeStoreService;
 use App\Services\Greeter;
 use App\Services\PaymentService;
@@ -36,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(FakeStoreService::class);
+
+        $this->app->singleton(ExternalApiService::class);
     }
 
     /**

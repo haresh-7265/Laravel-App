@@ -35,4 +35,21 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | External API Service
+    |--------------------------------------------------------------------------
+    |
+    | Base URL and bearer token for the centralised ExternalApiService.
+    | Credentials are read from .env – never hardcode them in source.
+    |
+    */
+    'external_api' => [
+        'base_url' => env('EXTERNAL_API_BASE_URL', 'https://fakestoreapi.com'),
+        'token'    => env('EXTERNAL_API_TOKEN', ''),
+        'timeout'  => (int) env('EXTERNAL_API_TIMEOUT', 30),
+        'retries'  => (int) env('EXTERNAL_API_RETRY', 3),
+        'retry_ms' => (int) env('EXTERNAL_API_RETRY_MS', 500),
+    ],
+
 ];

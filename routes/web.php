@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
+use App\Http\Controllers\ExternalApiController;
 use App\Http\Controllers\FakeStoreController;
+use App\Http\Controllers\GithubController;
 use App\Http\Controllers\OrderController as CustomerOrderController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CacheMonitorController;
@@ -143,3 +145,11 @@ Route::get('/preview/coupon-mail', function () {
 });
 
 Route::get('/payment-webhook', PaymentWebhookController::class);
+
+// ─── Github API ────────────────────────────────────
+
+Route::prefix('github')->group(function () {
+    Route::get('profile',      [GithubController::class, 'profile']);
+    Route::get('repos',        [GithubController::class, 'repos']);
+    Route::get('user/{name}',  [GithubController::class, 'user']);
+});
