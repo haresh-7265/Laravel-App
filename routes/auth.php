@@ -18,4 +18,4 @@ Route::middleware('auth')->group(function () {
 });
 
 // ─── Root redirect ──────────────────────────────────────────────
-Route::get('/', fn() => redirect()->route('login'));
+Route::get('/', fn() => redirect()->route('products.index'));

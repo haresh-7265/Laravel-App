@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Products')
+@section('title', __('products.title'))
 
 @section('content')
 
@@ -27,7 +27,7 @@
         {{-- ═══════ HOMEPAGE SECTIONS (Concurrent Data) ═══════ --}}
             @if($featured->isNotEmpty())
             <div class="mb-5">
-                <h3 class="mb-3">Featured Products</h3>
+                <h3 class="mb-3">{{ __('products.featured') }}</h3>
 
                 <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
                     @foreach($featured as $p)
@@ -42,7 +42,7 @@
 
             @if($newArrivals->isNotEmpty())
             <div class="mb-5">
-                <h3 class="mb-3">New Arrivals</h3>
+                <h3 class="mb-3">{{ __('products.new_arrivals') }}</h3>
 
                 <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
                     @foreach($newArrivals as $p)
@@ -57,7 +57,7 @@
 
             @if($onSale->isNotEmpty())
             <div class="mb-5">
-                <h3 class="mb-3">On Sale</h3>
+                <h3 class="mb-3">{{ __('products.on_sale') }}</h3>
 
                 <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
                     @foreach($onSale as $p)
@@ -72,7 +72,7 @@
 
             <hr class="mb-5">
 
-            <h3 class="mb-3">All Products</h3>
+            <h3 class="mb-3">{{ __('products.all_products') }}</h3>
 
         {{-- Results header --}}
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
@@ -98,7 +98,7 @@
                             @endforeach
                         @endif
                         @if(request('in_stock'))
-                            <span class="filter-badge"><i class="bi bi-box-seam"></i> In Stock</span>
+                            <span class="filter-badge"><i class="bi bi-box-seam"></i> {{ __('products.stock') }}</span>
                         @endif
                         @if(request('on_sale'))
                             <span class="filter-badge"><i class="bi bi-percent"></i> On Sale</span>
@@ -124,8 +124,8 @@
                 <div class="col-12">
                     <div class="alert alert-info text-center">
                         <i class="bi bi-search me-1"></i>
-                        No products match your filters.
-                        <a href="{{ route('products.index') }}" class="alert-link ms-1">Clear all filters</a>
+                        {{ __('products.no_products') }}
+                        <a href="{{ route('products.index') }}" class="alert-link ms-1">{{ __('products.clear_filters') }}</a>
                     </div>
                 </div>
             @endforelse

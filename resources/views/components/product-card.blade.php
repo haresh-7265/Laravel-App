@@ -23,7 +23,7 @@
         {{-- Out of Stock Overlay --}}
         @if($product->stock <= 0)
             <div class="absolute inset-0 bg-white/50 flex items-center justify-center">
-                <span class="text-xs font-semibold uppercase tracking-widest text-red-800">Out of stock</span>
+                <span class="text-xs font-semibold uppercase tracking-widest text-red-800">{{ __('products.out_of_stock') }}</span>
             </div>
         @endif
 
@@ -45,7 +45,7 @@
 
         {{-- Description --}}
         <p class="text-[13px] text-gray-400 leading-relaxed line-clamp-2">
-            {{ Str::limit($product->description ?? 'No description available.', 30, '...', true) }}
+            {{ Str::limit($product->description ?? __('products.no_description'), 30, '...', true) }}
         </p>
 
         {{-- Price --}}
@@ -65,7 +65,7 @@
         <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full flex-shrink-0 {{ $product->stock > 0 ? 'bg-green-500' : 'bg-red-400' }}"></span>
             <span class="text-[12px] font-medium {{ $product->stock > 0 ? 'text-green-800' : 'text-red-700' }}">
-                {{ $product->stock > 0 ? $product->stock . ' in stock' : 'Out of stock' }}
+                {{ $product->stock > 0 ? __('products.in_stock', ['count' => $product->stock]) : __('products.out_of_stock') }}
             </span>
         </div>
 
@@ -73,20 +73,20 @@
         <div class="flex gap-2 mt-1">
             <a href="{{ route('products.show', $product) }}"
                class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80 {{ $product->stock <= 0 ? 'opacity-40 pointer-events-none' : '' }}">
-                View
+                {{ __('products.view') }}
             </a>
 
             @can('edit-product')
                 <a href="{{ route('products.edit', $product) }}"
                    class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors">
-                    Edit
+                    {{ __('products.edit') }}
                 </a>
             @endcan
 
             @can('delete-product')
                 <form action="{{ route('products.destroy', $product) }}"
                       method="POST"
-                      onsubmit="return confirm('Delete this product?')"
+                      onsubmit="return confirm('{{ __('products.delete_short') }}')"
                       style="display:contents;">
                     @csrf
                     @method('DELETE')

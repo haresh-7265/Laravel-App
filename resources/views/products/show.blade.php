@@ -7,12 +7,12 @@
 <input type="hidden" id="productId" value="{{ $product->id }}">
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Product Details</h2>
+        <h2>{{ __('products.product_details') }}</h2>
         <div>
             @admin
-            <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">Edit</a>
+            <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">{{ __('products.edit') }}</a>
             @endadmin
-            <a href="{{ route('products.index') }}" class="btn btn-secondary">Back</a>
+            <a href="{{ route('products.index') }}" class="btn btn-secondary">{{ __('products.back') }}</a>
         </div>
     </div>
 
@@ -38,14 +38,14 @@
 
                     {{-- Category --}}
                     <p class="text-muted mb-2">
-                        <strong>Category:</strong>
+                        <strong>{{ __('products.category') }}:</strong>
                         <span class="badge bg-primary">{{ $product->category->name }}</span>
                     </p>
 
                     {{-- Description --}}
                     <p class="card-text mb-3">
-                        <strong>Description:</strong><br>
-                        {{ $product->description ?? 'No description available.' }}
+                        <strong>{{ __('products.description') }}:</strong><br>
+                        {{ $product->description ?? __('products.no_description') }}
                     </p>
 
                     <hr>
@@ -54,7 +54,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded text-center">
-                                <small class="text-muted d-block">Price</small>
+                                <small class="text-muted d-block">{{ __('products.price') }}</small>
                                 @if(!empty($product->discount_price) && $product->discount_price < $product->price)
                                     {{-- Has discount --}}
                                     <span class="text-decoration-line-through text-muted me-1">
@@ -75,9 +75,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded text-center">
-                                <small class="text-muted d-block">Stock</small>
+                                <small class="text-muted d-block">{{ __('products.stock') }}</small>
                                 <strong class="fs-4 {{ $product->stock > 0 ? 'text-primary' : 'text-danger' }}" id="stockCount">
-                                    {{ $product->stock > 0 ? $product->stock . ' units' : 'Out of Stock' }}
+                                    {{ $product->stock > 0 ? __('products.units', ['count' => $product->stock]) : __('products.out_of_stock') }}
                                 </strong>
                             </div>
                         </div>
@@ -103,12 +103,12 @@
                         
                             {{-- Button --}}
                             <button type="submit" class="btn btn-success" id="addToCartBtn">
-                                🛒 Add to Cart
+                                {{ __('products.add_to_cart') }}
                             </button>
                         </form>
                     </div>
                         <button class="btn btn-secondary" id="outOfStockBtn" disabled style="display: {{ $outOfStock ? '' : 'none' }};">
-                            Out of Stock
+                            {{ __('products.out_of_stock') }}
                         </button>
                     
                     @endif
@@ -120,11 +120,11 @@
                     {{-- Timestamps --}}
                     <div class="row text-muted small">
                         <div class="col-md-6">
-                            <strong>Created:</strong>
+                            <strong>{{ __('products.created') }}</strong>
                             {{ $product->created_at->format('d M Y, h:i A') }}
                         </div>
                         <div class="col-md-6">
-                            <strong>Last Updated:</strong>
+                            <strong>{{ __('products.last_updated') }}</strong>
                             {{ $product->updated_at->format('d M Y, h:i A') }}
                         </div>
                     </div>
@@ -135,15 +135,15 @@
                     <div class="d-flex gap-2">
                         <a href="{{ route('products.edit', $product) }}"
                            class="btn btn-warning">
-                            Edit Product
+                            {{ __('products.edit_product') }}
                         </a>
 
                         <form action="{{ route('products.destroy', $product) }}"
                               method="POST"
-                              onsubmit="return confirm('Are you sure you want to delete this product?')">
+                              onsubmit="return confirm('{{ __('products.delete_confirm') }}')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Delete Product</button>
+                            <button type="submit" class="btn btn-danger">{{ __('products.delete_product') }}</button>
                         </form>
                     </div>
 
