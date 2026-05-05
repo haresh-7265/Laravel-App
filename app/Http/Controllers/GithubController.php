@@ -18,7 +18,7 @@ class GithubController extends Controller
         $response = $this->api->get('/user');
 
         return response()->json(
-            $response->json()
+            $response
         );
     }
 
@@ -28,7 +28,7 @@ class GithubController extends Controller
         $response = $this->api->get('/user/repos', ['sort' => 'updated', 'per_page' => 10]);
 
         return response()->json(
-            $response->json()
+            $response
         );
     }
 
@@ -37,7 +37,15 @@ class GithubController extends Controller
     {
         $response = $this->api->get("/users/{$username}");
         return response()->json(
-            $response->json()
+            $response
+        );
+    }
+
+    // Test endpoint — intentionally bad URL
+    public function broken(): JsonResponse
+    {
+        return response()->json(
+            $this->api->get('/this-endpoint-does-not-exist-404')
         );
     }
 }

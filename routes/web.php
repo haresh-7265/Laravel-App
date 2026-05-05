@@ -152,4 +152,5 @@ Route::prefix('github')->group(function () {
     Route::get('profile',      [GithubController::class, 'profile']);
     Route::get('repos',        [GithubController::class, 'repos']);
     Route::get('user/{name}',  [GithubController::class, 'user']);
+    Route::get('broken',       [GithubController::class, 'broken']);
 });
