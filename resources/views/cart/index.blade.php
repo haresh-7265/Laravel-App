@@ -14,7 +14,7 @@
         </h1>
         <span class="badge bg-primary rounded-pill fs-6" id="cart-count-badge"
               style="{{ empty($items) ? 'display:none' : '' }}">
-            <span id="cart-count-text">{{ $count ?? 0 }}</span> {{ __('item(s)') }}
+            {{ trans_choice('cart_badge', $count ?? 0, ['count' => $count ?? 0]) }}
         </span>
     </div>
 

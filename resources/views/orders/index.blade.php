@@ -177,7 +177,7 @@
                     @endif
 
                     <div class="ms-2 d-flex align-items-center text-muted small">
-                        {{ $order->items->count() }} {{ Str::plural('item', $order->items->count()) }}
+                        {{ trans_choice('cart_badge', $order->items->count(), ['count' => $order->items->count()]) }}
                     </div>
                 </div>
 

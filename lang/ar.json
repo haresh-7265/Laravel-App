@@ -9,7 +9,6 @@
     "Clear Cart": "إفراغ السلة",
     "Continue Shopping": "متابعة التسوق",
     "Proceed to Checkout": "المتابعة إلى الدفع",
-    "item(s)": "عنصر/عناصر",
 
     "Add to Cart": "أضف إلى السلة",
     "Out of Stock": "غير متوفر",
@@ -50,7 +49,6 @@
 
     "Order Summary": "ملخص الطلب",
     "Subtotal": "المجموع الفرعي",
-    ":count items": ":count عناصر",
     "Discount": "الخصم",
     "Coupon": "قسيمة",
     "Shipping": "الشحن",
@@ -66,5 +64,12 @@
     "Remove coupon": "إزالة القسيمة",
     ":value% off": "خصم :value%",
     "saving :amount": "توفير :amount",
-    "Qty: :qty": "الكمية: :qty"
+    "Qty: :qty": "الكمية: :qty",
+
+    "cart_badge": "{0} ٠ عناصر|{1} عنصر واحد|{2} عنصران|[3,10] :count عناصر|[11,*] :count عنصرًا",
+    "products_found": "{0} لا توجد منتجات|{1} منتج واحد|{2} منتجان|[3,10] :count منتجات|[11,*] :count منتجًا",
+
+    "Order #:id confirmed on :date": "تم تأكيد الطلب #:id بتاريخ :date",
+    "Order #:id": "الطلب #:id",
+    "Placed on :date": "بتاريخ :date"
 }

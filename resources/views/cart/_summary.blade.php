@@ -40,7 +40,7 @@
 
 {{-- Subtotal --}}
 <div class="d-flex justify-content-between mb-2 text-muted small">
-    <span>{{ __('Subtotal') }} ({{ __(':count items', ['count' => $count]) }})</span>
+    <span>{{ __('Subtotal') }} ({{ trans_choice('cart_badge', $count, ['count' => $count]) }})</span>
     <span>@currency($total)</span>
 </div>
 

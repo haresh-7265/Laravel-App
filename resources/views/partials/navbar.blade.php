@@ -92,6 +92,9 @@
                             Log out
                         </button>
                     </form>
+                    <span class="text-gray-400 text-sm hidden lg:inline fixed right-5">
+                        {{ __('Welcome back, :name!', ['name' => auth()->user()->name]) }}
+                    </span>
                 @endauth
 
                 @guest

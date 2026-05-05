@@ -9,7 +9,6 @@
     "Clear Cart": "Clear Cart",
     "Continue Shopping": "Continue Shopping",
     "Proceed to Checkout": "Proceed to Checkout",
-    "item(s)": "item(s)",
 
     "Add to Cart": "Add to Cart",
     "Out of Stock": "Out of Stock",
@@ -50,7 +49,6 @@
 
     "Order Summary": "Order Summary",
     "Subtotal": "Subtotal",
-    ":count items": ":count items",
     "Discount": "Discount",
     "Coupon": "Coupon",
     "Shipping": "Shipping",
@@ -66,5 +64,12 @@
     "Remove coupon": "Remove coupon",
     ":value% off": ":value% off",
     "saving :amount": "saving :amount",
-    "Qty: :qty": "Qty: :qty"
+    "Qty: :qty": "Qty: :qty",
+
+    "cart_badge": "{0} 0 items|{1} 1 item|[2,*] :count items",
+    "products_found": "{0} No products found|{1} 1 product found|[2,*] :count products found",
+
+    "Order #:id confirmed on :date": "Order #:id confirmed on :date",
+    "Order #:id": "Order #:id",
+    "Placed on :date": "Placed on :date"
 }
