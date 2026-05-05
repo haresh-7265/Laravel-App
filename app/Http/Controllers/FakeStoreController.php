@@ -16,6 +16,10 @@ class FakeStoreController extends Controller
         $products = $this->fakeStoreService->fetchProducts();
         $this->fakeStoreService->postProduct();  // post request with body
 
+        if(request()->acceptsJson()){
+            return $products;
+        }
+
         return view('fakestore.index', compact('products'));
     }
 }

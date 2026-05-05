@@ -46,10 +46,16 @@ return [
     */
     'external_api' => [
         'base_url' => env('EXTERNAL_API_BASE_URL', 'https://fakestoreapi.com'),
-        'token'    => env('EXTERNAL_API_TOKEN', ''),
-        'timeout'  => (int) env('EXTERNAL_API_TIMEOUT', 30),
-        'retries'  => (int) env('EXTERNAL_API_RETRY', 3),
+        'token' => env('EXTERNAL_API_TOKEN', ''),
+        'timeout' => (int) env('EXTERNAL_API_TIMEOUT', 30),
+        'retries' => (int) env('EXTERNAL_API_RETRY', 3),
         'retry_ms' => (int) env('EXTERNAL_API_RETRY_MS', 500),
+    ],
+
+    'fakestore' => [
+        'base_url' => env('FAKESTORE_API_URL', 'https://fakestoreapi.com'),
+        'key' => env('FAKESTORE_API_KEY', ''),
+        'timeout' => env('FAKESTORE_API_TIMEOUT', 30),
     ],
 
 ];

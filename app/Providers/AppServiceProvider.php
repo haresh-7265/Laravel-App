@@ -12,6 +12,7 @@ use App\Services\TestService2;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
@@ -77,6 +78,16 @@ class AppServiceProvider extends ServiceProvider
 
         \Blade::directive('currency', function ($amount) {
             return "<?php echo '₹' . number_format((float)$amount, 2); ?>";
+        });
+
+        Http::macro('jsonApi', function (string $baseUrl, string $apiKey = '', int $timeout) {
+            return Http::baseUrl($baseUrl)
+                ->withHeaders([
+                    'Accept'        => 'application/json',
+                    'Content-Type'  => 'application/json',
+                    'X-Api-Key'     => $apiKey,
+                ])
+                ->timeout($timeout);
         });
     }
 }
