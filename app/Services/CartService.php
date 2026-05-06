@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Session;
 
 class CartService
 {
-    private string $sessionKey = 'cart';
+    public string $sessionKey = 'cart';
     private string $couponSessionKey = 'applied_coupon';
 
     public function __construct(
@@ -229,10 +229,8 @@ class CartService
     // MERGE SESSION → DB ON LOGIN
     // ─────────────────────────────────────────────────────────
 
-    public function mergeSessionCart(): void
+    public function mergeSessionCart($sessionCart): void
     {
-        $sessionCart = Session::get($this->sessionKey, []);
-
         // Only merge if logged in AND is a customer
         if (blank($sessionCart) || !auth()->check() || !auth()->user()->isCustomer()) {
             return;
@@ -292,11 +290,11 @@ class CartService
     public function applyCoupon(Coupon $coupon, float $discount): void
     {
         Session::put($this->couponSessionKey, [
-            'coupon_id'   => $coupon->id,
-            'code'        => $coupon->code,
-            'type'        => $coupon->type,
-            'value'       => $coupon->value,
-            'discount'    => $discount,
+            'coupon_id' => $coupon->id,
+            'code' => $coupon->code,
+            'type' => $coupon->type,
+            'value' => $coupon->value,
+            'discount' => $discount,
         ]);
     }
 
@@ -368,11 +366,11 @@ class CartService
         }
 
         return [
-            'total'           => $total,
-            'count'           => $count,
-            'coupon'          => $coupon,
+            'total' => $total,
+            'count' => $count,
+            'coupon' => $coupon,
             'coupon_discount' => $couponDiscount,
-            'final_total'     => $total - $couponDiscount,
+            'final_total' => $total - $couponDiscount,
         ];
     }
 

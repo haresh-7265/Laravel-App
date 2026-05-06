@@ -75,12 +75,19 @@
         </div>
 
         {{-- Submit --}}
+        <div class="flex-col items-center justify-end mt-4">
+            @if (Route::has('password.request'))
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-2" href="{{ route('password.request') }}">
+                    {{ __('Forgot your password?') }}
+                </a>
+            @endif
         <button
             type="submit"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium
                    py-2.5 px-4 rounded-lg text-sm transition-colors duration-150">
             Sign in
         </button>
+        </div>
     </form>
 
     {{-- Register link --}}

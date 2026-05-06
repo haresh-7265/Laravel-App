@@ -48,6 +48,7 @@
     </div>
  
     @include('partials.navbar')
+    @include('partials.sidebar')
 
     <div class="container mt-4">
 

@@ -1,148 +1,67 @@
+{{-- resources/views/partials/navbar.blade.php --}}
 <nav class="bg-gray-900 text-white shadow sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4">
+    <div class="max-w-full mx-auto px-4 h-14 flex items-center gap-3">
 
-        <div class="flex justify-between items-center h-16">
+        {{-- ── Sidebar toggle (inline in nav, not fixed) ─────────────── --}}
+        <button
+            id="sidebar-toggle"
+            aria-label="Open navigation"
+            aria-expanded="false"
+            aria-controls="sidebar"
+            class="flex items-center justify-center w-8 h-8 rounded-lg
+                   text-gray-300 hover:bg-gray-700 hover:text-white
+                   transition flex-shrink-0">
+            <i class="bi bi-list text-xl leading-none"></i>
+        </button>
 
-            <!-- Logo -->
-            <a href="/" class="text-lg font-semibold">
-                {{ config('admin.name') }}
-            </a>
+        {{-- ── Brand ──────────────────────────────────────────────────── --}}
+        <a href="/" class="text-base font-semibold flex-shrink-0">
+            {{ config('app.name') }}
+        </a>
 
-            <!-- Toggle -->
-            <button id="menu-btn" class="lg:hidden">
-                <i class="bi bi-list text-2xl"></i>
-            </button>
+        {{-- ── Right side actions ──────────────────────────────────────── --}}
+        <div class="flex items-center gap-4 ms-auto">
 
-            <!-- Menu -->
-            <div id="menu"
-                class="hidden lg:flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-5 absolute lg:static top-16 left-0 w-full lg:w-auto bg-gray-900 lg:bg-transparent px-4 lg:px-0 py-4 lg:py-0">
-
-                <!-- Products -->
-                <a href="{{ route('products.index') }}"
-                   class=" {{ request()->routeIs('products.index') ? 'text-blue-400' : '' }}">
-                    Products
+            {{-- Export (admin only) --}}
+            @admin
+                <a href="{{ route('products.export') }}"
+                   class="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600
+                          text-sm px-3 py-1.5 rounded transition">
+                    <i class="bi bi-download text-lg"></i> Export
                 </a>
+            @endadmin
 
-                @auth
-                    @if(auth()->user()->role === 'customer')
-                        <a href="{{ route('orders.index') }}"
-                           class=" {{ request()->routeIs('orders.index') ? 'text-blue-400' : '' }}">
-                            My Orders
-                        </a>
-                    @endif
-                @endauth
+            {{-- Cart (guest + customer) --}}
+            @if(!auth()->check() || auth()->user()->role === 'customer')
+                <a href="{{ route('cart.index') }}" class="relative">
+                    <i class="bi bi-cart text-xl"></i>
+                    <span id="cart-badge"
+                          class="absolute -top-1.5 -end-1.5 bg-red-500 text-white text-[9px]
+                                 min-w-[16px] h-4 flex items-center justify-center
+                                 rounded-full px-0.5">
+                        {{ $cart_count > 99 ? '99+' : ($cart_count ?: '0') }}
+                    </span>
+                </a>
+            @endif
 
-                @if(!auth()->check() || auth()->user()->role === 'customer')
-                    <!-- Cart -->
-                    <a href="{{ route('cart.index') }}"
-                       class="relative  {{ request()->routeIs('cart.index') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-cart text-xl"></i>
+            {{-- Profile avatar --}}
+            @auth
+                <a href="{{ route('profile.edit') }}"
+                   class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center
+                          text-sm font-medium text-white hover:bg-blue-500 transition">
+                    {{ Str::initials(auth()->user()?->name) }}
+                </a>
+            @endauth
 
-                        <span id="cart-badge"
-                              class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 
-                                     bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] 
-                                     flex items-center justify-center rounded-full">
-                            {{ $cart_count > 0 ? ($cart_count > 99 ? '99+' : $cart_count) : '0' }}
-                        </span>
-                    </a>
-                @endif
+            {{-- Guest login --}}
+            @guest
+                <a href="{{ route('login') }}"
+                   class="border border-gray-300 px-3 py-1 rounded text-sm
+                          hover:bg-white hover:text-black transition">
+                    Log in
+                </a>
+            @endguest
 
-                @admin
-                    <a href="{{ route('fakestore.index') }}" class=" {{ request()->routeIs('fakestore.index') ? 'text-blue-400' : '' }}">
-                        Fake Store
-                    </a>
-                    <a href="{{ route('admin.dashboard') }}" class=" {{ request()->routeIs('admin.dashboard') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-
-                    <a href="{{ route('admin.orders.index') }}" class=" {{ request()->routeIs('admin.orders.index') ? 'text-blue-400' : '' }}">
-                        Orders
-                    </a>
-
-                    <a href="{{ route('products.create') }}" class=" {{ request()->routeIs('products.create') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-plus-circle"></i> Create
-                    </a>
-
-                    <a href="{{ route('admin.online-customers') }}" class=" {{ request()->routeIs('admin.online-customers') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-people"></i> Online
-                    </a>
-
-                    <a href="{{ route('admin.cache-monitor') }}" class=" {{ request()->routeIs('admin.cache-monitor') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-speedometer"></i> Cache
-                    </a>
-
-                    <a href="{{ route('admin.sales-analytics') }}" class=" {{ request()->routeIs('admin.sales-analytics') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-graph-up-arrow"></i> Sales
-                    </a>
-
-                    <a href="{{ route('admin.invoices.index') }}" class="{{ request()->routeIs('admin.invoices.index') ? 'text-blue-400' : '' }}">
-                        <i class="bi bi-receipt"></i> Invoices
-                    </a>
-
-                    <a href="{{ route('admin.files.index') }}" class="{{ request()->routeIs('admin.files.index') ? 'text-blue-400' : '' }}">
-                    <i class="bi bi-bar-chart-line"></i> Reports
-                    </a>
-                @endadmin
-
-                <!-- Auth -->
-                @auth
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button class="border border-red-500 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white text-sm">
-                            Log out
-                        </button>
-                    </form>
-                @endauth
-
-                @guest
-                    <a href="{{ route('login') }}"
-                       class="border border-gray-300 px-3 py-1 rounded hover:bg-white hover:text-black text-sm">
-                        Log in
-                    </a>
-                @endguest
-
-            </div>
         </div>
-
-        {{-- ═══ Language Switcher ═══ --}}
-        <div class="locale-switcher" style="position:fixed; bottom:20px; right:20px; z-index:9999;">
-            @php
-                $locales = [
-                    'en' => ['label' => 'EN', 'flag' => '🇬🇧'],
-                    'ar' => ['label' => 'AR', 'flag' => '🇸🇦'],
-                ];
-                $currentLocale = app()->getLocale();
-            @endphp
-
-            <div class="btn-group-vertical shadow-lg rounded overflow-hidden" role="group">
-                @foreach ($locales as $code => $meta)
-                    @if ($code === $currentLocale)
-                        <button type="button"
-                                class="btn btn-primary btn-sm px-3 py-2 fw-bold"
-                                disabled
-                                title="{{ $meta['label'] }}">
-                            {{ $meta['flag'] }} {{ $meta['label'] }}
-                        </button>
-                    @else
-                        <form action="{{ route('locale.switch') }}" method="POST" class="d-inline">
-                            @csrf
-                            <input type="hidden" name="locale" value="{{ $code }}">
-                            <button type="submit"
-                                    class="btn btn-light btn-sm px-3 py-2 fw-semibold w-100"
-                                    title="{{ $meta['label'] }}">
-                                {{ $meta['flag'] }} {{ $meta['label'] }}
-                            </button>
-                        </form>
-                    @endif
-                @endforeach
-            </div>
-        </div>
-
     </div>
 </nav>
-
-<script>
-    document.getElementById('menu-btn').addEventListener('click', function () {
-        document.getElementById('menu').classList.toggle('hidden');
-    });
-</script>

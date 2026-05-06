@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -56,13 +57,13 @@ class AppServiceProvider extends ServiceProvider
 
         \Response::macro('success', function ($data = null, $message = 'Success', $code = 200) {
             return \Response::json([
-                'status'  => 'success',
+                'status' => 'success',
                 'message' => $message,
-                'data'    => $data,
+                'data' => $data,
             ], $code);
         });
 
-        \Response::macro('error', function ($message = 'Error',$error = null) {
+        \Response::macro('error', function ($message = 'Error', $error = null) {
             return response()->json([
                 'status' => false,
                 'message' => $message,
@@ -83,11 +84,19 @@ class AppServiceProvider extends ServiceProvider
         Http::macro('jsonApi', function (string $baseUrl, string $apiKey = '', int $timeout) {
             return Http::baseUrl($baseUrl)
                 ->withHeaders([
-                    'Accept'        => 'application/json',
-                    'Content-Type'  => 'application/json',
-                    'X-Api-Key'     => $apiKey,
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'X-Api-Key' => $apiKey,
                 ])
                 ->timeout($timeout);
+        });
+
+        Str::macro('initials', function ($value, $limit = 2) {
+            return collect(preg_split('/\s+/', trim($value)))
+                ->filter()
+                ->map(fn($word) => strtoupper($word[0] ?? ''))
+                ->take($limit)
+                ->join('');
         });
     }
 }

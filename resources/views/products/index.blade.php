@@ -6,16 +6,6 @@
 
 @include('partials.recently-viewed', ['recentlyViewed' => $recentlyViewed])
 
-@admin
-<div class="fixed top-5 right-5 z-50">
-    <a href="{{ route('products.export')}}"
-       class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-lg transition">
-        <i class="bi bi-download text-lg"></i>
-        Export
-    </a>
-</div>
-@endadmin
-
 <div class="row g-4">
 
     {{-- ═══════ LEFT: FILTER SIDEBAR ═══════ --}}
