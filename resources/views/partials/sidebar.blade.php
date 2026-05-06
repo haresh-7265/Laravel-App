@@ -30,7 +30,6 @@
        aria-label="Main navigation"
        class="fixed top-0 start-0 z-50 h-full w-52
               bg-gray-800 text-gray-300 flex flex-col
-              -translate-x-full rtl:translate-x-full
               transition-transform duration-300 ease-in-out shadow-2xl">
 
     {{-- Header --}}
@@ -111,9 +110,13 @@
     const toggle  = document.getElementById('sidebar-toggle'); // lives in navbar
     const close   = document.getElementById('sidebar-close');
     const isRtl   = document.documentElement.dir === 'rtl';
+    const hiddenClass = isRtl ? 'translate-x-full' : '-translate-x-full';
+
+    // Set initial hidden state via JS (avoids rtl: Tailwind variant mismatch)
+    sidebar.classList.add(hiddenClass);
 
     function openSidebar() {
-        sidebar.classList.remove('-translate-x-full', 'translate-x-full');
+        sidebar.classList.remove(hiddenClass);
         sidebar.classList.add('translate-x-0');
         overlay.classList.remove('opacity-0', 'pointer-events-none');
         overlay.classList.add('opacity-100');
@@ -123,7 +126,7 @@
 
     function closeSidebar() {
         sidebar.classList.remove('translate-x-0');
-        sidebar.classList.add(isRtl ? 'translate-x-full' : '-translate-x-full');
+        sidebar.classList.add(hiddenClass);
         overlay.classList.add('opacity-0', 'pointer-events-none');
         overlay.classList.remove('opacity-100');
         toggle?.setAttribute('aria-expanded', 'false');

@@ -78,8 +78,8 @@
             </div>
             <div>
                 <small class="text-muted d-block">Order Date</small>
-                <span class="fw-medium">{{ $order->created_at->format('d M Y') }}</span>
-                <small class="text-muted ms-1">{{ $order->created_at->format('h:i A') }}</small>
+                <span class="fw-medium">{{ $order->created_at->isoFormat('LL') }}</span>
+                <small class="text-muted ms-1">{{ $order->created_at->isoFormat('LT') }}</small>
             </div>
             <div class="ms-auto text-end">
                 <small class="text-muted d-block">Order Total</small>

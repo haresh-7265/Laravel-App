@@ -121,11 +121,11 @@
                     <div class="row text-muted small">
                         <div class="col-md-6">
                             <strong>{{ __('products.created') }}</strong>
-                            {{ $product->created_at->format('d M Y, h:i A') }}
+                            {{ $product->created_at->isoFormat('LL') }}
                         </div>
                         <div class="col-md-6">
                             <strong>{{ __('products.last_updated') }}</strong>
-                            {{ $product->updated_at->format('d M Y, h:i A') }}
+                            {{ $product->updated_at->isoFormat('LL') }}
                         </div>
                     </div>
 

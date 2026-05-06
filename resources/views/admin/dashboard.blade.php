@@ -52,7 +52,7 @@
     <h2 class="fw-bold mb-0">
         <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
     </h2>
-    <span class="text-muted">{{ now()->format('D, d M Y') }}</span>
+    <span class="text-muted">{{ now()->isoFormat('LL') }}</span>
 </div>
 
 {{-- ═══════ STAT CARDS ═══════ --}}
@@ -160,7 +160,7 @@
                                                 {{ ucfirst($order->status) }}
                                             </span>
                                         </td>
-                                        <td class="text-muted">{{ $order->created_at->format('d M, Y') }}</td>
+                                        <td class="text-muted">{{ $order->created_at->isoFormat('LLL') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

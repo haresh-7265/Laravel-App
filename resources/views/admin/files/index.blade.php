@@ -65,7 +65,7 @@
                             {{ number_format($file['size'] / 1024, 1) }} KB
                         </td>
                         <td class="text-muted small">
-                            {{ \Carbon\Carbon::createFromTimestamp($file['lastModified'])->format('d M Y, H:i') }}
+                            {{ \Carbon\Carbon::createFromTimestamp($file['lastModified'])->isoFormat('D MMM YYYY, HH:mm') }}
                         </td>
                         <td>
                             <span class="badge {{ $file['age_days'] >=30 ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success' }}">

@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 class LocaleController extends Controller
 {
     /**
-     * Store the chosen locale in session and redirect back.
+     * Store the chosen locale in session (and DB for authenticated users)
+     * then redirect back.
      */
     public function switch(Request $request): RedirectResponse
     {
@@ -17,7 +18,15 @@ class LocaleController extends Controller
             'locale' => 'required|string|in:' . implode(',', SetLocale::SUPPORTED),
         ]);
 
-        session(['locale' => $request->input('locale')]);
+        $locale = $request->input('locale');
+
+        // Always write to session (works for guests & authenticated users)
+        session(['locale' => $locale]);
+
+        // For authenticated users, also persist to DB so it survives logout/login
+        if ($request->user()) {
+            $request->user()->update(['preferred_locale' => $locale]);
+        }
 
         return redirect()->back();
     }

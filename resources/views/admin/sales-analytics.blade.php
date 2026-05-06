@@ -194,9 +194,9 @@
 <script>
 
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat(@json(app()->getLocale()), {
         style: 'currency',
-        currency: @json(config('admin.currency_code'))
+        currency: @json(config('admin.currency_code.' . app()->getLocale() . '.code', 'USD'))
     }).format(value);
 };
 

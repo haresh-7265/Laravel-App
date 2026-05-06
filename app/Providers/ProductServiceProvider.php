@@ -36,7 +36,7 @@ class ProductServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
-        Number::useCurrency(config('admin.currency_code'));
+        // Number::useCurrency(config('admin.currency_code'));
 
         if (\App::environment('local', 'development')) {
             Log::channel('db-query')->info('===============================================');

@@ -154,7 +154,7 @@
             </h2>
             <small class="text-muted">
                 <span class="live-dot"></span>Data calculated from today's cache logs &middot;
-                {{ now()->format('D, d M Y H:i') }}
+                {{ now()->isoFormat('LLLL') }}
             </small>
         </div>
 
@@ -342,7 +342,7 @@
                                                 <code class="text-break" style="font-size:.82rem;">{{ $event['key'] }}</code>
                                             </td>
                                             <td class="text-muted" style="font-size:.82rem;">
-                                                {{ $event['timestamp'] }}
+                                                {{ \Illuminate\Support\Carbon::parse($event['timestamp'])->isoFormat('YYYY-MM-DD HH:mm:ss') }}
                                             </td>
                                         </tr>
                                     @endforeach

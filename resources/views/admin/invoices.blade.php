@@ -68,7 +68,7 @@
                         {{ number_format($invoice['size'] / 1024, 1) }} KB
                     </td>
                     <td style="padding:11px 16px; font-size:13px; color:#6b7280">
-                        {{ \Carbon\Carbon::createFromTimestamp($invoice['lastModified'])->format('d M Y, H:i') }}
+                        {{ \Carbon\Carbon::createFromTimestamp($invoice['lastModified'])->isoFormat('D MMM YYYY, HH:mm') }}
                     </td>
                 </tr>
                 @empty

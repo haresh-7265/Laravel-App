@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\SetLocale;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,25 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's preferred locale.
+     */
+    public function updateLocale(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'preferred_locale' => ['required', 'string', 'in:' . implode(',', SetLocale::SUPPORTED)],
+        ]);
+
+        $locale = $request->input('preferred_locale');
+
+        $request->user()->update(['preferred_locale' => $locale]);
+
+        // Sync session so the change takes effect immediately
+        session(['locale' => $locale]);
+
+        return Redirect::route('profile.edit')->with('success', 'locale-updated');
     }
 
     /**

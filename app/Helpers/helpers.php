@@ -44,7 +44,7 @@ class CurrencyHelper
     {
 
         if (is_null($currency)) {
-            $currency = config('admin.currency_code');
+            $currency = config('admin.currency_code')[app()->getLocale()]['code'];
         }
 
         $absAmount = abs($amount);
@@ -58,7 +58,7 @@ class CurrencyHelper
         }
 
         $symbol = self::getCurrencySymbol($currency);
-        return $symbol . $abbreviated;
+        return $symbol.$abbreviated;
     }
 
     private static function getCurrencySymbol($currency)
@@ -68,6 +68,7 @@ class CurrencyHelper
             'EUR' => '€',
             'INR' => '₹',
             'GBP' => '£',
+            'SAR' => 'ر.س',
             default => $currency,
         };
     }
