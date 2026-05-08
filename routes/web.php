@@ -162,3 +162,12 @@ Route::prefix('github')->group(function () {
     Route::get('user/{name}',  [GithubController::class, 'user']);
     Route::get('broken',       [GithubController::class, 'broken']);
 });
+
+if (app()->environment('local')) {
+
+    Route::get('/preview/order-confirmation/{order?}', function (?\App\Models\Order $order = null) {
+        $order = $order ?? \App\Models\Order::latest()->first();
+
+        return (new \App\Mail\OrderConfirmation($order))->render();
+    });
+}

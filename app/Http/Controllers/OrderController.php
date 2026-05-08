@@ -38,7 +38,7 @@ class OrderController extends Controller
 
         $order = $this->orderService->placeOrder($request->all());
 
-        Mail::to($order->shipping_email)->later(now()->addMinutes(5), new OrderConfirmation($order));
+        Mail::to($order->shipping_email, $order->shipping_name)->locale($order->user?->preferredLocale())->later(now()->addMinutes(5), new OrderConfirmation($order));
 
         return redirect()
             ->route('orders.show', $order)

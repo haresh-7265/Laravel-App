@@ -6,8 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -77,5 +78,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Coupon::class)
             ->withPivot('usage_limit', 'used_count')
             ->withTimestamps();
+    }
+
+    public function preferredLocale(): ?string
+    {
+        return $this->preferred_locale;
     }
 }
