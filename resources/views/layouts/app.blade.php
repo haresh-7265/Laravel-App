@@ -5,6 +5,7 @@
 
 <!DOCTYPE html>
 <html lang="{{ $currentLocale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,6 +28,7 @@
     @vite(['resources/js/admin/app.js'])
     @endadmin
 </head>
+
 <body>
 
     {{-- ════ TOAST ════ --}}
@@ -39,14 +41,14 @@
                     <!-- dynamic content -->
                 </div>
 
-                <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                    data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
 
         </div>
 
     </div>
- 
+
     @include('partials.navbar')
     @include('partials.sidebar')
 
@@ -67,7 +69,7 @@
     @yield('footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     @auth
         @if (auth()->user()->isCustomer())
             @vite('resources/js/customer/customer.js')
@@ -75,4 +77,5 @@
     @endauth
     @stack('scripts')
 </body>
+
 </html>

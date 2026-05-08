@@ -304,7 +304,7 @@ class ImportProducts extends Command
                 'image'          => $image,
             ];
 
-            if (filled($existingSlugs[$slug])) {
+            if (isset($existingSlugs[$slug])) {
                 Product::where('slug', $slug)->update($data);
                 $this->updated++;
             } else {

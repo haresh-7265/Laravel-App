@@ -6,7 +6,7 @@
 <input type="hidden" value="{{ $order->id }}" id="orderId">
 <div class="row justify-content-center">
     <div class="col-lg-10">
-        <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm sticky top-20 z-50">
+        <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary btn-sm sticky top-20 z-1">
             <i class="bi bi-arrow-left me-1"></i> Back to My Orders
         </a>
         <br>

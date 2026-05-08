@@ -18,7 +18,7 @@
 {{-- Page Header --}}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary btn-sm sticky top-20 z-50">
+        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary btn-sm sticky top-20 z-1">
             <i class="bi bi-arrow-left me-1"></i> Back to Orders
         </a>
         <h4 class="fw-bold mb-0 mt-1">

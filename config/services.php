@@ -58,4 +58,12 @@ return [
         'timeout' => env('FAKESTORE_API_TIMEOUT', 30),
     ],
 
+
+    // mailgun service
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
+    ],
 ];

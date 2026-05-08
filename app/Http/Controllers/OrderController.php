@@ -8,6 +8,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderConfirmation;
 
 class OrderController extends Controller
 {
@@ -36,6 +38,7 @@ class OrderController extends Controller
 
         $order = $this->orderService->placeOrder($request->all());
 
+        Mail::to($order->shipping_email)->send(new OrderConfirmation($order));
 
         return redirect()
             ->route('orders.show', $order)

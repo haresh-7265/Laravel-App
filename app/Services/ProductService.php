@@ -40,10 +40,13 @@ class ProductService
 
         return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters) {
             $ids = $this->apply($filters)->toArray();
+            $orderCase = 'CASE id ' .
+                collect($ids)->map(fn($id, $i) => "WHEN $id THEN $i")->implode(' ') .
+                ' END';
             $products = Product::active()
                 ->with('category')
                 ->whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')')
+                ->orderByRaw($orderCase)
                 ->paginate($perPage)
                 ->withQueryString();
             return $products;
