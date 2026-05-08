@@ -13,9 +13,12 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class OrderConfirmation extends Mailable
+class OrderConfirmation extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public $tries = 3;
+    public $backoff = [10, 30, 60];
 
     /**
      * Create a new message instance.
@@ -23,6 +26,7 @@ class OrderConfirmation extends Mailable
     public function __construct(public Order $order)
     {
         $this->order->load('items');
+        $this->onQueue('emails');
     }
 
     /**
