@@ -6,9 +6,12 @@ use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class OrderConfirmation extends Mailable
 {
@@ -52,6 +55,18 @@ class OrderConfirmation extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        $attachments = [];
+
+        if ($this->order->invoice_path) {
+            if (Storage::disk('public')->exists($this->order->invoice_path)) {
+                $attachments[] = Attachment::fromStorageDisk('public', $this->order->invoice_path)
+                    ->as("invoice-{$this->order->order_number}.pdf")
+                    ->withMime('application/pdf');
+            } else {
+                Log::channel('order')->warning("Invoice PDF missing for order {$this->order->order_number} at {$this->order->invoice_path}");
+            }
+        }
+
+        return $attachments;
     }
 }

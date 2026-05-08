@@ -1,4 +1,8 @@
 <x-mail::message>
+<div style="text-align: center;">
+    <img src="{{ $message->embed(public_path('images/logo.png')) }}" alt="Logo" style="max-height: 60px; margin-bottom: 20px;">
+</div>
+
 # Order Confirmation
 
 Thank you for your order, {{ $order->name }}!
