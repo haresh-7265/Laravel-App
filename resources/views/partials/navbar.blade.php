@@ -10,6 +10,9 @@
         </button>
 
         {{-- ── Brand ──────────────────────────────────────────────────── --}}
+        <a href="/" class="flex items-center justify-center w-8 h-8 flex-shrink-0">
+            <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-8 h-8 object-contain">
+        </a>
         <a href="/" class="text-base font-semibold flex-shrink-0">
             {{ config('app.name') }}
         </a>

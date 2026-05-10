@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Notifications\OrderShipped;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -161,6 +162,9 @@ class OrderService
         $order->update(['status' => $status]);
         $order->refresh();
 
+        if ($status === 'shipped' && $order->user) {
+            $order->user->notify(new OrderShipped($order));
+        }
     }
 
 
