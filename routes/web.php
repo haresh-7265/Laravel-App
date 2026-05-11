@@ -179,4 +179,13 @@ if (app()->environment('local')) {
 
         return (new \App\Mail\OrderConfirmation($order))->render();
     });
-}
+
+    Route::get('/slack-request', function () {
+        $response = Http::post(config('services.slack.webhooks.orders'), [
+            'text' => 'Hello from Laravel',
+        ]);
+
+    // Check
+        return $response->successful();
+    });
+};
