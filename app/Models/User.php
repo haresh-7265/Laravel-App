@@ -84,4 +84,15 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return $this->preferred_locale;
     }
+
+    /**
+     * Route the webhook notification channel.
+     *
+     * Per-user override: if the user has a webhook_url column, use that.
+     * Otherwise the WebhookChannel falls back to config('services.webhook.url').
+     */
+    public function routeNotificationForWebhook(): ?string
+    {
+        return $this->webhook_url ?? null;
+    }
 }

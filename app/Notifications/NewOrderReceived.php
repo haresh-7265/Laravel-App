@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Order;
+use App\Notifications\Channels\WebhookChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -28,7 +29,7 @@ class NewOrderReceived extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast'];
+        return ['mail', 'database', 'broadcast', WebhookChannel::class];
     }
 
     /**
@@ -82,5 +83,24 @@ class NewOrderReceived extends Notification implements ShouldQueue
             'message' => 'New order #'.$this->order->order_number.' placed by '.$this->order->shipping_name,
             'placed_at' => now()->toDateTimeString(),
         ]);
+    }
+
+    /**
+     * Payload posted to the external webhook.
+     *
+     * @return array<string, mixed>
+     */
+    public function toWebhook(object $notifiable): array
+    {
+        return [
+            'event'         => 'order.placed',
+            'order_number'  => $this->order->order_number,
+            'customer_name' => $this->order->shipping_name,
+            'customer_email'=> $this->order->shipping_email,
+            'total'         => $this->order->total,
+            'items_count'   => $this->order->items()->sum('quantity'),
+            'placed_at'     => $this->order->created_at->toIso8601String(),
+            'admin_url'     => route('admin.orders.show', $this->order),
+        ];
     }
 }

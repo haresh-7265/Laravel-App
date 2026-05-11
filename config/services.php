@@ -66,4 +66,21 @@ return [
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
         'scheme' => 'https',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Webhook Notification Channel
+    |--------------------------------------------------------------------------
+    |
+    | Default URL and tuning for the custom WebhookChannel.
+    | Per-user overrides are possible via routeNotificationForWebhook().
+    |
+    */
+    'webhook' => [
+        'url'      => env('WEBHOOK_NOTIFICATION_URL', ''),
+        'secret'   => env('WEBHOOK_NOTIFICATION_SECRET', ''),
+        'timeout'  => (int) env('WEBHOOK_NOTIFICATION_TIMEOUT', 10),
+        'retries'  => (int) env('WEBHOOK_NOTIFICATION_RETRIES', 3),
+        'retry_ms' => (int) env('WEBHOOK_NOTIFICATION_RETRY_MS', 500),
+    ],
 ];
