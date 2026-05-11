@@ -40,6 +40,9 @@
                 </a>
             @endif
 
+            {{-- Notification Bell --}}
+            @include('partials.notification-bell')
+
             {{-- Profile avatar --}}
             @auth
                 <a href="{{ route('profile.edit') }}" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center

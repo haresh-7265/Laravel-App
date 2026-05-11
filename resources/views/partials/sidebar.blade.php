@@ -66,6 +66,21 @@
                     <i class="bi bi-bag w-4 text-center"></i> My Orders
                 </a>
             @endif
+
+            <a href="{{ route('notifications.index') }}" @class([
+                'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
+                'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('notifications.index'),
+            ])>
+                <i class="bi bi-bell w-4 text-center"></i> Notifications
+                @php
+                    $sidebarUnread = auth()->user()->unreadNotifications()->count();
+                @endphp
+                @if($sidebarUnread > 0)
+                    <span class="ms-auto bg-indigo-500 text-white text-[10px] font-semibold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1">
+                        {{ $sidebarUnread > 99 ? '99+' : $sidebarUnread }}
+                    </span>
+                @endif
+            </a>
         @endauth
 
         @admin

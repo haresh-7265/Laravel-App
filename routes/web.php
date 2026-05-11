@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Mail\CouponMail;
@@ -30,6 +31,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // ─── Notifications ─────────────────────────────────
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/',              [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count',  [NotificationController::class, 'unread'])->name('unread');
+        Route::patch('/{id}/read',   [NotificationController::class, 'markAsRead'])->name('markAsRead');
+        Route::post('/mark-all-read',[NotificationController::class, 'markAllRead'])->name('markAllRead');
+    });
 });
 
 // Admin only
