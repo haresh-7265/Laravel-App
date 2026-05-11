@@ -71,5 +71,25 @@
 
     "Order #:id confirmed on :date": "Order #:id confirmed on :date",
     "Order #:id": "Order #:id",
-    "Placed on :date": "Placed on :date"
+    "Placed on :date": "Placed on :date",
+
+    "New Order Received": "New Order Received",
+    "Hello :name,": "Hello :name,",
+    "A new order has been placed and is awaiting processing.": "A new order has been placed and is awaiting processing.",
+    "Order": "Order",
+    "Customer": "Customer",
+    "Items": "Items",
+    "View Order": "View Order",
+    "Please process this order at your earliest convenience.": "Please process this order at your earliest convenience.",
+    "New order #:order placed by :customer": "New order #:order placed by :customer",
+    "New Order": "New Order",
+
+    "Order Shipped": "Order Shipped",
+    "Great news! Your order :order has been shipped.": "Great news! Your order :order has been shipped.",
+    "Your tracking number is: :tracking": "Your tracking number is: :tracking",
+    "Your order :order has been shipped.": "Your order :order has been shipped.",
+    "Thank you for shopping with us!": "Thank you for shopping with us!",
+
+    "Low Stock Alert": "Low Stock Alert",
+    "Low stock alert: :product has only :stock units left": "Low stock alert: :product has only :stock units left"
 }

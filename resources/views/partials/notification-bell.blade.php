@@ -19,14 +19,14 @@
     {{-- Dropdown panel --}}
     <div id="notification-dropdown"
          class="notification-dropdown"
-         style="display:none; position:absolute; top:calc(100% + 8px); right:0; width:360px; max-height:460px;
+         style="display:none; position:absolute; top:calc(100% + 8px); inset-inline-end:0; width:360px; max-height:460px;
                 background:#1f2937; border:1px solid #374151; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.45);
                 z-index:9999; overflow:hidden;">
 
         {{-- Header --}}
         <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid #374151;">
             <span style="font-weight:600; font-size:15px; color:#f9fafb;">
-                <i class="bi bi-bell-fill" style="color:#60a5fa; margin-right:6px;"></i>Notifications
+                <i class="bi bi-bell-fill" style="color:#60a5fa; margin-inline-end:6px;"></i>Notifications
             </span>
             <div style="display:flex; align-items:center; gap:10px;">
                 <button id="notification-mark-all" type="button"
@@ -57,9 +57,9 @@
 <style>
     .notification-dropdown::-webkit-scrollbar { width: 5px; }
     .notification-dropdown::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
-    .notification-item { display:flex; align-items:flex-start; gap:10px; padding:10px 16px; text-decoration:none; color:#e5e7eb; transition:background .15s; border-left:3px solid transparent; }
+    .notification-item { display:flex; align-items:flex-start; gap:10px; padding:10px 16px; text-decoration:none; color:#e5e7eb; transition:background .15s; border-inline-start:3px solid transparent; }
     .notification-item:hover { background:#374151; }
-    .notification-item.unread { border-left-color:#60a5fa; background:rgba(96,165,250,.06); }
+    .notification-item.unread { border-inline-start-color:#60a5fa; background:rgba(96,165,250,.06); }
     .notification-item .notif-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px; }
     .notification-item .notif-body { flex:1; min-width:0; }
     .notification-item .notif-msg { font-size:13px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                     <div class="notif-body">
                         <div class="notif-msg">${escapeHtml(msg)}</div>
-                        <div class="notif-time"><i class="bi bi-clock" style="margin-right:3px;"></i>${time}</div>
+                        <div class="notif-time"><i class="bi bi-clock" style="margin-inline-end:3px;"></i>${time}</div>
                     </div>
                     ${unread ? '<span class="notif-dot"></span>' : ''}
                 </a>`;

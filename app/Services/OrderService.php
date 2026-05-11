@@ -17,8 +17,7 @@ class OrderService
     public function __construct(
         private CartService $cartService,
         private CouponService $couponService
-    ) {
-    }
+    ) {}
 
     public function placeOrder(array $shippingData): Order
     {
@@ -26,11 +25,11 @@ class OrderService
 
             $cartItems = $this->cartService->get();
 
-            // Stock validation (before touching any DB row) 
+            // Stock validation (before touching any DB row)
             foreach ($cartItems as $item) {
                 $product = Product::lockForUpdate()->find($item['product_id']);
 
-                if (!$product || $product->stock < $item['quantity']) {
+                if (! $product || $product->stock < $item['quantity']) {
                     throw new ProductOutOfStockException(
                         $item['name'],
                         $item['product_id'],
@@ -41,7 +40,7 @@ class OrderService
             }
 
             $total = $this->cartService->totalPrice();
-            $subtotal = collect($cartItems)->sum(fn($item) => $item['original_price'] * $item['quantity']);
+            $subtotal = collect($cartItems)->sum(fn ($item) => $item['original_price'] * $item['quantity']);
             $discount = $subtotal - $total;
 
             // ─── Coupon handling ───────────────────────────────
@@ -73,7 +72,7 @@ class OrderService
             $paymentStatus = $paymentMethod == 'cod' ? 'unpaid' : 'paid';
             $order = tap(Order::create([
                 'user_id' => auth()->id(),
-                'order_number' => 'ORD-' . strtoupper(uniqid()),
+                'order_number' => 'ORD-'.strtoupper(uniqid()),
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'discount' => $discount,
@@ -96,7 +95,7 @@ class OrderService
                         'total' => $order->total,
                         'user_id' => $order->user_id,
                         'payment_status' => $order->payment_status,
-                        'payment_method' => $order->payment_method
+                        'payment_method' => $order->payment_method,
                     ]);
                 });
             });
@@ -163,10 +162,9 @@ class OrderService
         $order->refresh();
 
         if ($status === 'shipped' && $order->user) {
-            $order->user->notify(new OrderShipped($order));
+            $order->user->notify((new OrderShipped($order))->locale($order->user->preferredLocale()));
         }
     }
-
 
     public function getCustomerOrdersAndStats(int $userId): array
     {
@@ -200,7 +198,7 @@ class OrderService
             'totalSpent' => $totalSpent,
             'averageOrderValue' => $averageOrderValue,
             'topProducts' => $topProducts,
-            'ordersByStatus' => $ordersByStatus
+            'ordersByStatus' => $ordersByStatus,
         ];
     }
 
@@ -209,17 +207,17 @@ class OrderService
         return rescue(
             // Attempt — may throw network, timeout, or parsing exceptions
             fn () => throw new Exception('estimation failed'),
- 
+
             // Fallback — returned whenever $callback throws
             rescue: function (\Throwable $e) use ($order): array {
                 Log::warning('Shipping estimate unavailable', [
                     'order_id' => $order->id,
-                    'error'    => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
- 
+
                 // Return a safe, UI-friendly default
                 return [
-                    'days'  => null,
+                    'days' => null,
                     'label' => 'Estimate unavailable — contact support',
                 ];
             }

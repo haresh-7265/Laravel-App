@@ -71,5 +71,25 @@
 
     "Order #:id confirmed on :date": "تم تأكيد الطلب #:id بتاريخ :date",
     "Order #:id": "الطلب #:id",
-    "Placed on :date": "بتاريخ :date"
+    "Placed on :date": "بتاريخ :date",
+
+    "New Order Received": "تم استلام طلب جديد",
+    "Hello :name,": "مرحبًا :name،",
+    "A new order has been placed and is awaiting processing.": "تم تقديم طلب جديد وهو بانتظار المعالجة.",
+    "Order": "الطلب",
+    "Customer": "العميل",
+    "Items": "العناصر",
+    "View Order": "عرض الطلب",
+    "Please process this order at your earliest convenience.": "يرجى معالجة هذا الطلب في أقرب وقت ممكن.",
+    "New order #:order placed by :customer": "طلب جديد #:order من :customer",
+    "New Order": "طلب جديد",
+
+    "Order Shipped": "تم شحن الطلب",
+    "Great news! Your order :order has been shipped.": "أخبار رائعة! تم شحن طلبك :order.",
+    "Your tracking number is: :tracking": "رقم التتبع الخاص بك هو: :tracking",
+    "Your order :order has been shipped.": "تم شحن طلبك :order.",
+    "Thank you for shopping with us!": "شكرًا لتسوقك معنا!",
+
+    "Low Stock Alert": "تنبيه انخفاض المخزون",
+    "Low stock alert: :product has only :stock units left": "تنبيه مخزون: :product يتبقى منه :stock وحدة فقط"
 }
