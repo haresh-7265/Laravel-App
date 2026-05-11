@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -86,7 +87,7 @@ class NotificationController extends Controller
     {
         $data = $notification->data;
 
-        // OrderShipped or any notification with an order_id
+        // OrderShipped / NewOrderReceived or any notification with an order_id
         if (!empty($data['order_id'])) {
             $order = Order::find($data['order_id']);
 
@@ -97,6 +98,15 @@ class NotificationController extends Controller
                 }
 
                 return route('orders.show', $order);
+            }
+        }
+
+        // ProductLowStock or any notification with a product_id
+        if (!empty($data['product_id'])) {
+            $product = Product::find($data['product_id']);
+
+            if ($product) {
+                return route('products.edit', $product);
             }
         }
 

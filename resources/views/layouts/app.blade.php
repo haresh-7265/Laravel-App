@@ -24,7 +24,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     @yield('style')
     @stack('styles')
-    @vite(['resources/js/app.js', "resources/js/helpers.js", "resources/css/app.css"])
+    @vite(['resources/js/app.js', "resources/js/helpers.js", "resources/css/app.css", 'resources/js/notify.js'])
     @admin
     @vite(['resources/js/admin/app.js'])
     @endadmin
@@ -33,6 +33,7 @@
 <body>
 
     {{-- ════ TOAST ════ --}}
+    @include('partials.toast')
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999">
 
         <div id="orderToast" class="toast align-items-center text-bg-dark border-0" role="alert">

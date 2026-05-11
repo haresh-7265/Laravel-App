@@ -18,6 +18,7 @@ export default defineConfig({
                 "resources/js/customer/orderStatus.js",
                 "resources/js/admin/browsing.js",
                 "resources/js/customer/customer.js",
+                "resources/js/notify.js",
             ],
             refresh: true,
         }),
