@@ -95,4 +95,15 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return $this->webhook_url ?? null;
     }
+
+    /**
+     * Route notifications for the Slack channel.
+     *
+     * @return string|null
+     */
+    public function routeNotificationForSlack(): ?string
+    {
+        // Return the user's specific channel, or fallback to the system default
+        return $this->slack_channel ?? config('services.slack.notifications.channel', '#orders');
+    }
 }

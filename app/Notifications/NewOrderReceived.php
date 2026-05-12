@@ -9,6 +9,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\{ActionsBlock, ContextBlock, SectionBlock};
+use Illuminate\Notifications\Slack\SlackMessage;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -31,7 +33,7 @@ class NewOrderReceived extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'broadcast', WebhookChannel::class];
+        return ['mail', 'database', 'broadcast', WebhookChannel::class, 'slack'];
     }
 
     /**
@@ -45,6 +47,7 @@ class NewOrderReceived extends Notification implements ShouldQueue
             'mail'                  => 'emails',
             'broadcast'             => 'realtime',
             WebhookChannel::class   => 'emails',
+            'slack'                 => 'emails',
         ];
     }
 
@@ -126,6 +129,32 @@ class NewOrderReceived extends Notification implements ShouldQueue
             'placed_at'      => $this->order->created_at->toIso8601String(),
             'admin_url'      => route('admin.orders.show', $this->order),
         ];
+    }
+
+    /**
+     * Post to Slack.
+     */
+    public function toSlack(object $notifiable): SlackMessage
+    {
+        $isHighValue = $this->order->total > 1000;
+        $emoji = $isHighValue ? '🟠' : '🟢';
+
+        return (new SlackMessage)
+            ->to('#orders')
+            ->headerBlock(sprintf('New Order Received #%s', $this->order->order_number))
+            ->sectionBlock(function (SectionBlock $block) use ($emoji) {
+                $block->text(sprintf('%s *Customer:* %s', $emoji, $this->order->shipping_name));
+            })
+            ->contextBlock(function (ContextBlock $block) {
+                $block->text(sprintf('Total: %s | Items: %d | Payment: %s', 
+                    format_price($this->order->total), 
+                    $this->order->items()->sum('quantity'),
+                    strtoupper($this->order->payment_method)
+                ));
+            })
+            ->actionsBlock(function (ActionsBlock $block) {
+                $block->button('View Order')->url(route('admin.orders.show', $this->order));
+            });
     }
 
     /**
