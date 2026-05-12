@@ -34,14 +34,17 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
             'alerts_channel' => env('SLACK_CHANNEL_ALERTS', '#alerts'),
             'errors_channel' => env('SLACK_CHANNEL_ERRORS', '#errors'),
+            'support_channel' => env('SLACK_CHANNEL_SUPPORT', '#support'),
         ],
         'webhooks' => [
             'orders' => env('SLACK_WEBHOOK_ORDERS'),
             'alerts' => env('SLACK_WEBHOOK_ALERTS'),
             'errors' => env('SLACK_WEBHOOK_ERRORS'),
+            'support'=> env('SLACK_WEBHOOK_SUPPORT')
         ],
         'bot_token' => env('SLACK_BOT_TOKEN'),
         'warehouse_group_id' => env('SLACK_WAREHOUSE_GROUP_ID', 'SXXXXXXXXXX'),
+        'signing_secret' => env('SLACK_SIGNING_SECRET'),
     ],
 
     /*

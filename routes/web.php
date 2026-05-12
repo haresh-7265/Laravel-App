@@ -13,6 +13,7 @@ use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupportTicketController;
 use App\Mail\CouponMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -25,6 +26,13 @@ Route::get('/', function(){
 Route::get('/dashboard', function () {
     return redirect()->route('products.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::prefix('support')->name('support.')->group(function () {
+    Route::get('/tickets/create', [SupportTicketController::class, 'create'])
+        ->name('tickets.create');
+    Route::post('/tickets', [SupportTicketController::class, 'store'])
+        ->name('tickets.store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

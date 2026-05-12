@@ -1,6 +1,8 @@
 <?php
 
 use App\Facades\Products;
+use App\Http\Controllers\SlackInteractionController;
+use App\Http\Middleware\VerifySlackSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,3 +16,15 @@ Route::middleware('throttle:60,1')->group(function () {
         ]);
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Slack Interactive Messages
+|--------------------------------------------------------------------------
+|
+| Handles button clicks from Slack interactive messages (Block Kit).
+| Protected by HMAC signature verification middleware.
+|
+*/
+Route::post('slack/interactions', [SlackInteractionController::class, 'handle'])
+    ->middleware(VerifySlackSignature::class);

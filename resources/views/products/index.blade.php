@@ -133,12 +133,15 @@
 </div>
 
 @section('footer')
-<footer class="bg-dark text-white mt-auto py-3">
+<footer class="bg-dark text-white mt-auto py-3 flex-col">
     <div class="container text-center">
         <span class="fw-bold me-2">{{ config('app.name') }}</span>
         <span class="text-white-50 small">
             &copy; {{ date('Y') }} All rights reserved.
         </span>
+    </div>
+    <div class="container text-center">
+        <a href="{{ route('support.tickets.create') }}" class="underline">support</a>
     </div>
 </footer>
 @endsection
