@@ -40,7 +40,9 @@ return [
             'orders' => env('SLACK_WEBHOOK_ORDERS'),
             'alerts' => env('SLACK_WEBHOOK_ALERTS'),
             'errors' => env('SLACK_WEBHOOK_ERRORS'),
-            'support'=> env('SLACK_WEBHOOK_SUPPORT')
+            'support'=> env('SLACK_WEBHOOK_SUPPORT'),
+            'leadership'=> env('SLACK_WEBHOOK_LEADERSHIP'),
+            'bot-testing'=> env('SLACK_WEBHOOK_BOT_TESTING'),
         ],
         'bot_token' => env('SLACK_BOT_TOKEN'),
         'warehouse_group_id' => env('SLACK_WAREHOUSE_GROUP_ID', 'SXXXXXXXXXX'),
