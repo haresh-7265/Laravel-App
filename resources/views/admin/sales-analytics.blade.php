@@ -57,7 +57,7 @@
             <div class="card border-light rounded-3 p-4 h-100">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h2 class="h6 fw-medium text-secondary mb-0">Top 10 products</h2>
-                    <a href="{{ route('admin.sales-analytics.export', ['type' => 'products']) }}"
+                    <a href="{{ route('admin.sales-analytics.export', ['type' => 'products', 'year' => $selectedYear]) }}"
                        class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                        Export CSV ↓
                     </a>
@@ -100,7 +100,7 @@
             <div class="card border-light rounded-3 p-4 h-100">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h2 class="h6 fw-medium text-secondary mb-0">Top 10 customers</h2>
-                    <a href="{{ route('admin.sales-analytics.export', ['type' => 'customers']) }}"
+                    <a href="{{ route('admin.sales-analytics.export', ['type' => 'customers', 'year' => $selectedYear]) }}"
                        class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                        Export CSV ↓
                     </a>
@@ -145,7 +145,7 @@
     <div class="card border-light rounded-3 p-4 mb-4">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h2 class="h6 fw-medium text-secondary mb-0">Sales by category</h2>
-            <a href="{{ route('admin.sales-analytics.export', ['type' => 'category']) }}"
+            <a href="{{ route('admin.sales-analytics.export', ['type' => 'category', 'year' => $selectedYear]) }}"
                class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                Export CSV ↓
             </a>

@@ -13,7 +13,7 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $stats = Cache::tags(['admin', 'products'])->remember('admin.dashboard.stats', now()->addMinutes(10), function () {
+        $stats = Cache::tags(['admin', 'products', 'products.list', 'orders', 'users'])->remember('admin.dashboard.stats', now()->addMinutes(10), function () {
             [$todayOrders, $monthRevenue, $newCustomers, $lowStockCount] = Concurrency::run([
                 fn() => Order::whereDate('created_at', today())->count(),
                 fn() => Order::where('status', 'delivered')
@@ -36,14 +36,14 @@ class AdminDashboardController extends Controller
             ];
         });
 
-        $recentOrders = Cache::tags(['admin', 'products'])->remember('admin.dashboard.recent_orders', now()->addMinutes(10), function () {
+        $recentOrders = Cache::tags(['admin', 'orders'])->remember('admin.dashboard.recent_orders', now()->addMinutes(10), function () {
             return Order::with('user')
                 ->latest()
                 ->take(5)
                 ->get();
         });
 
-        $lowStockProducts = Cache::tags(['admin', 'products'])->remember('admin.dashboard.low_stock', now()->addMinutes(10), function () {
+        $lowStockProducts = Cache::tags(['admin', 'products.list', 'products'])->remember('admin.dashboard.low_stock', now()->addMinutes(10), function () {
             return Product::where('stock', '<=', 5)
                 ->orderBy('stock')
                 ->take(5)

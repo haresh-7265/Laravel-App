@@ -21,12 +21,3 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
-
-document.getElementById('name').addEventListener('keyup', function() {
-    let slug = this.value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-
-    document.getElementById('slug').value = slug;
-});

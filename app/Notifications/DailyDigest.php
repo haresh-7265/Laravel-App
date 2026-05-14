@@ -2,13 +2,16 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
 use Illuminate\Notifications\Slack\SlackMessage;
 
-class DailyDigest extends Notification
+class DailyDigest extends Notification implements ShouldQueue
 {
+    use Queueable;
      /**
      * Create a new notification instance.
      */

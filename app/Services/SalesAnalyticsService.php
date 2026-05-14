@@ -21,10 +21,12 @@ class SalesAnalyticsService
             ]);
     }
 
-    public function getTopProducts(int $limit = 10): Collection
+    public function getTopProducts(int $year, int $limit = 10): Collection
     {
-        return OrderItem::with('order')
-            ->with('product')
+        return OrderItem::with('product')
+            ->whereHas('order', fn($q) => $q
+                ->where('status', 'delivered')
+                ->whereYear('created_at', $year))
             ->get()
             ->filter(fn($item) => $item->order->status === 'delivered')
             ->groupBy('product_id')
@@ -38,10 +40,11 @@ class SalesAnalyticsService
             ->values();
     }
 
-    public function getTopCustomers(int $limit = 10): Collection
+    public function getTopCustomers(int $year, int $limit = 10): Collection
     {
         return Order::with('user')
             ->where('status', 'delivered')
+            ->whereYear('created_at', $year)
             ->get()
             ->groupBy('user_id')
             ->map(fn($orders) => (object) [
@@ -55,9 +58,12 @@ class SalesAnalyticsService
             ->values();
     }
 
-    public function getSalesByCategory(): Collection
+    public function getSalesByCategory(int $year): Collection
     {
         return OrderItem::with('product.category')
+            ->whereHas('order', fn($q) => $q
+                ->where('status', 'delivered')
+                ->whereYear('created_at', $year))
             ->get()
             ->groupBy(fn($item) => $item->product->category->name)
             ->map(fn($item) => (object) [
@@ -70,13 +76,23 @@ class SalesAnalyticsService
             ->values();
     }
 
-    public function getSummaryMetrics(): array
+    public function getSummaryMetrics(int $year): array
     {
+        $metrics = Order::where('status', 'delivered')
+        ->whereYear('created_at', $year)
+        ->selectRaw('
+            SUM(total)                    as total_revenue,
+            COUNT(*)                      as total_orders,
+            ROUND(AVG(total), 2)          as avg_order_value,
+            COUNT(DISTINCT user_id)       as unique_customers
+        ')
+        ->first();
+        
         return [
-            'totalRevenue' => Order::where('status', 'delivered')->sum('total'),
-            'totalOrders' => Order::where('status', 'delivered')->count(),
-            'avgOrderValue' => round(Order::where('status', 'delivered')->avg('total'), 2),
-            'uniqueCustomers' => Order::where('status', 'delivered')->distinct('user_id')->count('user_id'),
+            'totalRevenue'     => $metrics->total_revenue,
+            'totalOrders'      => $metrics->total_orders,
+            'avgOrderValue'    => $metrics->avg_order_value,
+            'uniqueCustomers'  => $metrics->unique_customers,
         ];
     }
 

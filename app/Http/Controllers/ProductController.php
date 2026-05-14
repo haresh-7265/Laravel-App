@@ -64,6 +64,7 @@ class ProductController extends Controller
             'description',
             'stock',
             'category_id',
+            'is_active',
             'tags',
         ]);
         $image = $request->file('image');

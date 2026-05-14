@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Translation\HasLocalePreference;
 
 class User extends Authenticatable implements HasLocalePreference
 {
@@ -80,6 +81,12 @@ class User extends Authenticatable implements HasLocalePreference
             ->withTimestamps();
     }
 
+    public function waitlistProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_waitlist')
+            ->withTimestamps();
+    }
+
     public function preferredLocale(): ?string
     {
         return $this->preferred_locale;
@@ -98,8 +105,6 @@ class User extends Authenticatable implements HasLocalePreference
 
     /**
      * Route notifications for the Slack channel.
-     *
-     * @return string|null
      */
     public function routeNotificationForSlack(): ?string
     {

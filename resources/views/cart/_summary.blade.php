@@ -20,7 +20,7 @@
 @foreach ($items as $item)
     <div class="d-flex justify-content-between align-items-start mb-2">
         <span class="text-muted small text-truncate me-2" style="max-width:60%">
-            {{ $item['name'] }}
+            {{ str($item['name'])->limit(20) }}
             <span class="badge bg-light text-secondary border ms-1">×{{ $item['quantity'] }}</span>
         </span>
         <span class="small fw-medium text-end">

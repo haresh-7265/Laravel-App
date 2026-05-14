@@ -4,20 +4,15 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use App\Notifications\Channels\WebhookChannel;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Slack\BlockKit\Blocks\{ActionsBlock, ContextBlock, SectionBlock};
+use Illuminate\Notifications\Slack\BlockKit\Blocks\ActionsBlock;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
 use Illuminate\Notifications\Slack\SlackMessage;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
-class NewOrderReceived extends Notification implements ShouldQueue
+class NewOrderReceived extends BaseNotification
 {
-    use Queueable;
-
     /**
      * Create a new notification instance.
      */
@@ -36,6 +31,11 @@ class NewOrderReceived extends Notification implements ShouldQueue
         return ['mail', 'database', 'broadcast', WebhookChannel::class, 'slack'];
     }
 
+    public function getPayload()
+    {
+        return $this->order->toArray();
+    }
+
     /**
      * Route mail and webhook to the "emails" queue, broadcast to "realtime".
      *
@@ -44,10 +44,10 @@ class NewOrderReceived extends Notification implements ShouldQueue
     public function viaQueues(): array
     {
         return [
-            'mail'                  => 'emails',
-            'broadcast'             => 'realtime',
-            WebhookChannel::class   => 'emails',
-            'slack'                 => 'emails',
+            'mail' => 'emails',
+            'broadcast' => 'realtime',
+            WebhookChannel::class => 'emails',
+            'slack' => 'emails',
         ];
     }
 
@@ -58,13 +58,13 @@ class NewOrderReceived extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('New Order Received') . ' — #' . $this->order->order_number)
+            ->subject(__('New Order Received').' — #'.$this->order->order_number)
             ->greeting(__('Hello :name,', ['name' => $notifiable->name ?? 'Admin']))
             ->line(__('A new order has been placed and is awaiting processing.'))
-            ->line('**' . __('Order') . ':** #' . $this->order->order_number)
-            ->line('**' . __('Customer') . ':** ' . $this->order->shipping_name)
-            ->line('**' . __('Total') . ':** ' . format_price($this->order->total))
-            ->line('**' . __('Items') . ':** ' . $this->order->items()->sum('quantity'))
+            ->line('**'.__('Order').':** #'.$this->order->order_number)
+            ->line('**'.__('Customer').':** '.$this->order->shipping_name)
+            ->line('**'.__('Total').':** '.format_price($this->order->total))
+            ->line('**'.__('Items').':** '.$this->order->items()->sum('quantity'))
             ->action(__('View Order'), route('admin.orders.show', $this->order))
             ->line(__('Please process this order at your earliest convenience.'));
     }
@@ -78,16 +78,16 @@ class NewOrderReceived extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'order_id'      => $this->order->id,
-            'order_number'  => $this->order->order_number,
+            'order_id' => $this->order->id,
+            'order_number' => $this->order->order_number,
             'customer_name' => $this->order->shipping_name,
-            'total'         => number_format($this->order->total, 2),
-            'items_count'   => $this->order->items()->sum('quantity'),
-            'message'       => __('New order #:order placed by :customer', [
-                'order'    => $this->order->order_number,
+            'total' => number_format($this->order->total, 2),
+            'items_count' => $this->order->items()->sum('quantity'),
+            'message' => __('New order #:order placed by :customer', [
+                'order' => $this->order->order_number,
                 'customer' => $this->order->shipping_name,
             ]),
-            'icon'          => 'order',
+            'icon' => 'order',
         ];
     }
 
@@ -98,17 +98,17 @@ class NewOrderReceived extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'type'          => 'success',
-            'title'         => __('New Order') . ' #' . $this->order->order_number,
-            'order_number'  => $this->order->order_number,
+            'type' => 'success',
+            'title' => __('New Order').' #'.$this->order->order_number,
+            'order_number' => $this->order->order_number,
             'customer_name' => $this->order->shipping_name,
-            'order_total'   => format_price($this->order->total),
-            'items_count'   => $this->order->items()->sum('quantity'),
-            'message'       => __('New order #:order placed by :customer', [
-                'order'    => $this->order->order_number,
+            'order_total' => format_price($this->order->total),
+            'items_count' => $this->order->items()->sum('quantity'),
+            'message' => __('New order #:order placed by :customer', [
+                'order' => $this->order->order_number,
                 'customer' => $this->order->shipping_name,
             ]),
-            'placed_at'     => now()->toDateTimeString(),
+            'placed_at' => now()->toDateTimeString(),
         ]);
     }
 
@@ -120,14 +120,21 @@ class NewOrderReceived extends Notification implements ShouldQueue
     public function toWebhook(object $notifiable): array
     {
         return [
-            'event'          => 'order.placed',
-            'order_number'   => $this->order->order_number,
-            'customer_name'  => $this->order->shipping_name,
-            'customer_email' => $this->order->shipping_email,
-            'total'          => $this->order->total,
-            'items_count'    => $this->order->items()->sum('quantity'),
-            'placed_at'      => $this->order->created_at->toIso8601String(),
-            'admin_url'      => route('admin.orders.show', $this->order),
+            'text' => "🛒 New Order: #{$this->order->order_number}",
+            'attachments' => [
+                [
+                    'fields' => [
+                        ['title' => 'Customer', 'value' => $this->order->shipping_name,  'short' => true],
+                        ['title' => 'Email',    'value' => $this->order->shipping_email, 'short' => true],
+                        ['title' => 'Total',    'value' => $this->order->total,          'short' => true],
+                        ['title' => 'Items',    'value' => $this->order->items()->sum('quantity'), 'short' => true],
+                        ['title' => 'Placed',   'value' => $this->order->created_at->toIso8601String(), 'short' => false],
+                    ],
+                    'actions' => [
+                        ['type' => 'button', 'text' => 'View Order', 'url' => route('admin.orders.show', $this->order)],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -146,8 +153,8 @@ class NewOrderReceived extends Notification implements ShouldQueue
                 $block->text(sprintf('%s *Customer:* %s', $emoji, $this->order->shipping_name));
             })
             ->contextBlock(function (ContextBlock $block) {
-                $block->text(sprintf('Total: %s | Items: %d | Payment: %s', 
-                    format_price($this->order->total), 
+                $block->text(sprintf('Total: %s | Items: %d | Payment: %s',
+                    format_price($this->order->total),
                     $this->order->items()->sum('quantity'),
                     strtoupper($this->order->payment_method)
                 ));
@@ -155,17 +162,5 @@ class NewOrderReceived extends Notification implements ShouldQueue
             ->actionsBlock(function (ActionsBlock $block) {
                 $block->button('View Order')->url(route('admin.orders.show', $this->order));
             });
-    }
-
-    /**
-     * Handle notification failure — log the error.
-     */
-    public function failed(Throwable $e): void
-    {
-        Log::channel('order')->error('NewOrderReceived notification failed', [
-            'order_number' => $this->order->order_number,
-            'error'        => $e->getMessage(),
-            'trace'        => $e->getTraceAsString(),
-        ]);
     }
 }

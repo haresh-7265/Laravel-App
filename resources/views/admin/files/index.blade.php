@@ -59,7 +59,11 @@
                     @forelse ($files as $file)
                     <tr>
                         <td>
-                            <code class="text-dark">{{ $file['name'] }}</code>
+                            <code class="text-dark">
+                                <a href="{{ $file['url'] }}" class="hover:text-blue-500 hover:underline">
+                                    {{ $file['name'] }}
+                                </a>
+                            </code>
                         </td>
                         <td class="text-muted small">
                             {{ number_format($file['size'] / 1024, 1) }} KB

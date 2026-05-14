@@ -24,7 +24,7 @@ class RecentlyViewedService
     {
         $key = $this->getKey($userId, $sessionId);
 
-        $ids = Cache::get($key, []);
+        $ids = Cache::tags(['products', 'products.list'])->get($key, []);
 
         // remove if already exists
         $ids = array_filter($ids, fn($id) => $id !== $productId);
@@ -60,6 +60,6 @@ class RecentlyViewedService
     {
         $key = $this->getKey($userId, $sessionId);
 
-        Cache::forget($key);
+        Cache::tags(['products','products.list'])->forget($key);
     }
 }

@@ -201,6 +201,15 @@ return [
             'level' => 'info',
         ],
 
+        // Slack delivery failures — file-based (not the Monolog Slack driver above)
+        'slack_errors' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/slack/slack.log'),
+            'level' => 'debug',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

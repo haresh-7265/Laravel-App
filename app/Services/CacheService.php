@@ -43,6 +43,10 @@ class CacheService
     // ─── Flush Everything ────────────────────────────
     public function flushAll(): void
     {
-        Cache::tags(['products', 'admin', 'customer'])->flush();
+        Cache::tags(['products', 'admin', 'customer', 'orders'])->flush();
+    }
+
+    public function forgetOrders(){
+        Cache::tags(['orders'])->flush();
     }
 }

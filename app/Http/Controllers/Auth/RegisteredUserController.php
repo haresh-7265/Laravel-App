@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules;
@@ -46,6 +47,7 @@ class RegisteredUserController extends Controller
         ]);
 
         $sessionCart = Session::get(app(CartService::class)->sessionKey, []);
+        Cache::tags(['users'])->flush();
 
         event(new Registered($user));
 

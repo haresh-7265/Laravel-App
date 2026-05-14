@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\EmptyCartException;
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Coupon;
 use App\Models\Order;
@@ -9,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Notifications\OrderShipped;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -24,7 +26,9 @@ class OrderService
         return DB::transaction(function () use ($shippingData) {
 
             $cartItems = $this->cartService->get();
-
+            if (empty($cartItems)) {
+                throw new EmptyCartException('Cart is empty');
+            }
             // Stock validation (before touching any DB row)
             foreach ($cartItems as $item) {
                 $product = Product::lockForUpdate()->find($item['product_id']);
@@ -156,6 +160,7 @@ class OrderService
     {
         if ($status === 'cancelled') {
             $this->cancelOrder($order);
+
             return;
         }
         $order->update(['status' => $status]);
@@ -168,9 +173,10 @@ class OrderService
 
     public function getCustomerOrdersAndStats(int $userId): array
     {
-        $orders = Order::where('user_id', $userId)
-            ->latest()
-            ->get();
+        $orders = Cache::tags(['orders'])->remember("orders.user.{$userId}",
+            now()->addMinutes(10), fn () => Order::where('user_id', $userId)
+                ->latest()
+                ->get());
 
         $totalOrders = $orders->count();
 

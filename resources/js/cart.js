@@ -1,27 +1,36 @@
 $(document).ready(function () {
-    $(document).on("submit", "#cart-form", function (e) {
+    $(document).on("submit", "#cart-form, .ajax-add-to-cart-form", function (e) {
         e.preventDefault();
-        let url = $(this).attr("action");
-        let submitBtn = $(this).find('button[type="submit"]');
+        let $form = $(this);
+        let url = $form.attr("action");
+        let submitBtn = $form.find('button[type="submit"]');
+        let originalLabel = submitBtn.html();
         submitBtn.prop("disabled", true);
 
         $.ajax({
             url: url,
             method: "POST",
-            data: $(this).serialize(),
+            data: $form.serialize(),
             dataType: "json",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                Accept: "application/json",
+            },
+            beforeSend: function () {
+                submitBtn.text("Adding...");
+            },
             success: function (res) {
-                submitBtn.prop("disabled", false);
+                submitBtn.prop("disabled", false).html(originalLabel);
                 if (res.status === "success") {
-                    updateCartBadge(res.cart_count);
+                    updateCartBadge(res.cart_count ?? res.count ?? 0);
                 }
-                showAlert(res.message, res.status);
+                window.notify(res.status, res.message);
             },
             error: function (xhr) {
-                submitBtn.prop("disabled", false);
-                showAlert(
-                    xhr.responseJSON?.message ?? "Something went wrong.",
-                    "danger",
+                submitBtn.prop("disabled", false).html(originalLabel);
+                window.notify(
+                    "error",
+                    xhr.responseJSON?.message ?? xhr.responseJSON?.error ?? "Something went wrong.",
                 );
             },
         });
@@ -29,12 +38,14 @@ $(document).ready(function () {
 
     let productId = $("#productId").val();
 
-    window.Echo.channel(`product.${productId}`).listen(
-        ".ProductStockChanged",
-        function (e) {
-            updateStockUI(e);
-        },
-    );
+    if (productId && window.Echo) {
+        window.Echo.channel(`product.${productId}`).listen(
+            ".ProductStockChanged",
+            function (e) {
+                updateStockUI(e);
+            },
+        );
+    }
 });
 
 const CSRF = $('meta[name="csrf-token"]').attr("content") ?? "";
@@ -56,6 +67,7 @@ function request(url, method = "POST", body = {}) {
 
 /* ── Apply server response to DOM ── */
 function applyCartResponse(data) {
+    window.notify(data.status, data.message);
     if (data.empty) {
         updateCartBadge(data.count);
         showEmptyState();
@@ -92,10 +104,9 @@ $("#cart-items-list").on("click", '[data-action="qty"]', function (e) {
     })
         .done((data) => {
             applyCartResponse(data);
-            showAlert(data.message, data.status);
         })
         .fail(() => {
-            showAlert("Could not update cart", "danger");
+            window.notify("error" ,"Could not update cart");
             $row.removeClass("item-loading");
         });
 });
@@ -112,11 +123,10 @@ $("#cart-items-list").on("click", '[data-action="remove"]', function (e) {
 
     request($btn.data("url"), "DELETE")
         .done((data) => {
-            setTimeout(() => applyCartResponse(data), 350);
-            showAlert(data.message, data.status);
+            applyCartResponse(data);
         })
         .fail(() => {
-            showAlert("Could not remove item", "danger");
+            window.notify("error", "Could not remove item");
             $row.removeClass("removing");
         });
 });
@@ -129,11 +139,9 @@ $("#clear-cart-btn").on("click", function () {
     request($btn.data("url"), "DELETE")
         .done((data) => {
             applyCartResponse(data);
-            toast("Cart cleared");
-            showAlert(data.message, data.status);
         })
         .fail(() => {
-            showAlert("Could not clear cart", "danger");
+            window.notify("error", "Could not clear cart");
             $btn.prop("disabled", false);
         });
 });
@@ -165,13 +173,12 @@ $(document).on("click", "#apply-coupon-btn", function () {
     request($btn.data("url"), "POST", { coupon_code: code })
         .done((data) => {
             applyCartResponse(data);
-            showAlert(data.message, data.status);
         })
         .fail((xhr) => {
             const msg =
                 xhr.responseJSON?.message ?? "Could not apply coupon.";
             showCouponFeedback($feedback, msg, "danger");
-            showAlert(msg, "danger");
+            window.notify("error", msg);
         })
         .always(() => {
             $btn.prop("disabled", false).html("Apply");
@@ -195,10 +202,9 @@ $(document).on("click", "#remove-coupon-btn", function () {
     request($btn.data("url"), "DELETE")
         .done((data) => {
             applyCartResponse(data);
-            showAlert(data.message, data.status);
         })
         .fail(() => {
-            showAlert("Could not remove coupon", "danger");
+            window.notify("error", "Could not remove coupon");
             $btn.prop("disabled", false);
         });
 });
@@ -235,3 +241,82 @@ function updateStockUI(data) {
         $('#outOfStockBtn').hide();
     }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   WAITLIST — Notify Me / Remove Notify (toggle)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Add to waitlist ── */
+$(document).on("click", ".waitlist-btn", function () {
+    const $btn = $(this);
+    const url = $btn.data("store-url");
+    const originalLabel = $btn.html();
+
+    $btn.prop("disabled", true).html("Adding...");
+
+    $.ajax({
+        url: url,
+        method: "POST",
+        dataType: "json",
+        headers: {
+            "X-CSRF-TOKEN": CSRF,
+            "X-Requested-With": "XMLHttpRequest",
+            Accept: "application/json",
+        },
+        success: function (res) {
+            window.notify(res.status, res.message);
+            // Swap to "Remove Notify" state
+            $btn.removeClass("waitlist-btn bg-violet-600 text-white")
+                .addClass("waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200")
+                .html("✓ Remove Notify")
+                .prop("disabled", false);
+        },
+        error: function (xhr) {
+            const msg = xhr.responseJSON?.message ?? "Something went wrong.";
+            window.notify(xhr.responseJSON?.status ?? "error", msg);
+
+            if (xhr.status === 409) {
+                // Already on waitlist — swap to remove state
+                $btn.removeClass("waitlist-btn bg-violet-600 text-white")
+                    .addClass("waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200")
+                    .html("✓ Remove Notify")
+                    .prop("disabled", false);
+            } else {
+                $btn.prop("disabled", false).html(originalLabel);
+            }
+        },
+    });
+});
+
+/* ── Remove from waitlist ── */
+$(document).on("click", ".waitlist-remove-btn", function () {
+    const $btn = $(this);
+    const url = $btn.data("destroy-url");
+    const originalLabel = $btn.html();
+
+    $btn.prop("disabled", true).html("Removing...");
+
+    $.ajax({
+        url: url,
+        method: "DELETE",
+        dataType: "json",
+        headers: {
+            "X-CSRF-TOKEN": CSRF,
+            "X-Requested-With": "XMLHttpRequest",
+            Accept: "application/json",
+        },
+        success: function (res) {
+            window.notify(res.status, res.message);
+            // Swap to "Notify Me" state
+            $btn.removeClass("waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200")
+                .addClass("waitlist-btn bg-violet-600 text-white")
+                .html("🔔 Notify Me")
+                .prop("disabled", false);
+        },
+        error: function (xhr) {
+            const msg = xhr.responseJSON?.message ?? "Something went wrong.";
+            window.notify(xhr.responseJSON?.status ?? "error", msg);
+            $btn.prop("disabled", false).html(originalLabel);
+        },
+    });
+});

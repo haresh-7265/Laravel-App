@@ -30,6 +30,7 @@ return [
     'tags'             => 'الوسوم',
     'tag_placeholder'  => 'اكتب الوسم واضغط Enter',
     'image'            => 'الصورة',
+    'is_active'        => 'نشط',
 
     // ─── Stock / empty states ────────────────────────────────
     'in_stock'         => ':count في المخزون',
@@ -46,9 +47,18 @@ return [
     'cancel'           => 'إلغاء',
     'export'           => 'تصدير',
     'add_to_cart'      => '🛒 أضف إلى السلة',
+    'notify_me'        => 'أعلمني',
+    'remove_notify'    => 'إلغاء الإشعار',
+    'email_placeholder'=> 'أدخل بريدك الإلكتروني',
 
     // ─── Misc labels on show page ────────────────────────────
     'created'          => 'تاريخ الإنشاء:',
     'last_updated'     => 'آخر تحديث:',
+
+    // ─── Waitlist / Notify Me ─────────────────────────────
+    'waitlist_already_in_stock'   => 'هذا المنتج متوفر بالفعل.',
+    'waitlist_already_registered' => 'أنت مسجل بالفعل في قائمة الانتظار.',
+    'waitlist_subscribed'         => 'سيتم إعلامك عندما يعود المنتج للمخزون!',
+    'waitlist_guest_prompt'       => 'أدخل بريدك الإلكتروني وسنبلغك عند عودة المنتج.',
 
 ];

@@ -15,7 +15,7 @@
 
         {{-- Product Info --}}
         <div class="flex-grow-1 min-width-0">
-            <div class="fw-semibold text-truncate mb-1">{{ $item['name'] }}</div>
+            <div class="fw-semibold text-truncate mb-1">{{ str($item['name'])->limit(20) }}</div>
 
             <div class="text-muted small">
                 @if(!blank($item['original_price']) && $item['original_price'] > $item['price'])

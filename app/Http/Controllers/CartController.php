@@ -63,7 +63,7 @@ class CartController extends Controller
             $this->cart->update($productId, $request->quantity);
         } catch (ProductOutOfStockException $e) {
             if($request->expectsJson()){
-                return $this->cartJson('danger', $e->getMessage());
+                return $this->cartJson('error', $e->getMessage());
             }
             throw $e;
         }
@@ -113,7 +113,7 @@ class CartController extends Controller
 
         if (!$result['success']) {
             return response()->json([
-                'status'  => 'danger',
+                'status'  => 'error',
                 'message' => $result['message'],
             ], 422);
         }

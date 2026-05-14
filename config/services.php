@@ -47,6 +47,7 @@ return [
         'bot_token' => env('SLACK_BOT_TOKEN'),
         'warehouse_group_id' => env('SLACK_WAREHOUSE_GROUP_ID', 'SXXXXXXXXXX'),
         'signing_secret' => env('SLACK_SIGNING_SECRET'),
+        'fallback_email' => env('SLACK_FALLBACK_EMAIL', env('MAIL_ADMIN_ADDRESS')),
     ],
 
     /*

@@ -15,28 +15,33 @@ class ProductService
 {
     public function getAll()
     {
-        return Cache::tags(['products', 'products.list'])->remember('product.all', now()->addHour(), fn() => Product::active()->get());
+        $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
+        $key = "products.{$role}.all"; 
+        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn() => Product::active()->get());
     }
 
     public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
     {
+        $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
         return Concurrency::run([
-            'featured' => fn() => Cache::tags(['products', 'products.list'])->remember('products.featured', now()->addHour(), fn() => $this->getAll()->featured()->take(8)),
-            'newArrivals' => fn() => Cache::tags(['products', 'products.list'])->remember('products.new', now()->addHour(), fn() => Product::active()->latest()->take(8)->get()),
-            'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember('products.onsale', now()->addHour(), fn() => $this->getAll()->onSale()->take(8)),
-            'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage),
+            'featured' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.featured", now()->addHour(), fn() => $this->getAll()->featured()->take(8)),
+            'newArrivals' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.new", now()->addHour(), fn() => Product::active()->latest()->take(8)->get()),
+            'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.onsale", now()->addHour(), fn() => $this->getAll()->onSale()->take(8)),
+            'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage, $role),
         ]);
     }
     // GET paginated products
-    public function getPaginatedProducts(int $page, array $filters, int $perPage = 10)
+    public function getPaginatedProducts(int $page, array $filters, int $perPage = 10, string $role)
     {
         ksort($filters);
 
-        $cacheKey = 'products.' . md5(json_encode([
+        $hash = md5(json_encode([
             'filters' => $filters,
             'page' => $page,
             'perPage' => $perPage,
+            'role' => auth()->user()?->role ?? 'customer'
         ]));
+        $cacheKey = "products.{$role}.{$hash}";
 
         return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters) {
             $ids = $this->apply($filters)->toArray();

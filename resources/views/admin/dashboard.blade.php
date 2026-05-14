@@ -149,7 +149,7 @@
                                 @foreach($recentOrders as $order)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('admin.orders.show', $order) }}" class="text-decoration-none fw-medium">
+                                            <a href="{{ route('admin.orders.show', $order) }}" class="fw-medium hover:text-blue-500 hover:underline">
                                                 {{ $order->order_number }}
                                             </a>
                                         </td>
@@ -195,7 +195,11 @@
                             <tbody>
                                 @foreach($lowStockProducts as $product)
                                     <tr>
-                                        <td class="fw-medium">{{ Str::limit($product->name, 25) }}</td>
+                                        <td class="fw-medium">
+                                            <a href="{{ route('products.show', $product) }}" class="fw-medium hover:text-blue-500 hover:underline">
+                                            {{ Str::limit($product->name, 25) }}
+                                            </a>
+                                        </td>
                                         <td>
                                             <span class="badge bg-{{ $product->stock === 0 ? 'danger' : 'warning' }}">
                                                 {{ $product->stock }}

@@ -62,7 +62,9 @@
                     data-ts="{{ $invoice['lastModified'] }}"
                     style="border-bottom:1px solid #e5e7eb">
                     <td style="padding:11px 16px; font-family:monospace; font-size:12px">
-                        {{ $invoice['filename'] }}
+                        <a href="{{ $invoice['url'] }}" target="_blank" class="hover:text-blue-500 hover:underline">
+                            {{ $invoice['filename'] }}
+                        </a>
                     </td>
                     <td style="padding:11px 16px; font-size:13px">
                         {{ number_format($invoice['size'] / 1024, 1) }} KB
@@ -107,7 +109,6 @@
         arr.forEach(r => tbody.appendChild(r));
     }
 
-    search.addEventListener('keyup', () => { filter(); sortRows(); });
     sort.addEventListener('change', sortRows);
 
 </script>

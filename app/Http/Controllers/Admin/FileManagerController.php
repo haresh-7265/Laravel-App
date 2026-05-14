@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class FileManagerController extends Controller
 {
@@ -17,6 +18,7 @@ class FileManagerController extends Controller
                 'path'         => $path,
                 'name'         => basename($path),
                 'size'         => Storage::disk($this->disk)->size($path),
+                'url'          => $this->generateSignedUrl(basename($path)),
                 'lastModified' => Storage::disk($this->disk)->lastModified($path),
                 'age_days'     => now()->diffInDays(
                                     \Carbon\Carbon::createFromTimestamp(
@@ -77,5 +79,25 @@ class FileManagerController extends Controller
         if ($missing) $msg .= " {$missing} file(s) already missing.";
 
         return back()->with('success', $msg);
+    }
+
+    public function download(string $filename) {
+        abort_unless(request()->hasValidSignature(), 403);
+
+        if (!Storage::disk($this->disk)->exists($filename)) {
+            return back()->with('warning',"File [{$filename}] not found — already gone.");
+        }
+
+        return response()->download(Storage::disk($this->disk)->path($filename));
+    }
+
+    private function generateSignedUrl($filename){
+        $url = URL::temporarySignedRoute(
+            'admin.files.download',
+            now()->addMinutes(10),
+            ['filename' => $filename]
+        );
+
+        return $url;
     }
 }

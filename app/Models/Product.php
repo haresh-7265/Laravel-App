@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Collections\ProductCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +20,7 @@ class Product extends Model
         'stock',
         'image',
         'category_id',
+        'is_active',
         'tags',
     ];
 
@@ -26,6 +28,7 @@ class Product extends Model
         'tags' => 'array',
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
     public function category()
@@ -38,7 +41,7 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
-    public function waitlistUsers()
+    public function waitlistUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'product_waitlist')->withTimestamps();
     }
@@ -79,7 +82,10 @@ class Product extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return match(request()->user()?->role){
+            'admin' => $query,
+            default => $query->where('is_active', true)
+        } ;
     }
 
     public function getImageSizeAttribute(){

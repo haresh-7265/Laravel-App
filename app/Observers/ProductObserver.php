@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 class ProductObserver
 {
     private const LOW_STOCK_THRESHOLD = 10;
+
     /**
      * Handle the Product "created" event.
      */
@@ -31,11 +32,18 @@ class ProductObserver
 
     public function updating(Product $product)
     {
+        // make active product when product is restocked
+        $oldStock = $product->getOriginal('stock');
+        $newStock = $product->stock;
+
+        if ($oldStock == 0 && $newStock > 0) {
+            $product->is_active = true;
+        }
         $slugChanged = $product->isDirty('slug');
         $imageChanged = $product->isDirty('image');
 
         // Case 1 — only slug changed, no new image
-        if ($slugChanged && !$imageChanged && $product->image) {
+        if ($slugChanged && ! $imageChanged && $product->image) {
             $oldPath = $product->image;
             $newPath = str_replace(
                 $product->getOriginal('slug'),
@@ -60,6 +68,9 @@ class ProductObserver
      */
     public function updated(Product $product): void
     {
+        if (! $product->wasChanged()) {
+            return;
+        }
         $this->clearProductCaches($product);
 
         if ($product->wasChanged('stock')) {

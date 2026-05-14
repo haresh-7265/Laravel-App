@@ -7,48 +7,59 @@ use App\Models\Order;
 use App\Services\OrderService;
 use Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
-    public function __construct(private OrderService $orderService)
-    {
-    }
+    public function __construct(private OrderService $orderService) {}
+
     public function index(Request $request)
     {
-        // Count per status for stats row
-        $allCounts = Order::selectRaw('status, count(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status')
-            ->toArray();
+        $filters = [
+            'date' => $request->query('date', ''),
+            'status' => $request->query('status', ''),
+            'search' => $request->query('search', ''),
+            'payment_status' => $request->query('payment_status', ''),
+        ];
+        ksort($filters);
 
-        $orders = Order::with(['user', 'items.product'])
-            ->when($request->search, function ($q) use ($request) {
-                $q->where('order_number', 'like', '%' . $request->search . '%')
-                    ->orWhereHas(
-                        'user',
-                        fn($q) =>
-                        $q->where('name', 'like', '%' . $request->search . '%')
-                            ->orWhere('email', 'like', '%' . $request->search . '%')
-                    );
-            })
-            ->when(
-                $request->status,
-                fn($q) =>
-                $q->where('status', $request->status)
-            )
-            ->when(
-                $request->payment_status,
-                fn($q) =>
-                $q->where('payment_status', $request->payment_status)
-            )
-            ->when(
-                $request->date,
-                fn($q) =>
-                $q->whereDate('created_at', $request->date)
-            )
-            ->latest()
-            ->get();
+        $ordersCacheKey = 'orders.admin.index.'.md5(json_encode($filters));
+        $countsCacheKey = 'orders.admin.status_counts';
+
+        // Count per status for stats row
+        $allCounts = Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () {
+            return Order::selectRaw('status, count(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray();
+        });
+
+        $orders = Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($request) {
+            return Order::with(['user', 'items.product'])
+                ->when($request->search, function ($q) use ($request) {
+                    $q->where('order_number', 'like', '%'.$request->search.'%')
+                        ->orWhereHas(
+                            'user',
+                            fn ($q) => $q->where('name', 'like', '%'.$request->search.'%')
+                                ->orWhere('email', 'like', '%'.$request->search.'%')
+                        );
+                })
+                ->when(
+                    $request->status,
+                    fn ($q) => $q->where('status', $request->status)
+                )
+                ->when(
+                    $request->payment_status,
+                    fn ($q) => $q->where('payment_status', $request->payment_status)
+                )
+                ->when(
+                    $request->date,
+                    fn ($q) => $q->whereDate('created_at', $request->date)
+                )
+                ->latest()
+                ->get();
+        });
 
         return view('admin.orders.index', compact('orders', 'allCounts'));
     }
@@ -57,7 +68,8 @@ class OrderController extends Controller
     {
         $order->load('items.product', 'user');
         $productNames = Arr::pluck($order->items->toArray(), 'product_name');
-        $summary = "Items: " . implode(', ', $productNames);
+        $summary = 'Items: '.implode(', ', $productNames);
+
         return view('admin.orders.show', compact('order', 'summary'));
     }
 
@@ -83,7 +95,7 @@ class OrderController extends Controller
 
         $allowed = $allowedTransitions[$order->status] ?? [];
 
-        if (!in_array($request->status, $allowed)) {
+        if (! in_array($request->status, $allowed)) {
             return back()->with('warning', "Cannot move order from {$order->status} to {$request->status}.");
         }
 
@@ -111,10 +123,11 @@ class OrderController extends Controller
             return [
                 'filename' => basename($path),
                 'path' => $path,
+                'url' => Storage::disk('public')->url($path),
                 'size' => Storage::disk('public')->size($path),
                 'lastModified' => Storage::disk('public')->lastModified($path),
             ];
-        });
+        })->sortByDesc('lastModified');
 
         return view('admin.invoices', compact('invoices'));
     }

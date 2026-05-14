@@ -40,7 +40,7 @@ class ProductOutOfStockException extends Exception
     {
         if ($request->expectsJson()) {
             return response()->json([
-                'status'            => 'danger',
+                'status'            => 'error',
                 'error'              => 'product_out_of_stock',
                 'message'            => $this->getMessage(),
                 'product_id'         => $this->productId,

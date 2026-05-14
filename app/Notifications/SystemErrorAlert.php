@@ -2,20 +2,15 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
 use Illuminate\Notifications\Slack\SlackMessage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
-class SystemErrorAlert extends Notification implements ShouldQueue
+class SystemErrorAlert extends BaseNotification
 {
-    use Queueable;
 
     private const SENSITIVE_KEYS = [
         'password', 'password_confirmation',
@@ -86,13 +81,6 @@ class SystemErrorAlert extends Notification implements ShouldQueue
             );
     }
 
-    public function failed(Throwable $e): void
-    {
-        Log::channel('admin')->error('SystemErrorAlert notification failed', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-    }
 
     // -------------------------------------------------------------------------
     // Helpers

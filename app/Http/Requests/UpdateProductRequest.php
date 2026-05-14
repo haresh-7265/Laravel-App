@@ -32,10 +32,18 @@ class UpdateProductRequest extends FormRequest
             'discount_price' => ['nullable', 'numeric', new ValidDiscountPrice($price)],
             'stock' => ['sometimes','required', 'integer', 'min:0'],
             'category_id' => ['sometimes','required', 'exists:categories,id'],
+            'is_active' => ['required', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'tags' => ['sometimes','array', 'min:1'],
             'tags.*' => ['string', 'distinct']
         ];
         
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_active' => filter_var($this->input('is_active', $this->route('product')?->is_active ?? true), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+        ]);
     }
 }

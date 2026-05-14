@@ -179,7 +179,7 @@
                                     </div>
                                     @endif
                                     <div class="flex-fill">
-                                        <p class="fw-medium mb-0 small">{{ $item['name'] }}</p>
+                                        <p class="fw-medium mb-0 small">{{ str($item['name'])->limit(20) }}</p>
                                         <small class="text-muted">{{ __('Qty: :qty', ['qty' => $item['quantity']]) }}</small>
                                     </div>
                                     <span class="small fw-semibold">

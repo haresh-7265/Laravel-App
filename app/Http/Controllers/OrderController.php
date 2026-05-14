@@ -96,7 +96,7 @@ class OrderController extends Controller
 
         // check file exists
         if ($path && !Storage::disk('public')->exists($path)) {
-            return back()->with('danger', 'Invoice not found. Please contact support.');
+            return back()->with('error', 'Invoice not found. Please contact support.');
         }
 
         return Storage::disk('public')->download(

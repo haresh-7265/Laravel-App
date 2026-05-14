@@ -32,10 +32,18 @@ class StoreProductRequest extends FormRequest
             'discount_price' => ['nullable', 'numeric', new ValidDiscountPrice((float) $this->input('price', 0))],
             'stock' => ['required', 'integer', 'min:0'],
             'category_id' => ['required', 'exists:categories,id'],
+            'is_active' => ['required', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'tags' => ['array', 'min:1'],
             'tags.*' => ['string', 'distinct']
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_active' => filter_var($this->input('is_active', true), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+        ]);
     }
 
     public function messages(): array
@@ -72,6 +80,10 @@ class StoreProductRequest extends FormRequest
             // Category
             'category_id.required' => 'Category is required.',
             'category_id.exists' => 'Selected category does not exist.',
+
+            // Status
+            'is_active.required' => 'Product status is required.',
+            'is_active.boolean' => 'Product status must be active or inactive.',
 
             // Image
             'image.image' => 'File must be an image.',

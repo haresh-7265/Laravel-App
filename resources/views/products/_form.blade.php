@@ -74,6 +74,23 @@
 </div>
 
 <div class="mb-3">
+    <label class="form-label d-block">{{ __('products.status') }}</label>
+    <input type="hidden" name="is_active" value="0">
+    <div class="form-check form-switch">
+        <input type="checkbox"
+               id="is_active"
+               name="is_active"
+               value="1"
+               class="form-check-input @error('is_active') is-invalid @enderror"
+               {{ old('is_active', $product->is_active ?? true) ? 'checked' : '' }}>
+        <label class="form-check-label" for="is_active">
+            {{ __('products.is_active') }}
+        </label>
+    </div>
+    @error('is_active') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+</div>
+
+<div class="mb-3">
     <label class="form-label">{{ __('products.tags') }}</label>
 
     <!-- Input -->
@@ -142,5 +159,14 @@ function removeTag(tag, element) {
     tags = tags.filter(t => t !== tag);
     element.parentElement.remove();
 }
+
+document.getElementById('name').addEventListener('keyup', function() {
+    let slug = this.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+    document.getElementById('slug').value = slug;
+});
 </script>
 @endpush

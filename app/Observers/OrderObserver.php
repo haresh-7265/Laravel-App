@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Events\Order\{OrderDelivered, OrderPaid, OrderPlaced, OrderShipped, OrderStatusUpdated};
 use App\Models\Order;
+use App\Services\CacheService;
 
 class OrderObserver
 {
@@ -13,6 +14,7 @@ class OrderObserver
     public function created(Order $order): void
     {
         OrderPlaced::dispatch($order);
+        $this->clearOrderCaches();
     }
 
     /**
@@ -20,6 +22,12 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
+        if(!$order->wasChanged()){
+            return;
+        }
+
+        $this->clearOrderCaches();
+        
         if($order->wasChanged('status')){
             OrderStatusUpdated::dispatch($order->id, $order->status);
 
@@ -57,5 +65,10 @@ class OrderObserver
     public function forceDeleted(Order $order): void
     {
         //
+    }
+
+    public function clearOrderCaches(): void
+    {
+        app(CacheService::class)->forgetOrders();
     }
 }

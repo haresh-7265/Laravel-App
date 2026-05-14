@@ -3,18 +3,13 @@
 namespace App\Notifications;
 
 use App\Models\SupportTicket;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Slack\BlockKit\Blocks\{ActionsBlock, ContextBlock, SectionBlock};
+use Illuminate\Notifications\Slack\BlockKit\Blocks\ActionsBlock;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
 use Illuminate\Notifications\Slack\SlackMessage;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
-class NewSupportTicket extends Notification implements ShouldQueue
+class NewSupportTicket extends BaseNotification
 {
-    use Queueable;
-
     public function __construct(public readonly SupportTicket $ticket)
     {
         $this->onQueue('notifications');
@@ -30,6 +25,11 @@ class NewSupportTicket extends Notification implements ShouldQueue
         return ['slack'];
     }
 
+    public function getPayload()
+    {
+        return $this->ticket->toArray();
+    }
+
     /**
      * Build the interactive Slack message for the #support channel.
      *
@@ -39,7 +39,7 @@ class NewSupportTicket extends Notification implements ShouldQueue
     public function toSlack(object $notifiable): SlackMessage
     {
         $ticket = $this->ticket;
-        $emoji  = $ticket->priorityEmoji();
+        $emoji = $ticket->priorityEmoji();
 
         return (new SlackMessage)
             ->to(config('services.slack.notifications.support_channel', '#support'))
@@ -74,15 +74,4 @@ class NewSupportTicket extends Notification implements ShouldQueue
             });
     }
 
-    /**
-     * Handle notification failure — log the error.
-     */
-    public function failed(Throwable $e): void
-    {
-        Log::error('NewSupportTicket notification failed', [
-            'ticket_id' => $this->ticket->id,
-            'error'     => $e->getMessage(),
-            'trace'     => $e->getTraceAsString(),
-        ]);
-    }
 }

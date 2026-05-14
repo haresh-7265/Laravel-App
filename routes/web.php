@@ -14,6 +14,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\WaitlistController;
 use App\Mail\CouponMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -81,6 +82,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::get('/', [FileManagerController::class, 'index'])->name('index');
             Route::post('/archive', [FileManagerController::class, 'archive'])->name('archive');
             Route::post('/cleanup', [FileManagerController::class, 'cleanup'])->name('cleanup');
+            Route::get('/download/{filename}', [FileManagerController::class, 'download'])->name('download');
         });
     });
 });
@@ -98,6 +100,8 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('my-orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
     Route::patch('my-orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('invoices/{order}/download', [CustomerOrderController::class, 'downloadInvoice'])->name('invoices.download');
+    Route::post('products/{product}/waitlist', [WaitlistController::class, 'store'])->name('product.waitlist.store');
+    Route::delete('products/{product}/waitlist', [WaitlistController::class, 'destroy'])->name('product.waitlist.destroy');
 });
 
 require __DIR__ . '/auth.php';

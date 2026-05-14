@@ -145,4 +145,8 @@
     </div>
 </footer>
 @endsection
+
+@push('scripts')
+    @vite('resources/js/cart.js')
+@endpush
 @endsection

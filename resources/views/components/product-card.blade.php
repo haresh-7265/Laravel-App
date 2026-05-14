@@ -40,7 +40,7 @@
 
         {{-- Name --}}
         <h3 class="text-[17px] font-semibold text-gray-900 leading-snug tracking-tight">
-            {{ $product->name }}
+            {{ Str::limit($product->name, 20, '...', true) }}
         </h3>
 
         {{-- Description --}}
@@ -71,10 +71,70 @@
 
         {{-- Actions --}}
         <div class="flex gap-2 mt-1">
-            <a href="{{ route('products.show', $product) }}"
-               class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80 {{ $product->stock <= 0 ? 'opacity-40 pointer-events-none' : '' }}">
-                {{ __('products.view') }}
-            </a>
+
+            {{-- ═══ ADMIN ═══ --}}
+            @admin
+                <a href="{{ route('products.show', $product) }}"
+                   class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80">
+                    {{ __('products.view') }}
+                </a>
+
+            {{-- ═══ CUSTOMER (authenticated) ═══ --}}
+            @elseif(auth()->check() && auth()->user()->isCustomer())
+                @if($product->stock > 0)
+                    <a href="{{ route('products.show', $product) }}"
+                       class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80">
+                        {{ __('products.view') }}
+                    </a>
+                    <form action="{{ route('cart.add', $product) }}"
+                          method="POST"
+                          class="ajax-add-to-cart-form flex-1">
+                        @csrf
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit"
+                                class="w-full text-center text-[13px] font-medium py-2 rounded-xl bg-emerald-600 text-white transition-opacity hover:opacity-90">
+                            {{ __('products.add_to_cart') }}
+                        </button>
+                    </form>
+                @else
+                    @php $onWaitlist = auth()->user()->waitlistProducts()->where('product_id', $product->id)->exists(); @endphp
+
+                    @if($onWaitlist)
+                        <button type="button"
+                                class="waitlist-remove-btn flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-violet-100 text-violet-700 border border-violet-200 transition-opacity hover:opacity-90"
+                                data-store-url="{{ route('product.waitlist.store', $product) }}"
+                                data-destroy-url="{{ route('product.waitlist.destroy', $product) }}">
+                            ✓ {{ __('products.remove_notify') }}
+                        </button>
+                    @else
+                        <button type="button"
+                                class="waitlist-btn flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-violet-600 text-white transition-opacity hover:opacity-90"
+                                data-store-url="{{ route('product.waitlist.store', $product) }}"
+                                data-destroy-url="{{ route('product.waitlist.destroy', $product) }}">
+                            🔔 {{ __('products.notify_me') }}
+                        </button>
+                    @endif
+                @endif
+
+            {{-- ═══ GUEST ═══ --}}
+            @else
+                <a href="{{ route('products.show', $product) }}"
+                   class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80 {{ $product->stock <= 0 ? 'opacity-40 pointer-events-none' : '' }}">
+                    {{ __('products.view') }}
+                </a>
+                @if($product->stock > 0)
+                    <form action="{{ route('cart.add', $product) }}"
+                          method="POST"
+                          class="ajax-add-to-cart-form flex-1">
+                        @csrf
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit"
+                                class="w-full text-center text-[13px] font-medium py-2 rounded-xl bg-emerald-600 text-white transition-opacity hover:opacity-90">
+                            {{ __('products.add_to_cart') }}
+                        </button>
+                    </form>
+                @endif
+            @endadmin
 
             @can('edit-product')
                 <a href="{{ route('products.edit', $product) }}"

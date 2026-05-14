@@ -3,18 +3,12 @@
 namespace App\Notifications;
 
 use App\Models\Product;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Slack\BlockKit\Blocks\{SectionBlock};
+use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
 use Illuminate\Notifications\Slack\SlackMessage;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
-class ProductLowStock extends Notification implements ShouldQueue
+class ProductLowStock extends BaseNotification
 {
-    use Queueable;
 
     /**
      * Create a new notification instance.
@@ -45,6 +39,11 @@ class ProductLowStock extends Notification implements ShouldQueue
             'mail' => 'emails',
             'slack' => 'emails',
         ];
+    }
+
+    public function getPayload()
+    {
+        return $this->product->toArray();
     }
 
     /**
@@ -89,9 +88,9 @@ class ProductLowStock extends Notification implements ShouldQueue
     public function toSlack(object $notifiable): SlackMessage
     {
         $isCritical = $this->hasCriticalStock();
-        $stock      = $this->product->stock;
-        $emoji      = $isCritical ? '🔴' : '🟡';
-        $flag       = $isCritical ? ' *— CRITICAL*' : '';
+        $stock = $this->product->stock;
+        $emoji = $isCritical ? '🔴' : '🟡';
+        $flag = $isCritical ? ' *— CRITICAL*' : '';
 
         $message = (new SlackMessage)
             ->to(config('services.slack.notifications.alerts_channel', '#alerts'))
@@ -104,7 +103,7 @@ class ProductLowStock extends Notification implements ShouldQueue
                 // <!subteam^ID> is Slack mrkdwn syntax to ping a user group (@warehouse).
                 $groupId = config('services.slack.warehouse_group_id', 'SXXXXXXXXXX');
                 $block->text("<@{$groupId}> *Critical stock levels detected!* Immediate action required.")
-                      ->markdown();
+                    ->markdown();
             });
         }
 
@@ -134,18 +133,5 @@ class ProductLowStock extends Notification implements ShouldQueue
     private function hasCriticalStock(): bool
     {
         return $this->product->stock < 5;
-    }
-
-    /**
-     * Handle notification failure — log the error.
-     */
-    public function failed(Throwable $e): void
-    {
-        Log::channel('product')->error('ProductLowStock notification failed', [
-            'product_id' => $this->product->id,
-            'product_name' => $this->product->name,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
     }
 }
