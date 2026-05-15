@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\LocaleController;
@@ -184,6 +185,9 @@ Route::prefix('github')->group(function () {
     Route::get('broken',       [GithubController::class, 'broken']);
 });
 
+
+// Local environment routes
+
 if (app()->environment('local')) {
 
     Route::get('/preview/order-confirmation/{order?}', function (?\App\Models\Order $order = null) {
@@ -200,4 +204,6 @@ if (app()->environment('local')) {
     // Check
         return $response->successful();
     });
+
+    Route::get('/test-db', [AnalyticsController::class, 'index']);
 };
