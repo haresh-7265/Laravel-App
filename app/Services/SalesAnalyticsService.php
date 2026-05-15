@@ -107,4 +107,53 @@ class SalesAnalyticsService
 
         return $years;
     }
+
+    /**
+     * DB::select with ? bindings for a complex aggregation
+     * Raw SQL is necessary here if we needed complex window functions, CTEs, or highly 
+     * specific DB features not supported out of the box by Laravel's Query Builder.
+     */
+    public function getCustomerAggregation(int $userId): array
+    {
+        $result = \DB::select('
+            SELECT 
+                COUNT(id) as total_orders,
+                SUM(total) as lifetime_value,
+                MAX(created_at) as last_order_date
+            FROM orders 
+            WHERE user_id = ? AND status = ?
+        ', [$userId, 'delivered']);
+
+        return (array) ($result[0] ?? []);
+    }
+
+    /**
+     * Named bindings (:user_id)
+     * Query Builder is preferable for simple SELECTs, eager loading relations, and dynamic WHERE clauses.
+     */
+    public function getCustomerAggregationNamed(int $userId): array
+    {
+        $result = \DB::select('
+            SELECT 
+                COUNT(id) as total_orders,
+                SUM(total) as lifetime_value,
+                MAX(created_at) as last_order_date
+            FROM orders 
+            WHERE user_id = :user_id AND status = :status
+        ', [
+            'user_id' => $userId,
+            'status' => 'delivered'
+        ]);
+
+        return (array) ($result[0] ?? []);
+    }
+
+    /**
+     * Use DB::statement() for a one-off DDL operation (e.g. TRUNCATE TABLE)
+     */
+    public function truncateOrderAnalytics(): void
+    {
+        // Example of a one-off DDL operation
+        \DB::connection('analytics')->statement('TRUNCATE TABLE order_analytics'); // Example truncate
+    }
 }

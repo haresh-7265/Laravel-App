@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ProductHasOrdersException;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Database\QueryException;
@@ -144,6 +145,10 @@ class ProductService
     public function delete(Product $product): bool
     {
         try {
+
+        if($product->orderItems()->exists()){
+            throw new ProductHasOrdersException();
+        }
             $product->delete();
 
             return true;

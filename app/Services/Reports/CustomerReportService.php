@@ -34,7 +34,7 @@ class CustomerReportService
                 'name' => $o->user->name ?? 'Unknown',
                 'email' => $o->user->email ?? 'N/A',
                 'total_orders' => $o->order_count,
-                'total_spent' => number_format($o->total_spent, 2),
+                'total_spent' => format_price($o->total_spent),
             ])->toArray();
 
         // Inactive: customers with no orders in last 90 days
@@ -58,7 +58,7 @@ class CustomerReportService
                 'email' => $user->email,
                 'last_order_at' => $user->last_order_at ?? 'Never',
                 'days_inactive' => $user->days_inactive
-                    ?? Carbon::parse($user->created_at)->diffInDays(now()),
+                    ?? floor(Carbon::parse($user->created_at)->diffInDays(now())),
             ])
             ->toArray();
 
@@ -79,7 +79,7 @@ class CustomerReportService
             ['New (Last 30 days)', $data['new_registrations']],
             ['Inactive (90d+)', count($data['inactive_users'] ?? [])],
             ['Top Buyer', $topBuyer['name'] ?? 'N/A'],
-            ['Top Buyer Spent',  format_price($topBuyer['total_spent'] ?? '0.00')],
+            ['Top Buyer Spent', $topBuyer['total_spent'] ?? 0.00],
         ];
     }
 

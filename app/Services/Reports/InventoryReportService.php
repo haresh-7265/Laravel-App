@@ -16,7 +16,7 @@ class InventoryReportService
             ->map(fn($p) => [
                 'name' => $p->name,
                 'stock' => $p->stock,
-                'price' => number_format($p->price, 2),
+                'price' => format_price($p->price),
                 'threshold' => self::LOW_STOCK_THRESHOLD
             ])->toArray();
 
@@ -25,20 +25,20 @@ class InventoryReportService
             ->get(['name', 'stock', 'price', 'discount_price'])
             ->map(fn($p) => [
                 'name' => $p->name,
-                'price' => number_format($p->price, 2),
+                'price' => format_price($p->price),
                 'last_updated_at' => $p->updated_at,
             ])->toArray();
 
         // Total inventory value using effective price (discount_price if set, else price)
         $totalValue = Product::all()->sum(function ($product) {
-            $effectivePrice = $product->discount_price ?? $product->price;
+            $effectivePrice = $product->final_price;
             return $effectivePrice * $product->stock;
         });
 
 
         return [
             'generated_at' => now()->toDateTimeString(),
-            'total_value' => number_format($totalValue, 2),
+            'total_value' => $totalValue,
             'out_of_stock_count' => count($outOfStockItems),
             'low_stock_items' => $lowStockItems,
             'out_of_stock_items' => $outOfStockItems,

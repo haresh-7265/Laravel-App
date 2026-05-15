@@ -26,7 +26,7 @@ class SalesReportService
             ->map(fn($item) => [
                 'name' => $item->product_name,
                 'units_sold' => $item->units_sold,
-                'revenue' => number_format($item->revenue, 2),
+                'revenue' => format_price($item->revenue),
             ])->toArray();
 
 
@@ -36,8 +36,8 @@ class SalesReportService
 
         return [
             'generated_at' => now()->toDateTimeString(),
-            'total_revenue' => number_format($totalRevenue, 2),
-            'total_discount' => number_format($totalDiscount, 2),
+            'total_revenue' => $totalRevenue,
+            'total_discount' => $totalDiscount,
             'order_count' => $orderCount,
             'top_products' => $topProducts,
         ];

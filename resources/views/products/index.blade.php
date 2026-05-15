@@ -16,53 +16,39 @@
 
         {{-- ═══════ HOMEPAGE SECTIONS (Concurrent Data) ═══════ --}}
             @if($featured->isNotEmpty())
-            <div class="mb-5">
-                <h3 class="mb-3">{{ __('products.featured') }}</h3>
-
-                <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
+                <x-collapsible-section title="{{ __('products.featured') }}">
                     @foreach($featured as $p)
-                        <div style="min-width: 280px; flex: 0 0 auto; scroll-snap-align: start;">
+                        <div class="min-w-[280px] flex-none snap-start">
                             <x-product-card :product="$p" />
                         </div>
                     @endforeach
-                </div>
-            </div>
+                </x-collapsible-section>
             @endif
-
 
             @if($newArrivals->isNotEmpty())
-            <div class="mb-5">
-                <h3 class="mb-3">{{ __('products.new_arrivals') }}</h3>
-
-                <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
+                <x-collapsible-section title="{{ __('products.new_arrivals') }}">
                     @foreach($newArrivals as $p)
-                        <div style="min-width: 280px; flex: 0 0 auto; scroll-snap-align: start;">
+                        <div class="min-w-[280px] flex-none snap-start">
                             <x-product-card :product="$p" />
                         </div>
                     @endforeach
-                </div>
-            </div>
+                </x-collapsible-section>
             @endif
 
-
             @if($onSale->isNotEmpty())
-            <div class="mb-5">
-                <h3 class="mb-3">{{ __('products.on_sale') }}</h3>
-
-                <div class="d-flex overflow-auto gap-3 pb-2 horizontal-scroll" style="scroll-snap-type: x mandatory;">
+                <x-collapsible-section title="{{ __('products.on_sale') }}">
                     @foreach($onSale as $p)
-                        <div style="min-width: 280px; flex: 0 0 auto; scroll-snap-align: start;">
+                        <div class="min-w-[280px] flex-none snap-start">
                             <x-product-card :product="$p" />
                         </div>
                     @endforeach
-                </div>
-            </div>
+                </x-collapsible-section>
             @endif
 
 
             <hr class="mb-5">
 
-            <h3 class="mb-3">{{ __('products.all_products') }}</h3>
+            <h3 class="mb-3 text-lg font-semibold">{{ __('products.all_products') }}</h3>
 
         {{-- Results header --}}
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">

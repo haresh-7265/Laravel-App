@@ -41,6 +41,10 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
     public function waitlistUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'product_waitlist')->withTimestamps();
