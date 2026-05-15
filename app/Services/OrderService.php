@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\Order\OrderPlaced;
 use App\Exceptions\EmptyCartException;
 use App\Exceptions\ProductOutOfStockException;
 use App\Models\Coupon;
@@ -128,8 +129,10 @@ class OrderService
             // Clear cart after order (also clears applied coupon)
             $this->cartService->clear();
 
+            DB::afterCommit(fn() => OrderPlaced::dispatch($order));
+
             return $order;
-        });
+        }, attempts: 3);
     }
 
     public function cancelOrder(Order $order): void

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductObserver
 {
+    public bool $afterCommit = true; // observer methods runs after commit
     private const LOW_STOCK_THRESHOLD = 10;
 
     /**

@@ -2,18 +2,18 @@
 
 namespace App\Observers;
 
-use App\Events\Order\{OrderDelivered, OrderPaid, OrderPlaced, OrderShipped, OrderStatusUpdated};
+use App\Events\Order\{OrderDelivered, OrderPaid, OrderShipped, OrderStatusUpdated};
 use App\Models\Order;
 use App\Services\CacheService;
 
 class OrderObserver
 {
+    public bool $afterCommit = true;  // observer methods runs after commit
     /**
      * Handle the Order "created" event.
      */
     public function created(Order $order): void
     {
-        OrderPlaced::dispatch($order);
         $this->clearOrderCaches();
     }
 

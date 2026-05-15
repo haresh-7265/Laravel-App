@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Services\OrderService;
+use App\Http\Requests\StoreCheckoutRequest;
+use App\Mail\OrderConfirmation;
 use App\Models\Order;
+use App\Services\OrderService;
+use Illuminate\Database\DeadlockException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\OrderConfirmation;
 
 class OrderController extends Controller
 {
-    public function __construct(private OrderService $orderService)
-    {
-    }
+    public function __construct(private OrderService $orderService) {}
 
     // Show checkout page
     public function checkout()
@@ -24,25 +23,22 @@ class OrderController extends Controller
     }
 
     // Place order from cart
-    public function store(Request $request)
+    public function store(StoreCheckoutRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string|size:10',
-            'address' => 'required|string',
-            'city' => 'required|string',
-            'state' => 'required|string',
-            'pincode' => 'required|string|size:6',
-        ]);
 
-        $order = $this->orderService->placeOrder($request->all());
+        try {
 
-        Mail::to($order->shipping_email, $order->shipping_name)->locale($order->user?->preferredLocale())->later(now()->addMinutes(5), new OrderConfirmation($order));
+            $order = $this->orderService->placeOrder($request->validated());
 
-        return redirect()
-            ->route('orders.show', $order)
-            ->with('success', 'Order placed successfully!');
+            Mail::to($order->shipping_email, $order->shipping_name)->locale($order->user?->preferredLocale())->later(now()->addMinutes(5), new OrderConfirmation($order));
+
+            return redirect()
+                ->route('orders.show', $order)
+                ->with('success', 'Order placed successfully!');
+
+        } catch (DeadlockException $e) {
+            return back()->with('error', 'Too busy, try again');
+        }
     }
 
     // Customer order listing
@@ -74,7 +70,7 @@ class OrderController extends Controller
         abort_if($order->user_id !== auth()->id(), 403);
 
         // Only cancellable before shipping
-        abort_if(!in_array($order->status, ['pending', 'processing']), 403, 'Order cannot be cancelled at this stage.');
+        abort_if(! in_array($order->status, ['pending', 'processing']), 403, 'Order cannot be cancelled at this stage.');
 
         $this->orderService->cancelOrder($order);
 
@@ -87,21 +83,20 @@ class OrderController extends Controller
     {
 
         // validate signature — abort if expired or tampered
-        if (!$request->hasValidSignature()) {
+        if (! $request->hasValidSignature()) {
             abort(403, 'Link expired or invalid.');
         }
-
 
         $path = $order->invoice_path;
 
         // check file exists
-        if ($path && !Storage::disk('public')->exists($path)) {
+        if ($path && ! Storage::disk('public')->exists($path)) {
             return back()->with('error', 'Invoice not found. Please contact support.');
         }
 
         return Storage::disk('public')->download(
             $path,
-            'Invoice-' . $order->order_number . '.pdf'
+            'Invoice-'.$order->order_number.'.pdf'
         );
     }
 
