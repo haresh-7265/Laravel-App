@@ -17,8 +17,8 @@ class ProductService
     public function getAll()
     {
         $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
-        $key = "products.{$role}.all"; 
-        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn() => Product::active()->get());
+        $key = "products.{$role}.all";
+        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn() => Product::active()->with('category')->get());
     }
 
     public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
@@ -26,7 +26,7 @@ class ProductService
         $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
         return Concurrency::run([
             'featured' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.featured", now()->addHour(), fn() => $this->getAll()->featured()->take(8)),
-            'newArrivals' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.new", now()->addHour(), fn() => Product::active()->latest()->take(8)->get()),
+            'newArrivals' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.new", now()->addHour(), fn() => Product::active()->with('category')->latest()->take(8)->get()),
             'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.onsale", now()->addHour(), fn() => $this->getAll()->onSale()->take(8)),
             'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage, $role),
         ]);
@@ -146,9 +146,9 @@ class ProductService
     {
         try {
 
-        if($product->orderItems()->exists()){
-            throw new ProductHasOrdersException();
-        }
+            if ($product->orderItems()->exists()) {
+                throw new ProductHasOrdersException();
+            }
             $product->delete();
 
             return true;

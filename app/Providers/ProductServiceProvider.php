@@ -38,27 +38,6 @@ class ProductServiceProvider extends ServiceProvider
 
         // Number::useCurrency(config('admin.currency_code'));
 
-        if (\App::environment('local', 'development')) {
-            Log::channel('db-query')->info('===============================================');
-            $listening = false; // ✅ flag to prevent re-entry
-
-            DB::listen(function ($query) use (&$listening) {
-                if ($listening)
-                    return; // ✅ skip if already logging
-
-                $listening = true;
-
-                Log::channel('db-query')->info('DB Query', [
-                    'sql' => $query->sql,
-                    'bindings' => $query->bindings,
-                    'user_id' => auth()->check() ? auth()->id() : 'guest',
-                    'time' => $query->time . 'ms',
-                ]);
-
-                $listening = false;
-            });
-        }
-
         \Blade::directive('admin', function () {
             return "<?php if(auth()->check() && auth()->user()->role === 'admin'): ?>";
         });

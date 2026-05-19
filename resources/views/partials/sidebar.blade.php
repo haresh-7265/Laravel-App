@@ -14,6 +14,7 @@
         ['route' => 'admin.sales-analytics',  'icon' => 'bi-graph-up-arrow', 'label' => 'Sales'],
         ['route' => 'admin.invoices.index',   'icon' => 'bi-receipt-cutoff', 'label' => 'Invoices'],
         ['route' => 'admin.files.index',      'icon' => 'bi-bar-chart-line', 'label' => 'Reports'],
+        ['route' => 'admin.slow-queries.index', 'icon' => 'bi-hourglass-split', 'label' => 'Slow Queries'],
     ];
 @endphp
 

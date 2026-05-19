@@ -85,6 +85,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::post('/cleanup', [FileManagerController::class, 'cleanup'])->name('cleanup');
             Route::get('/download/{filename}', [FileManagerController::class, 'download'])->name('download');
         });
+        // slow query monitor route
+        Route::get('slow-queries', function () {
+            return view('admin.slow-queries');
+        })->name('slow-queries.index');
     });
 });
 
