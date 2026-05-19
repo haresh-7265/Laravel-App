@@ -10,7 +10,7 @@
 
         {{-- Category Badge --}}
         <span class="absolute top-3 left-3 text-[11px] font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-blue-50 text-blue-800">
-            {{ $product->category->name }}
+            {{ $product->category_name }}
         </span>
 
         {{-- Discount Pill --}}
@@ -30,7 +30,7 @@
         {{-- {{ image filesize }} --}}
         @admin
         <span class="absolute bottom-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
-            {{ $product->image_size }}
+            {{ human_file_size(Storage::disk('public')->size($product->image ?? 'products/default.png')) }}
         </span>
         @endadmin
     </div>
@@ -74,7 +74,7 @@
 
             {{-- ═══ ADMIN ═══ --}}
             @admin
-                <a href="{{ route('products.show', $product) }}"
+                <a href="{{ route('products.show', $product->slug) }}"
                    class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80">
                     {{ __('products.view') }}
                 </a>
@@ -82,11 +82,11 @@
             {{-- ═══ CUSTOMER (authenticated) ═══ --}}
             @elseif(auth()->check() && auth()->user()->isCustomer())
                 @if($product->stock > 0)
-                    <a href="{{ route('products.show', $product) }}"
+                    <a href="{{ route('products.show', $product->slug) }}"
                        class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80">
                         {{ __('products.view') }}
                     </a>
-                    <form action="{{ route('cart.add', $product) }}"
+                    <form action="{{ route('cart.add', $product->slug) }}"
                           method="POST"
                           class="ajax-add-to-cart-form flex-1">
                         @csrf
@@ -102,15 +102,15 @@
                     @if($onWaitlist)
                         <button type="button"
                                 class="waitlist-remove-btn flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-violet-100 text-violet-700 border border-violet-200 transition-opacity hover:opacity-90"
-                                data-store-url="{{ route('product.waitlist.store', $product) }}"
-                                data-destroy-url="{{ route('product.waitlist.destroy', $product) }}">
+                                data-store-url="{{ route('product.waitlist.store', $product->slug) }}"
+                                data-destroy-url="{{ route('product.waitlist.destroy', $product->slug) }}">
                             ✓ {{ __('products.remove_notify') }}
                         </button>
                     @else
                         <button type="button"
                                 class="waitlist-btn flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-violet-600 text-white transition-opacity hover:opacity-90"
-                                data-store-url="{{ route('product.waitlist.store', $product) }}"
-                                data-destroy-url="{{ route('product.waitlist.destroy', $product) }}">
+                                data-store-url="{{ route('product.waitlist.store', $product->slug) }}"
+                                data-destroy-url="{{ route('product.waitlist.destroy', $product->slug) }}">
                             🔔 {{ __('products.notify_me') }}
                         </button>
                     @endif
@@ -118,12 +118,12 @@
 
             {{-- ═══ GUEST ═══ --}}
             @else
-                <a href="{{ route('products.show', $product) }}"
+                <a href="{{ route('products.show', $product->slug) }}"
                    class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80 {{ $product->stock <= 0 ? 'opacity-40 pointer-events-none' : '' }}">
                     {{ __('products.view') }}
                 </a>
                 @if($product->stock > 0)
-                    <form action="{{ route('cart.add', $product) }}"
+                    <form action="{{ route('cart.add', $product->slug) }}"
                           method="POST"
                           class="ajax-add-to-cart-form flex-1">
                         @csrf
@@ -137,14 +137,14 @@
             @endadmin
 
             @can('edit-product')
-                <a href="{{ route('products.edit', $product) }}"
+                <a href="{{ route('products.edit', $product->slug) }}"
                    class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors">
                     {{ __('products.edit') }}
                 </a>
             @endcan
 
             @can('delete-product')
-                <form action="{{ route('products.destroy', $product) }}"
+                <form action="{{ route('products.destroy', $product->slug) }}"
                       method="POST"
                       onsubmit="return confirm('{{ __('products.delete_short') }}')"
                       style="display:contents;">

@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Exceptions\ProductHasOrdersException;
-use App\Models\OrderItem;
 use App\Models\Product;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Concurrency;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProductService
@@ -18,21 +18,24 @@ class ProductService
     {
         $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
         $key = "products.{$role}.all";
-        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn() => Product::active()->with('category')->get());
+
+        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn () => Product::active()->with('category')->get());
     }
 
     public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
     {
         $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
+
         return Concurrency::run([
-            'featured' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.featured", now()->addHour(), fn() => $this->getAll()->featured()->take(8)),
-            'newArrivals' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.new", now()->addHour(), fn() => Product::active()->with('category')->latest()->take(8)->get()),
-            'onSale' => fn() => Cache::tags(['products', 'products.list'])->remember("products.{$role}.onsale", now()->addHour(), fn() => $this->getAll()->onSale()->take(8)),
-            'products' => fn() => $this->getPaginatedProducts($page, $filters, $perPage, $role),
+            'featured' => fn () => $this->getFeaturedProducts($role),
+            'newArrivals' => fn () => $this->getNewArrivalProducts($role),
+            'onSale' => fn () => $this->getOnSaleProducts($role),
+            'products' => fn () => $this->getFilteredProducts($page, $filters, $perPage, $role),
         ]);
     }
+
     // GET paginated products
-    public function getPaginatedProducts(int $page, array $filters, int $perPage = 10, string $role)
+    public function getFilteredProducts(int $page, array $filters, int $perPage, string $role)
     {
         ksort($filters);
 
@@ -40,21 +43,15 @@ class ProductService
             'filters' => $filters,
             'page' => $page,
             'perPage' => $perPage,
-            'role' => auth()->user()?->role ?? 'customer'
+            'role' => auth()->user()?->role ?? 'customer',
         ]));
         $cacheKey = "products.{$role}.{$hash}";
 
-        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters) {
-            $ids = $this->apply($filters)->toArray();
-            $orderCase = 'CASE id ' .
-                collect($ids)->map(fn($id, $i) => "WHEN $id THEN $i")->implode(' ') .
-                ' END';
-            $products = Product::active()
-                ->with('category')
-                ->whereIn('id', $ids)
-                ->orderByRaw($orderCase)
+        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role) {
+            $products = $this->apply($filters, $role)
                 ->paginate($perPage)
                 ->withQueryString();
+
             return $products;
         });
     }
@@ -72,7 +69,7 @@ class ProductService
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'category_id' => $product->category_id,
-                    'has_image' => !is_null($product->image),
+                    'has_image' => ! is_null($product->image),
                     'created_by' => auth()->id() ?? 'system',
                 ]);
             });
@@ -88,7 +85,6 @@ class ProductService
             ]);
 
             throw $e;   // re-throw so controller/handler can respond
-
         } catch (\Exception $e) {
             // Log unexpected errors
             Log::channel('product')->error('Unexpected error creating product', [
@@ -100,7 +96,6 @@ class ProductService
         }
     }
 
-
     // UPDATE
     public function update(Product $product, array $data, ?UploadedFile $image = null)
     {
@@ -109,7 +104,6 @@ class ProductService
             if ($image) {
                 $data['image'] = $this->uploadImage($image, $data['slug'] ?? $product->slug);
             }
-
 
             return tap($product, function ($product) use ($data) {
                 $product->update($data);
@@ -129,7 +123,6 @@ class ProductService
             ]);
 
             throw $e;
-
         } catch (\Exception $e) {
             Log::channel('product')->error('Unexpected error updating product', [
                 'product_id' => $product->id,
@@ -147,7 +140,7 @@ class ProductService
         try {
 
             if ($product->orderItems()->exists()) {
-                throw new ProductHasOrdersException();
+                throw new ProductHasOrdersException;
             }
             $product->delete();
 
@@ -161,7 +154,6 @@ class ProductService
             ]);
 
             throw $e;
-
         } catch (\Exception $e) {
             Log::channel('product')->error('Unexpected error deleting product', [
                 'product_id' => $product->id,
@@ -178,8 +170,8 @@ class ProductService
     {
         try {
             $results = Product::query()
-                ->when($filters['category'] ?? null, fn($q, $v) => $q->where('category_id', $v))
-                ->when($filters['price'] ?? null, fn($q, $v) => $q->where('price', $v))
+                ->when($filters['category'] ?? null, fn ($q, $v) => $q->where('category_id', $v))
+                ->when($filters['price'] ?? null, fn ($q, $v) => $q->where('price', $v))
                 ->active()
                 ->get();
 
@@ -209,12 +201,11 @@ class ProductService
         }
     }
 
-
     // Upload image
     private function uploadImage(UploadedFile $image, $slug): string
     {
         try {
-            $path = $image->storeAs('products', $slug . '.' . $image->extension(), 'public');
+            $path = $image->storeAs('products', $slug.'.'.$image->extension(), 'public');
 
             return $path;
         } catch (\Exception $e) {
@@ -231,77 +222,94 @@ class ProductService
     }
 
     // filters
-    public function apply(array $filters): Collection
+    public function apply(array $filters, string $role = 'customer'): Builder
     {
-        // ─── 1. Load all products with category (single DB query) ──
-        $products = $this->getAll();
+        return DB::table('products')
+            ->select([
+                'products.id',
+                'products.name',
+                'products.slug',
+                'products.description',
+                'products.price',
+                'products.discount_price',
+                'products.stock',
+                'products.image',
+                'categories.id as category_id',
+                'categories.name as category_name',
+            ])
+            ->join('categories', 'categories.id', '=', 'products.category_id')
+            ->when($role !== 'admin', function ($q) {
+                $q->where('products.is_active', true);
+            })
+            ->when(! empty($filters['min_price']), function ($q) use ($filters) {
+                $q->where(DB::raw('COALESCE(products.discount_price, products.price)'), '>=', (float) $filters['min_price']);
+            })
+            ->when(! empty($filters['max_price']), function ($q) use ($filters) {
+                $q->where(DB::raw('COALESCE(products.discount_price, products.price)'), '<=', (float) $filters['max_price']);
+            })
+            ->when(! empty($filters['categories']) && is_array($filters['categories']), function ($q) use ($filters) {
+                $q->whereIn('products.category_id', array_map('intval', $filters['categories']));
+            })
+            ->when(! empty($filters['in_stock']), fn ($q) => $q->where('products.stock', '>', 0))
+            ->when(! empty($filters['on_sale']), function ($q) {
+                $q->whereNotNull('products.discount_price')
+                    ->where('products.discount_price', '>', 0)
+                    ->whereColumn('products.discount_price', '<', 'price')
+                    ->addSelect(DB::raw('ROUND((1 - products.discount_price / products.price) * 100) as discount_percent'));
+            })
+            ->when($filters['sort'] ?? null, function ($q, $sort) {
+                match ($sort) {
+                    'price_asc' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'asc'),
+                    'price_desc' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'desc'),
+                    'popularity' => $q->orderByDesc(
+                        DB::raw('(SELECT COUNT(*) FROM order_items WHERE order_items.product_id = products.id)')
+                    ),
+                    'newest' => $q->orderBy('products.created_at', 'desc'),
+                    default => $q->orderBy('products.created_at', 'desc'),
+                };
+            }, fn ($q) => $q->orderBy('products.created_at', 'desc'));
+    }
 
-        // ─── 2. Price range filter — filter() ──────────────────────
-        if (!empty($filters['min_price'])) {
-            $min = (float) $filters['min_price'];
-            $products = $products->filter(fn(Product $p) => (float) $p->getFinalPriceAttribute() >= $min);
-        }
-
-        if (!empty($filters['max_price'])) {
-            $max = (float) $filters['max_price'];
-            $products = $products->filter(fn(Product $p) => (float) $p->getFinalPriceAttribute() <= $max);
-        }
-
-        // ─── 3. Multiple categories filter — filter() 
-        if (!empty($filters['categories']) && is_array($filters['categories'])) {
-            $categoryIds = array_map('intval', $filters['categories']);
-            $products = $products->filter(
-                fn(Product $p) => in_array($p->category_id, $categoryIds)
+    // get featuren products
+    public function getFeaturedProducts(string $role = 'customer', int $limit = 8)
+    {
+        return Cache::tags(['products', 'products.list'])
+            ->remember("products.{$role}.featured",
+                now()->addHour(),
+                fn () => Product::active()
+                    ->with('category')
+                    ->whereJsonContains('tags', 'featured')
+                    ->limit($limit)
+                    ->get()
             );
-        }
-
-        // ─── 4. In-stock only — where() ────────────────────────────
-        if (!empty($filters['in_stock'])) {
-            $products = $products->where('stock', '>', 0);
-        }
-
-        // ─── 5. On sale (has discount) — filter() ──────────────────
-        if (!empty($filters['on_sale'])) {
-            $products = $products->filter(function (Product $p) {
-                return $p->discount_price
-                    && (float) $p->discount_price > 0
-                    && (float) $p->discount_price < (float) $p->price;
-            });
-        }
-
-        // ─── 6. Sorting — sortBy() / sortByDesc() ──────────────────
-        $products = $this->applySorting($products, $filters['sort'] ?? null);
-
-        return $products->pluck('id'); // re-index
     }
 
-    /**
-     * Apply sorting using sortBy() and sortByDesc().
-     */
-    private function applySorting(Collection $products, ?string $sort): Collection
+    // get new arrivals products
+    public function getNewArrivalProducts(string $role = 'customer', int $limit = 8)
     {
-        return match ($sort) {
-            'price_low' => $products->sortBy(fn(Product $p) => (float) $p->getFinalPriceAttribute()),
-            'price_high' => $products->sortByDesc(fn(Product $p) => (float) $p->getFinalPriceAttribute()),
-            'popularity' => $this->sortByPopularity($products),
-            'newest' => $products->sortByDesc('created_at'),
-            default => $products->sortByDesc('created_at'),
-        };
+        return Cache::tags(['products', 'products.list'])
+            ->remember("products.{$role}.new",
+                now()->addHour(),
+                fn () => Product::active()
+                    ->with('category')
+                    ->latest()
+                    ->limit($limit)
+                    ->get()
+            );
     }
 
-    /**
-     * Sort by popularity = total quantity sold (from order_items).
-     * Uses sortByDesc() with a pre-built sales lookup.
-     */
-    private function sortByPopularity(Collection $products): Collection
+    // get on sale products
+    public function getOnSaleProducts(string $role = 'customer', int $limit = 8)
     {
-        // Build a map: product_id => total_quantity_sold
-        $salesMap = OrderItem::selectRaw('product_id, SUM(quantity) as total_sold')
-            ->groupBy('product_id')
-            ->pluck('total_sold', 'product_id');
-
-        return $products->sortByDesc(
-            fn(Product $p) => $salesMap->get($p->id, 0)
-        );
+        return Cache::tags(['products', 'products.list'])
+            ->remember("products.{$role}.onsale",
+                now()->addHour(),
+                fn () => Product::active()
+                    ->with('category')
+                    ->whereNotNull('discount_price')
+                    ->where('discount_price', '>', 0)
+                    ->whereColumn('discount_price', '<', 'price')
+                    ->get()
+            );
     }
 }
