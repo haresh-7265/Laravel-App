@@ -78,7 +78,7 @@
                             <td class="ps-0 text-muted">{{ $i + 1 }}</td>
                             <td class="ps-0">
                                 <div class="fw-medium text-dark text-truncate" style="max-width: 160px;">
-                                    {{ $p->product->name ?? 'N/A' }}
+                                    {{ str($p->product_name)->limit(20) ?? 'N/A' }}
                                 </div>
                                 <div class="progress mt-1" style="height: 4px; width: 96px;">
                                     <div class="progress-bar bg-primary"
@@ -120,9 +120,9 @@
                         <tr class="border-bottom border-light">
                             <td class="ps-0 text-muted">{{ $i + 1 }}</td>
                             <td class="ps-0">
-                                <div class="fw-medium text-dark">{{ $c->customer->name ?? 'N/A' }}</div>
+                                <div class="fw-medium text-dark">{{ $c->customer_name ?? 'N/A' }}</div>
                                 <div class="text-muted" style="font-size: 11px;">
-                                    {{ $c->customer->email ?? '' }}
+                                    {{ $c->customer_email ?? '' }}
                                 </div>
                                 <div class="progress mt-1" style="height: 4px; width: 96px;">
                                     <div class="progress-bar bg-success"
@@ -172,7 +172,7 @@
                     @foreach($byCategory as $cat)
                         <tr class="border-bottom border-light">
                             <td class="ps-0 fw-medium text-dark">
-                                {{ $cat->category->name ?? 'Uncategorized' }}
+                                {{ $cat->category_name ?? 'Uncategorized' }}
                             </td>
                             <td class="text-end pe-0 text-dark">@currency($cat->total_revenue)</td>
                             <td class="text-end pe-0 text-dark">{{ number_format($cat->total_orders) }}</td>
@@ -241,7 +241,7 @@ new Chart(document.getElementById('monthlyChart'), {
     }
 });
 
-const catLabels = @json($byCategory->map(fn($c) => $c->category->name ?? 'Other'));
+const catLabels = @json($byCategory->map(fn($c) => $c->category_name ?? 'Other'));
 const catData   = @json($byCategory->pluck('total_revenue'));
 const catColors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#6b7280'];
 

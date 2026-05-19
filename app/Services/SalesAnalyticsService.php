@@ -1,98 +1,119 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Order;
-use App\Models\OrderItem;
 use Illuminate\Support\Collection;
-use function Illuminate\Support\years;
+use Illuminate\Support\Facades\DB;
 
 class SalesAnalyticsService
 {
     public function getMonthlySales(int $year): Collection
     {
-        return Order::whereYear('created_at', $year)
+        return DB::table('orders')
+            ->select([
+                DB::raw('DATE_FORMAT(created_at, "%b") as month'),
+                DB::raw('SUM(total) as revenue'),
+                DB::raw('COUNT(id) as orders'),
+                DB::raw('ROUND(AVG(total), 2) as avg'),
+            ])
+            ->whereYear('created_at', $year)
             ->where('status', 'delivered')
+            ->groupBy(DB::raw('DATE_FORMAT(created_at, "%b")'))
+            ->orderBy(DB::raw('MONTH(created_at)'), 'asc')
             ->get()
-            ->groupBy(fn($o) => $o->created_at->format('M'))
-            ->map(fn($group) => (object) [
-                'revenue' => $group->sum('total'),
-                'orders' => $group->count(),
-                'avg' => round($group->avg('total'), 2),
-            ]);
+            ->keyBy('month');
     }
 
     public function getTopProducts(int $year, int $limit = 10): Collection
     {
-        return OrderItem::with('product')
-            ->whereHas('order', fn($q) => $q
-                ->where('status', 'delivered')
-                ->whereYear('created_at', $year))
-            ->get()
-            ->filter(fn($item) => $item->order->status === 'delivered')
-            ->groupBy('product_id')
-            ->map(fn($item) => (object) [
-                'product' => $item->first()->product,
-                'total_sold' => $item->sum('quantity'),
-                'revenue' => $item->sum('subtotal')
+        return DB::table('order_items')
+            ->select([
+                'order_items.product_id',
+                'products.name as product_name',
+                'categories.name as category_name',
+                DB::raw('SUM(order_items.quantity) as total_sold'),
+                DB::raw('SUM(order_items.subtotal) as revenue'),
             ])
-            ->sortByDesc('total_sold')
-            ->take($limit)
-            ->values();
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->where('orders.status', 'delivered')
+            ->whereYear('orders.created_at', $year)
+            ->groupBy(
+                'order_items.product_id',
+                'products.name',
+                'categories.name'
+            )
+            ->orderByDesc('total_sold')
+            ->limit($limit)
+            ->get();
     }
 
     public function getTopCustomers(int $year, int $limit = 10): Collection
     {
-        return Order::with('user')
-            ->where('status', 'delivered')
-            ->whereYear('created_at', $year)
-            ->get()
-            ->groupBy('user_id')
-            ->map(fn($orders) => (object) [
-                'customer' => $orders->first()->user,
-                'total_spent' => $orders->sum('total'),
-                'order_count' => $orders->count(),
-                'avg_order' => round($orders->sum('total') / $orders->count(), 2),
+        return DB::table('orders')
+            ->select([
+                'orders.user_id',
+                'users.name as customer_name',
+                'users.email as customer_email',
+                DB::raw('SUM(orders.total) as total_spent'),
+                DB::raw('COUNT(orders.id) as order_count'),
             ])
-            ->sortByDesc('total_spent')
-            ->take($limit)
-            ->values();
+            ->join('users', 'users.id', '=', 'orders.user_id')
+            ->where('orders.status', 'delivered')
+            ->whereYear('orders.created_at', $year)
+            ->groupBy(
+                'orders.user_id',
+                'users.name',
+                'users.email'
+            )
+            ->orderByDesc('total_spent')
+            ->limit($limit)
+            ->get();
     }
 
     public function getSalesByCategory(int $year): Collection
     {
-        return OrderItem::with('product.category')
-            ->whereHas('order', fn($q) => $q
-                ->where('status', 'delivered')
-                ->whereYear('created_at', $year))
-            ->get()
-            ->groupBy(fn($item) => $item->product->category->name)
-            ->map(fn($item) => (object) [
-                'category' => $item->first()->product->category,
-                'total_quantity' => $item->sum('quantity'),
-                'total_revenue' => $item->sum(fn($i) => $i->price * $i->quantity),
-                'total_orders' => $item->pluck('order_id')->unique()->count(),
+        return DB::table('order_items')
+            ->select([
+                'categories.id as category_id',
+                'categories.name as category_name',
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('SUM(order_items.price * order_items.quantity) as total_revenue'),
+                DB::raw('COUNT(DISTINCT order_items.order_id) as total_orders'),
             ])
-            ->sortByDesc('total_revenue')
-            ->values();
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->join('categories', 'categories.id', '=', 'products.category_id')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.status', 'delivered')
+            ->whereYear('orders.created_at', $year)
+            ->groupBy(
+                'categories.id',
+                'categories.name',
+            )
+            ->orderByDesc('total_revenue')
+            ->get();
     }
 
     public function getSummaryMetrics(int $year): array
     {
-        $metrics = Order::where('status', 'delivered')
-        ->whereYear('created_at', $year)
-        ->selectRaw('
-            SUM(total)                    as total_revenue,
-            COUNT(*)                      as total_orders,
-            ROUND(AVG(total), 2)          as avg_order_value,
-            COUNT(DISTINCT user_id)       as unique_customers
-        ')
-        ->first();
-        
+        $metrics = DB::table('orders')
+            ->select([
+                DB::raw('SUM(total)                  as total_revenue'),
+                DB::raw('COUNT(*)                    as total_orders'),
+                DB::raw('ROUND(AVG(total), 2)        as avg_order_value'),
+                DB::raw('COUNT(DISTINCT user_id)     as unique_customers'),
+            ])
+            ->where('status', 'delivered')
+            ->whereYear('created_at', $year)
+            ->first();
+
         return [
-            'totalRevenue'     => $metrics->total_revenue,
-            'totalOrders'      => $metrics->total_orders,
-            'avgOrderValue'    => $metrics->avg_order_value,
-            'uniqueCustomers'  => $metrics->unique_customers,
+            'totalRevenue' => $metrics->total_revenue,
+            'totalOrders' => $metrics->total_orders,
+            'avgOrderValue' => $metrics->avg_order_value,
+            'uniqueCustomers' => $metrics->unique_customers,
         ];
     }
 
@@ -100,7 +121,7 @@ class SalesAnalyticsService
     {
         $years = Order::all()
             ->pluck('created_at')
-            ->map(fn($date) => $date->year)
+            ->map(fn ($date) => $date->year)
             ->unique()
             ->sortDesc()
             ->values();
@@ -110,7 +131,7 @@ class SalesAnalyticsService
 
     /**
      * DB::select with ? bindings for a complex aggregation
-     * Raw SQL is necessary here if we needed complex window functions, CTEs, or highly 
+     * Raw SQL is necessary here if we needed complex window functions, CTEs, or highly
      * specific DB features not supported out of the box by Laravel's Query Builder.
      */
     public function getCustomerAggregation(int $userId): array
@@ -142,7 +163,7 @@ class SalesAnalyticsService
             WHERE user_id = :user_id AND status = :status
         ', [
             'user_id' => $userId,
-            'status' => 'delivered'
+            'status' => 'delivered',
         ]);
 
         return (array) ($result[0] ?? []);

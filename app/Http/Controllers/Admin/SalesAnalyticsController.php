@@ -76,21 +76,21 @@ class SalesAnalyticsController extends Controller
                 fputcsv($handle, ['Rank', 'Product', 'Qty Sold', 'Revenue', 'Category']);
                 $rows = $this->salesAnalyticsService->getTopProducts($year);
                 foreach ($rows as $i => $r) {
-                    fputcsv($handle, [$i + 1, str($r->product->name)->limit(20), $r->total_sold, format_price($r->revenue), $r->product->category->name ?? '-']);
+                    fputcsv($handle, [$i + 1, str($r->product_name)->limit(20), $r->total_sold, format_price($r->revenue), $r->category_name ?? '-']);
                 }
 
             } elseif ($type === 'customers') {
                 fputcsv($handle, ['Rank', 'Customer', 'Email', 'Orders', 'Total Spent']);
                 $rows = $this->salesAnalyticsService->getTopCustomers($year);
                 foreach ($rows as $i => $r) {
-                    fputcsv($handle, [$i + 1, $r->customer->name, $r->customer->email, $r->order_count, format_price($r->total_spent)]);
+                    fputcsv($handle, [$i + 1, $r->customer_name, $r->customer_email, $r->order_count, format_price($r->total_spent)]);
                 }
 
             } elseif ($type === 'category') {
                 fputcsv($handle, ['Category', 'Revenue', 'Orders']);
                 $rows = $this->salesAnalyticsService->getSalesByCategory($year);
                 foreach ($rows as $r) {
-                    fputcsv($handle, [$r->category->name ?? '-', format_price($r->total_revenue), $r->total_quantity]);
+                    fputcsv($handle, [$r->category_name ?? '-', format_price($r->total_revenue), $r->total_quantity]);
                 }
             }
 
