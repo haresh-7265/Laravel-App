@@ -8,7 +8,7 @@
     <h4 class="fw-bold mb-0">
         <i class="bi bi-bag-check me-1"></i> All Orders
     </h4>
-    <span class="badge bg-secondary fs-6">{{ $orders->count() }} Total Orders</span>
+    <span class="badge bg-secondary fs-6">{{ array_sum($allCounts) }} Total Orders</span>
 </div>
 
 {{-- Filters --}}
@@ -203,6 +203,9 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+        <div class="ml-6 mr-6">
+            {{ $orders->withQueryString()->links() }}
         </div>
         @endif
     </div>

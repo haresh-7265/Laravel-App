@@ -10,7 +10,7 @@
 
         {{-- Category Badge --}}
         <span class="absolute top-3 left-3 text-[11px] font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-blue-50 text-blue-800">
-            {{ $product->category_name }}
+            {{ $product->category_name ?? $product->category?->name }}
         </span>
 
         {{-- Discount Pill --}}

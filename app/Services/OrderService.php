@@ -22,6 +22,71 @@ class OrderService
         private CouponService $couponService
     ) {}
 
+    public function getFilteredProducts(array $filters)
+    {
+        ksort($filters);
+        $user = request()->user();
+        $role = $user?->role;
+        $id = $user?->id;
+        $hash = md5(json_encode($filters));
+        $suffix = $role !== 'admin' ? ".{$id}" : '';
+        $ordersCacheKey = "orders.{$role}{$suffix}.index.{$hash}";
+
+        return Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($filters, $role, $id) {
+            return Order::with([
+                'user:id,name,email',
+                'items:id,order_id,product_id,product_name',
+                'items.product:id,image',
+                ])
+                ->when(
+                    $role !== 'admin',
+                    fn ($q) => $q->where('user_id', $id)
+                )
+                ->when(! empty($filters['search']), function ($q) use ($filters) {
+                    $q->where('order_number', 'like', '%'.$filters['search'].'%')
+                        ->orWhereHas(
+                            'user',
+                            fn ($q) => $q->where('name', 'like', '%'.$filters['search'].'%')
+                                ->orWhere('email', 'like', '%'.$filters['search'].'%')
+                        );
+                })
+                ->when(
+                    ! empty($filters['status']),
+                    fn ($q) => $q->where('status', $filters['status'])
+                )
+                ->when(
+                    ! empty($filters['payment_status']),
+                    fn ($q) => $q->where('payment_status', $filters['payment_status'])
+                )
+                ->when(
+                    ! empty($filters['date']),
+                    fn ($q) => $q->whereDate('created_at', $filters['date'])
+                )
+                ->latest()
+                ->paginate(10);               
+        });
+    }
+
+    public function getOrderStatusCounts()
+    {
+        $user = request()->user();
+        $role = $user?->role;
+        $id = $user?->id;
+        $suffix = $role !== 'admin' ? ".{$id}" : '';
+        $countsCacheKey = "orders.{$role}{$suffix}.status_counts";
+
+        return Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () use ($role, $id) {
+            return Order::selectRaw('status, count(*) as count')
+                ->when(
+                    $role != 'admin',
+                    fn ($q) => $q->where('user_id', $id)
+                )
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray();
+        });
+    }
+
     public function placeOrder(array $shippingData): Order
     {
         return DB::transaction(function () use ($shippingData) {
@@ -129,7 +194,7 @@ class OrderService
             // Clear cart after order (also clears applied coupon)
             $this->cartService->clear();
 
-            DB::afterCommit(fn() => OrderPlaced::dispatch($order));
+            DB::afterCommit(fn () => OrderPlaced::dispatch($order));
 
             return $order;
         }, attempts: 3);
@@ -176,38 +241,38 @@ class OrderService
 
     public function getCustomerOrdersAndStats(int $userId): array
     {
-        $orders = Cache::tags(['orders'])->remember("orders.user.{$userId}",
-            now()->addMinutes(10), fn () => Order::where('user_id', $userId)
-                ->latest()
-                ->get());
+        $orders = $this->getFilteredProducts([]);
 
-        $totalOrders = $orders->count();
-
-        $totalSpent = $orders->where('status', '!=', 'cancelled')->sum('total');
-
-        $averageOrderValue = $totalOrders > 0
-            ? $orders->where('status', '!=', 'cancelled')->avg('total')
-            : 0;
+        $stats = DB::table('orders')
+            ->select([
+                DB::raw('COUNT(*) as total_orders'),
+                DB::raw('SUM(CASE WHEN status != "cancelled" THEN total ELSE 0 END) as total_spent'),
+                DB::raw('ROUND(AVG(CASE WHEN status != "cancelled" THEN total END), 2) as avg_order_value'),
+            ])
+            ->addSelect([
+                'last_order_amount' => Order::select('total')
+                    ->where('user_id', $userId)
+                    ->latest()
+                    ->limit(1),
+            ])
+            ->where('user_id', $userId)
+            ->first();
 
         $topProducts = OrderItem::whereHas('order', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })
-            ->with('product')
+            ->with('product:id,slug,name,image')
             ->selectRaw('product_id, sum(quantity) as total_quantity')
             ->groupBy('product_id')
             ->orderByDesc('total_quantity')
             ->take(3)
             ->get();
 
-        $ordersByStatus = $orders->groupBy('status')->map->count();
-
         return [
             'orders' => $orders,
-            'totalOrders' => $totalOrders,
-            'totalSpent' => $totalSpent,
-            'averageOrderValue' => $averageOrderValue,
+            'stats' => $stats,
             'topProducts' => $topProducts,
-            'ordersByStatus' => $ordersByStatus,
+            'ordersByStatus' => $this->getOrderStatusCounts(),
         ];
     }
 

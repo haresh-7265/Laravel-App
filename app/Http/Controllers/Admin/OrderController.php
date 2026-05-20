@@ -22,44 +22,11 @@ class OrderController extends Controller
             'search' => $request->query('search', ''),
             'payment_status' => $request->query('payment_status', ''),
         ];
-        ksort($filters);
-
-        $ordersCacheKey = 'orders.admin.index.'.md5(json_encode($filters));
-        $countsCacheKey = 'orders.admin.status_counts';
 
         // Count per status for stats row
-        $allCounts = Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () {
-            return Order::selectRaw('status, count(*) as count')
-                ->groupBy('status')
-                ->pluck('count', 'status')
-                ->toArray();
-        });
+        $allCounts = $this->orderService->getOrderStatusCounts();
 
-        $orders = Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($request) {
-            return Order::with(['user', 'items.product'])
-                ->when($request->search, function ($q) use ($request) {
-                    $q->where('order_number', 'like', '%'.$request->search.'%')
-                        ->orWhereHas(
-                            'user',
-                            fn ($q) => $q->where('name', 'like', '%'.$request->search.'%')
-                                ->orWhere('email', 'like', '%'.$request->search.'%')
-                        );
-                })
-                ->when(
-                    $request->status,
-                    fn ($q) => $q->where('status', $request->status)
-                )
-                ->when(
-                    $request->payment_status,
-                    fn ($q) => $q->where('payment_status', $request->payment_status)
-                )
-                ->when(
-                    $request->date,
-                    fn ($q) => $q->whereDate('created_at', $request->date)
-                )
-                ->latest()
-                ->get();
-        });
+        $orders = $this->orderService->getFilteredProducts($filters);
 
         return view('admin.orders.index', compact('orders', 'allCounts'));
     }

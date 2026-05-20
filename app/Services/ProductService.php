@@ -252,9 +252,13 @@ class ProductService
             })
             ->when(! empty($filters['in_stock']), fn ($q) => $q->where('products.stock', '>', 0))
             ->when(! empty($filters['on_sale']), function ($q) {
-                $q->whereNotNull('products.discount_price')
-                    ->where('products.discount_price', '>', 0)
-                    ->whereColumn('products.discount_price', '<', 'price')
+                $q->whereIn('products.id', function ($sub) {
+                    $sub->select('id')
+                        ->from('products')
+                        ->whereNotNull('discount_price')
+                        ->where('discount_price', '>', 0)
+                        ->whereRaw('discount_price < price');
+                })
                     ->addSelect(DB::raw('ROUND((1 - products.discount_price / products.price) * 100) as discount_percent'));
             })
             ->when($filters['sort'] ?? null, function ($q, $sort) {
@@ -309,6 +313,7 @@ class ProductService
                     ->whereNotNull('discount_price')
                     ->where('discount_price', '>', 0)
                     ->whereColumn('discount_price', '<', 'price')
+                    ->limit($limit)
                     ->get()
             );
     }

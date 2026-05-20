@@ -14,9 +14,9 @@
         </div>
 
         {{-- Order Statistics --}}
-        @if($totalOrders > 0)
+        @if($stats->total_orders > 0)
         <div class="row g-4 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card shadow-sm border-0 bg-primary text-white h-100">
                     <div class="card-body d-flex align-items-center">
                         <div class="bg-white text-primary rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
@@ -24,12 +24,12 @@
                         </div>
                         <div>
                             <h6 class="mb-1 text-white-50">Total Orders</h6>
-                            <h4 class="mb-0 fw-bold">{{ $totalOrders }}</h4>
+                            <h4 class="mb-0 fw-bold">{{ number_format($stats->total_orders ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card shadow-sm border-0 bg-success text-white h-100">
                     <div class="card-body d-flex align-items-center">
                         <div class="bg-white text-success rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
@@ -37,12 +37,12 @@
                         </div>
                         <div>
                             <h6 class="mb-1 text-white-50">Total Spent</h6>
-                            <h4 class="mb-0 fw-bold">@currency($totalSpent)</h4>
+                            <h4 class="mb-0 fw-bold">{{ format_price($stats->total_spent ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card shadow-sm border-0 bg-info text-white h-100">
                     <div class="card-body d-flex align-items-center">
                         <div class="bg-white text-info rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
@@ -50,7 +50,20 @@
                         </div>
                         <div>
                             <h6 class="mb-1 text-white-50">Average Value</h6>
-                            <h4 class="mb-0 fw-bold">@currency($averageOrderValue)</h4>
+                            <h4 class="mb-0 fw-bold">{{ format_price($stats->avg_order_value ?? 0) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 bg-warning text-white h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="bg-white text-warning rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-clock-history fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white-50">Last Order Value</h6>
+                            <h4 class="mb-0 fw-bold">{{ format_price($stats->last_order_amount ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -103,7 +116,7 @@
                                             <h6 class="mb-0 fw-bold text-truncate" style="max-width: 180px; font-size: 0.9rem;">
                                                 @if($item->product)
                                                     <a href="{{ route('products.show', $item->product) }}" class="text-dark text-decoration-none">
-                                                        {{ $item->product->name }}
+                                                        {{ str($item->product->name)->limit(20) }}
                                                     </a>
                                                 @else
                                                     Unknown Product
@@ -186,6 +199,9 @@
                     View Details <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
+        </div>
+        <div class="ml-6 mr-6 mb-7">
+            {{ $orders->withQueryString()->links() }}
         </div>
         @empty
 
