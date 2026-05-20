@@ -18,6 +18,8 @@ return new class extends Migration {
             $table->decimal('subtotal', 10, 2);
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
+            $table->string('coupon_code')->nullable();
+            $table->decimal('coupon_discount', 10, 2)->default(0);
             $table->string('payment_method')->default('cod');
             $table->enum('payment_status', ['paid', 'unpaid'])->default('unpaid');
             $table->string('invoice_path')->nullable();

@@ -20,6 +20,8 @@ return new class extends Migration {
             $table->integer('quantity');
             $table->decimal('subtotal', 10, 2);
             $table->timestamps();
+
+            $table->unique(['order_id', 'product_id']);
         });
     }
 

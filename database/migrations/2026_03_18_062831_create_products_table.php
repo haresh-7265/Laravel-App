@@ -17,10 +17,12 @@ return new class extends Migration {
             $table->decimal('price', 8, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->integer('stock');
+            $table->decimal('avg_rating', 3, 2)->default(0);
+            $table->boolean('is_active')->default(true);
             // Foreign key
             $table->foreignId('category_id')
                 ->constrained()
-                ->cascadeOnDelete();
+                ->restrictOnDelete();
             $table->text('description')->nullable();
             $table->json('tags')->nullable();
             $table->string('image')->nullable();

@@ -245,10 +245,7 @@ class ImportProducts extends Command
         // Parse tags: accept comma-separated string or JSON array
         $tags = null;
         if ($tagsRaw !== null) {
-            $decoded = json_decode($tagsRaw, true);
-            $tags    = json_last_error() === JSON_ERROR_NONE
-                ? $decoded
-                : array_map('trim', explode(',', $tagsRaw));
+            $tags = array_map('trim', explode(',', $tagsRaw));
         }
 
         // ── Validate ──────────────────────────────────────────────────────────
@@ -300,7 +297,7 @@ class ImportProducts extends Command
                 'stock'          => (int) $stock,
                 'category_id'    => (int) $categoryId,
                 'description'    => $description,
-                'tags'           => $tags ? json_encode($tags) : null,
+                'tags'           => $tags ?? null,
                 'image'          => $image,
             ];
 
