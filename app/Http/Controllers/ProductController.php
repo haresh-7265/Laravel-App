@@ -40,6 +40,7 @@ class ProductController extends Controller
                 'onSale'
             ));
         }
+
         return response()->success($products, 'All products');
     }
 
@@ -71,6 +72,7 @@ class ProductController extends Controller
 
         Products::create($data, $image);
         session()->flash('success', 'Product created successfully');
+
         return redirect()->route('products.index');
     }
 
@@ -80,6 +82,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         ProductViewed::dispatch($product, auth()->user(), session()->id());
+
         return view('products.show')->with('product', $product);
     }
 
@@ -99,7 +102,7 @@ class ProductController extends Controller
         $data = Arr::except($request->all(), [
             '_token',
             '_method',
-            'image'
+            'image',
         ]);
         $image = $request->file('image');
 
@@ -132,24 +135,40 @@ class ProductController extends Controller
     // export csv file
     public function exportCsv()
     {
-        $products = Product::select('id', 'name', 'price', 'stock')->get();
-
-        return response()->streamDownload(function () use ($products) {
+        return response()->streamDownload(function () {
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, ['ID', 'Name', 'Price', 'Stock']);
+            fputcsv($handle, ['Product Id', 'Name', 'Price', 'Stock', 'Category', 'Avg Rating']);
 
-            foreach ($products as $product) {
-                fputcsv($handle, [
-                    $product->id,
-                    $product->name,
-                    $product->price,
-                    $product->stock,
-                ]);
+            try {
+                Product::select(
+                    'products.id',
+                    'products.name',
+                    'products.price',
+                    'products.stock',
+                    'products.avg_rating',
+                    'categories.name as category_name'
+                )
+                    ->join('categories', 'categories.id', '=', 'products.category_id')
+                    ->orderBy('categories.name')
+                    ->lazy(500)
+                    ->each(function ($product) use ($handle) {
+                        fputcsv($handle, [
+                            $product->id,
+                            $product->name,
+                            $product->price,
+                            $product->stock,
+                            $product->category_name,
+                            $product->avg_rating,
+                        ]);
+                    });
+            } catch (\Exception $e) {
+                \Log::channel('product')->error('CSV Export failed: '.$e->getMessage());
+            } finally {
+                fclose($handle);
             }
 
-            fclose($handle);
-        }, 'products-' . now()->format('Y-m-d') . '.csv', [
+        }, 'products-'.now()->format('Y-m-d').'.csv', [
             'Content-Type' => 'text/csv',
         ]);
     }

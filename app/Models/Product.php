@@ -22,6 +22,7 @@ class Product extends Model
         'category_id',
         'is_active',
         'tags',
+        'avg_rating'
     ];
 
     protected $casts = [
