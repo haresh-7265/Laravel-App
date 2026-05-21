@@ -65,7 +65,7 @@ class ProductServiceProvider extends ServiceProvider
             $view->with('cart_count', $cartCount);
         });
 
-        Paginator::useBootstrapFive();
+        Paginator::useTailwind();
 
         Product::observe(ProductObserver::class);
         Order::observe(OrderObserver::class);

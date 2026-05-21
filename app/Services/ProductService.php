@@ -50,6 +50,7 @@ class ProductService
         return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role) {
             $products = $this->apply($filters, $role)
                 ->paginate($perPage)
+                ->onEachSide(2)
                 ->withQueryString();
 
             return $products;
