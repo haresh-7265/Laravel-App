@@ -4,11 +4,15 @@ namespace App\Models;
 
 use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['name'];
+
     protected static function booted(): void
     {
         $flush = fn () => app(CacheService::class)->forgetCategories();

@@ -114,7 +114,7 @@ return [
         ],
 
         'analytics' => [
-            'driver' => 'pgsql',
+            'driver' => env('DB_ANALYTICS_DRIVER', 'pgsql'),
             'url' => env('DB_ANALYTICS_URL'),
             'host' => env('DB_ANALYTICS_HOST', '127.0.0.1'),
             'port' => env('DB_ANALYTICS_PORT', '5432'),

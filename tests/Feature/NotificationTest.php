@@ -159,7 +159,7 @@ class NotificationTest extends TestCase
     }
 
     /** @test */
-    public function new_order_received_via_returns_all_four_channels(): void
+    public function new_order_received_via_returns_all_five_channels(): void
     {
         $notification = new NewOrderReceived($this->order);
 
@@ -169,17 +169,18 @@ class NotificationTest extends TestCase
         $this->assertContains('database', $channels);
         $this->assertContains('broadcast', $channels);
         $this->assertContains(WebhookChannel::class, $channels);
-        $this->assertCount(4, $channels);
+        $this->assertContains('slack', $channels);
+        $this->assertCount(5, $channels);
     }
 
     /** @test */
-    public function product_low_stock_via_returns_mail_and_database(): void
+    public function product_low_stock_via_returns_mail_database_and_slack(): void
     {
         $notification = new ProductLowStock($this->product);
 
         $channels = $notification->via($this->admin);
 
-        $this->assertEquals(['mail', 'database'], $channels);
+        $this->assertEquals(['mail', 'database', 'slack'], $channels);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
