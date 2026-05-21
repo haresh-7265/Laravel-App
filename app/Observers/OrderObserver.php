@@ -9,6 +9,27 @@ use App\Services\CacheService;
 class OrderObserver
 {
     public bool $afterCommit = true;  // observer methods runs after commit
+
+    /**
+     * Handle the Order "creating" event.
+     * Populates the created_by and updated_by audit columns.
+     */
+    public function creating(Order $order): void
+    {
+        $userId = auth()->id();
+        $order->created_by = $order->created_by ?? $userId;
+        $order->updated_by = $order->updated_by ?? $userId;
+    }
+
+    /**
+     * Handle the Order "updating" event.
+     * Populates the updated_by audit column.
+     */
+    public function updating(Order $order): void
+    {
+        $order->updated_by = auth()->id();
+    }
+
     /**
      * Handle the Order "created" event.
      */

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Collections\ProductCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'slug',
@@ -22,7 +25,9 @@ class Product extends Model
         'category_id',
         'is_active',
         'tags',
-        'avg_rating'
+        'avg_rating',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -35,6 +40,16 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function reviews(): HasMany

@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\Services\CacheService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
+    use SoftDeletes;
+
     protected static function booted(): void
     {
         $flush = fn() => app(CacheService::class)->forgetDashboard();
@@ -22,6 +25,7 @@ class Order extends Model
         'payment_method', 'payment_status', 'invoice_path',
         'notes', 'shipping_name', 'shipping_email', 'shipping_phone',
         'shipping_address', 'shipping_city', 'shipping_state', 'shipping_pincode',
+        'created_by', 'updated_by',
     ];
 
     // Relationships
@@ -33,6 +37,16 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     // Helper

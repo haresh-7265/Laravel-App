@@ -14,7 +14,20 @@ use Illuminate\Support\Facades\Storage;
 class ProductObserver
 {
     public bool $afterCommit = true; // observer methods runs after commit
+
     private const LOW_STOCK_THRESHOLD = 10;
+
+    /**
+     * Handle the Product "creating" event.
+     * Populates the created_by and updated_by audit columns.
+     */
+    public function creating(Product $product): void
+    {
+        $userId = auth()->id();
+        $product->created_by = $product->created_by ?? $userId;
+        $product->updated_by = $product->updated_by ?? $userId;
+
+    }
 
     /**
      * Handle the Product "created" event.
@@ -22,17 +35,13 @@ class ProductObserver
     public function created(Product $product): void
     {
         $this->clearProductCaches($product);
-        // Log::channel('product')->info('Product created', [
-        //     'product_id' => $product->id,
-        //     'product_name' => $product->name,
-        //     'category_id' => $product->category_id,
-        //     'has_image' => !is_null($product->image),
-        //     'created_by' => auth()->id() ?? 'system',
-        // ]);
     }
 
     public function updating(Product $product)
     {
+        // Populate updated_by audit column
+        $product->updated_by = auth()->id();
+
         // make active product when product is restocked
         $oldStock = $product->getOriginal('stock');
         $newStock = $product->stock;
@@ -107,13 +116,29 @@ class ProductObserver
     {
         $this->clearProductCaches($product);
 
+        Log::channel('product')->warning('Product deleted', [
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'deleted_by' => auth()->id() ?? 'system',
+            'data' => [
+                'price' => $product->price,
+                'stock' => $product->stock,
+                'is_active' => $product->is_active,
+            ],
+        ]);
+    }
+
+    public function forceDeleted(Product $product): void
+    {
+        $this->clearProductCaches($product);
+
         // delete image
         $path = $product->image;
         if ($path && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }
 
-        Log::channel('product')->warning('Product deleted', [
+        Log::channel('product')->warning('Product forceDeleted', [
             'product_id' => $product->id,
             'product_name' => $product->name,
             'deleted_by' => auth()->id() ?? 'system',

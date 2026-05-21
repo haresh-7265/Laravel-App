@@ -238,6 +238,7 @@ class ProductService
                 'categories.name as category_name',
             ])
             ->join('categories', 'categories.id', '=', 'products.category_id')
+            ->whereNull('products.deleted_at')
             ->when($role !== 'admin', function ($q) {
                 $q->where('products.is_active', true);
             })
@@ -263,8 +264,8 @@ class ProductService
             })
             ->when($filters['sort'] ?? null, function ($q, $sort) {
                 match ($sort) {
-                    'price_asc' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'asc'),
-                    'price_desc' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'desc'),
+                    'price_low' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'asc'),
+                    'price_high' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'desc'),
                     'popularity' => $q->orderByDesc(
                         DB::raw('(SELECT COUNT(*) FROM order_items WHERE order_items.product_id = products.id)')
                     ),
@@ -316,5 +317,38 @@ class ProductService
                     ->limit($limit)
                     ->get()
             );
+    }
+
+    // get trashed products
+    public function getTrashedProducts(int $perPage = 10)
+    {
+        $page = request()->query('page', 1);
+
+        return Cache::tags(['products', 'products.list'])
+            ->remember("products.trashed.{$page}.{$perPage}",
+                now()->addHour(),
+                fn () => Product::onlyTrashed()
+                    ->with('category')
+                    ->latest('deleted_at')
+                    ->paginate($perPage)
+            );
+    }
+
+    // restore product
+    public function restoreProduct(int $id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore();
+
+        return $product;
+    }
+
+    // force delete product
+    public function forceDeleteProduct(int $id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->forceDelete();
+
+        return $product;
     }
 }

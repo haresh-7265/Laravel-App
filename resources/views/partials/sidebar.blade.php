@@ -8,7 +8,6 @@
     $adminLinks = [
         ['route' => 'admin.dashboard',        'icon' => 'bi-speedometer2',   'label' => 'Dashboard'],
         ['route' => 'admin.orders.index',     'icon' => 'bi-receipt',        'label' => 'Orders'],
-        ['route' => 'products.create',        'icon' => 'bi-plus-circle',    'label' => 'Create'],
         ['route' => 'admin.online-customers', 'icon' => 'bi-people',         'label' => 'Online'],
         ['route' => 'admin.cache-monitor',    'icon' => 'bi-speedometer',    'label' => 'Cache'],
         ['route' => 'admin.sales-analytics',  'icon' => 'bi-graph-up-arrow', 'label' => 'Sales'],
@@ -16,6 +15,10 @@
         ['route' => 'admin.files.index',      'icon' => 'bi-bar-chart-line', 'label' => 'Reports'],
         ['route' => 'admin.slow-queries.index', 'icon' => 'bi-hourglass-split', 'label' => 'Slow Queries'],
     ];
+    $adminMenuLinks = [
+        ['route' => 'products.create',  'icon' => 'bi-plus-circle', 'label' => 'Create Product'],
+        ['route' => 'products.trashed', 'icon' => 'bi-archive',     'label' => 'Trashed Products']
+    ]
 @endphp
 
 {{-- Overlay --}}
@@ -57,6 +60,17 @@
         ])>
             <i class="bi bi-grid w-4 text-center"></i> Products
         </a>
+
+        @admin
+            @foreach($adminMenuLinks as $link)
+                <a href="{{ route($link['route']) }}" @class([
+                    'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
+                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs($link['route']),
+                ])>
+                    <i class="{{ $link['icon'] }} w-4 text-center"></i> {{ $link['label'] }}
+                </a>
+            @endforeach
+        @endadmin
 
         @auth
             @if(auth()->user()->isCustomer())

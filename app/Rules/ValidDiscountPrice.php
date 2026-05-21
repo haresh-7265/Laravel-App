@@ -12,8 +12,8 @@ class ValidDiscountPrice implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value < 0) {
-            $fail('Discount price cannot be negative.');
+        if ($value <= 0) {
+            $fail('Discount price cannot be negative or 0.');
         }
 
         if ($value >= $this->price) {

@@ -172,4 +172,36 @@ class ProductController extends Controller
             'Content-Type' => 'text/csv',
         ]);
     }
+
+    /**
+     * Display paginated list of trashed (soft-deleted) products.
+     */
+    public function trashed()
+    {
+        $products = Products::getTrashedProducts();
+
+        return view('products.trashed', compact('products'));
+    }
+
+    /**
+     * Restore a soft-deleted product.
+     */
+    public function restore(int $id)
+    {
+        $product = Products::restoreProduct($id);
+
+        return redirect()->route('products.trashed')
+            ->with('success', "Product \"{$product->name}\" restored successfully!");
+    }
+
+    /**
+     * Permanently delete a trashed product.
+     */
+    public function forceDelete(int $id)
+    {
+        $product = Products::forceDeleteProduct($id);
+
+        return redirect()->route('products.trashed')
+            ->with('success', "Product \"{$product->name}\" permanently deleted!");
+    }
 }

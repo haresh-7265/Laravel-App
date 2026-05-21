@@ -60,6 +60,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::get('products/export', [ProductController::class, 'exportCsv'])->name('products.export');
+
+    // Trashed products (soft-delete management)
+    Route::get('products/trashed', [ProductController::class, 'trashed'])->name('products.trashed');
+    Route::patch('products/{id}/restore', [ProductController::class, 'restore'])->name('products.restore');
+    Route::delete('products/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('products.forceDelete');
     //fakestore products route
     Route::get('/fakestore/products', [FakeStoreController::class, 'index'])->name('fakestore.index');
     // orders route
