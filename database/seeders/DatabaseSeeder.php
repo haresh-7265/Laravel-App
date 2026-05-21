@@ -11,19 +11,15 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
-     * Seeders are called in dependency order:
-     * 1. CategorySeeder - Categories must exist before products
-     * 2. UserSeeder - Users must exist before orders
-     * 3. ProductSeeder - Products must exist before order items
-     * 4. OrderSeeder - Depends on users and products
      */
     public function run(): void
     {
-        $this->call([
-            CategorySeeder::class,
-            UserSeeder::class,
-            ProductSeeder::class,
-            OrderSeeder::class,
-        ]);
+        // 1. Run ProductionSeeder (seeding essential reference data for all environments)
+        $this->call(ProductionSeeder::class);
+
+        // 2. Skip heavy demo data runs in staging/production environments
+        if (app()->environment('local', 'testing')) {
+            $this->call(DemoDataSeeder::class);
+        }
     }
 }
