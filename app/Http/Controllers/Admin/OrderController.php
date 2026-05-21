@@ -26,7 +26,7 @@ class OrderController extends Controller
         // Count per status for stats row
         $allCounts = $this->orderService->getOrderStatusCounts();
 
-        $orders = $this->orderService->getFilteredProducts($filters);
+        $orders = $this->orderService->getFilteredOrders($filters);
 
         return view('admin.orders.index', compact('orders', 'allCounts'));
     }

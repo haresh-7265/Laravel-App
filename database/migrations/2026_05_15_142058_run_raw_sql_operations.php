@@ -15,12 +15,15 @@ return new class extends Migration
         // Use DB::unprepared() ONLY for migration-time operations (e.g. setting up triggers, views, or stored procedures).
         // DB::unprepared() executes raw SQL without any parameter binding or sanitization.
         // It must NEVER accept user input, beacause user input is untrusted data — unprepared() puts it directly into SQL without any escaping, making SQL injection trivially easy..
-        DB::unprepared('
-            CREATE OR REPLACE VIEW active_products_view AS
-            SELECT id, name, price 
-            FROM products 
-            WHERE is_active = 1;
-        ');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::unprepared('
+                DROP VIEW IF EXISTS active_products_view;
+                CREATE VIEW active_products_view AS
+                SELECT id, name, price 
+                FROM products 
+                WHERE is_active = 1;
+            ');
+        }
     }
 
     /**
@@ -28,6 +31,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::unprepared('DROP VIEW IF EXISTS active_products_view;');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::unprepared('DROP VIEW IF EXISTS active_products_view;');
+        }
     }
 };

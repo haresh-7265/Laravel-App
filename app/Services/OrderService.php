@@ -22,7 +22,7 @@ class OrderService
         private CouponService $couponService
     ) {}
 
-    public function getFilteredProducts(array $filters)
+    public function getFilteredOrders(array $filters)
     {
         ksort($filters);
         $user = request()->user();
@@ -241,7 +241,7 @@ class OrderService
 
     public function getCustomerOrdersAndStats(int $userId): array
     {
-        $orders = $this->getFilteredProducts([]);
+        $orders = $this->getFilteredOrders([]);
 
         $stats = DB::table('orders')
             ->select([

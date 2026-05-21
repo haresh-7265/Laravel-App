@@ -26,7 +26,7 @@ class OrderFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'order_number' => 'ORD-' . fake()->uuid(),
+            'order_number' => strtoupper(uniqid('ORD-')),
             'status' => fake()->randomElement(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
             'subtotal' => $subtotal,
             'discount' => $discount,

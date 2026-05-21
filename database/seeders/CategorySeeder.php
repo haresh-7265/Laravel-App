@@ -8,16 +8,13 @@ use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
+    use WithoutModelEvents;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Category::insert([
-            ['name' => 'Electronics'],
-            ['name' => 'Clothing'],
-            ['name' => 'Books'],
-            ['name' => 'Furniture'],
-        ]);
+        Category::factory()->count(10)->create();
     }
 }

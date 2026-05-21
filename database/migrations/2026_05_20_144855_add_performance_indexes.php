@@ -27,12 +27,12 @@ return new class extends Migration
 
         // ── products ─────────────────────────────────────────
 
-        Schema::table('products', function (Blueprint $table) {
-
-
-            // 4. Full-text: products(name, description)
-            $table->fullText(['name', 'description'], 'idx_products_fulltext');
-        });
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('products', function (Blueprint $table) {
+                // 4. Full-text: products(name, description)
+                $table->fullText(['name', 'description'], 'idx_products_fulltext');
+            });
+        }
     }
 
     /**
@@ -46,8 +46,10 @@ return new class extends Migration
             $table->dropIndex('idx_orders_user_status');
         });
 
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropFullText('idx_products_fulltext');
-        });
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('products', function (Blueprint $table) {
+                $table->dropFullText('idx_products_fulltext');
+            });
+        }
     }
 };
