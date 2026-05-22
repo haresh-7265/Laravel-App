@@ -21,14 +21,14 @@
         <div class="col-md-3">
             <div class="bg-light rounded p-3">
                 <p class="text-muted small mb-1">Total files</p>
-                <p class="fw-500 fs-5 mb-0">{{ count($files) }}</p>
+                <p class="fw-500 fs-5 mb-0">{{ $paginator->total() }}</p>
             </div>
         </div>
         <div class="col-md-3">
             <div class="bg-light rounded p-3">
                 <p class="text-muted small mb-1">Total size</p>
                 <p class="fw-500 fs-5 mb-0">
-                    {{ number_format($files->sum('size') / 1024, 1) }} KB
+                    {{ human_file_size($totalSize) }}
                 </p>
             </div>
         </div>
@@ -36,7 +36,7 @@
             <div class="bg-light rounded p-3">
                 <p class="text-muted small mb-1">Older than 30 days</p>
                 <p class="fw-500 fs-5 mb-0 text-danger">
-                    {{ $files->where('age_days', '>=', 30)->count() }}
+                    {{ $olderFilesCount }}
                 </p>
             </div>
         </div>
@@ -48,6 +48,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th>#</th>
                         <th>Filename</th>
                         <th>Size</th>
                         <th>Last modified</th>
@@ -56,8 +57,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($files as $file)
+                    @forelse ($paginator as $i => $file)
                     <tr>
+                        <td>{{ ($paginator->currentPage() - 1) * $paginator->perPage() + $i + 1 }}</td>
                         <td>
                             <code class="text-dark">
                                 <a href="{{ $file['url'] }}" class="hover:text-blue-500 hover:underline">
@@ -97,6 +99,10 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    {{-- Works exactly like Eloquent paginator --}}
+    <div class="pagination">
+        {{ $paginator->links() }}
     </div>
 
 </div>
