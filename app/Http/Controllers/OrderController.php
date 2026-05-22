@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCheckoutRequest;
 use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Services\OrderService;
+use Arr;
 use Illuminate\Database\DeadlockException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -42,11 +43,24 @@ class OrderController extends Controller
     }
 
     // Customer order listing
-    public function index()
+    public function index(Request $request)
     {
-        $stats = $this->orderService->getCustomerOrdersAndStats(auth()->id());
+        $user = $request->user();
+        $filters = $request->only(['search', 'status', 'payment_status', 'date']);
+        $cursor = $request->input('cursor');
+        $perPage = min((int) $request->input('perPage', 20), 100);
 
-        return view('orders.index', $stats);
+        $orders = $this->orderService->getFilteredOrders(
+            filters: $filters,
+            role: $user?->role ?? 'guest',
+            userId: $user?->id,
+            cursor: $cursor,
+            perPage: $perPage,
+        );
+
+        extract($this->orderService->getCustomerOrderStats($user?->id));
+    
+        return view('orders.index', compact('stats', 'topProducts', 'ordersByStatus', 'orders'));
     }
 
     // Customer order detail

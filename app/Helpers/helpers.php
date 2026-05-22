@@ -11,7 +11,7 @@ if (!function_exists('analytics')) {
 }
 
 if (!function_exists('format_price')) {
-    function format_price($amount)
+    function format_price(int|float $amount)
     {
         return Number::currency($amount);
     }

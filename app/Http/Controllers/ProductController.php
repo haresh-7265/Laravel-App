@@ -25,9 +25,17 @@ class ProductController extends Controller
             'on_sale',
             'sort',
         ]);
+        $user = $request->user();
+        $cursor = $request->input('cursor');
+        $perPage = min((int) $request->input('perPage', 20), 100);
         $hasFilters = collect($filters)->hasAny(['min_price', 'max_price', 'categories', 'in_stock', 'on_sale', 'sort']);
 
-        extract(Products::getHomepageProducts($request->input('page', 1), $filters));
+        extract(Products::getHomepageProducts(
+            filters: $filters,
+            role: $user?->role ?? 'customer',
+            cursor: $cursor,
+            perPage: $perPage
+            ));
 
         if ($request->acceptsHtml()) {
             return view('products.index', compact(
@@ -176,9 +184,11 @@ class ProductController extends Controller
     /**
      * Display paginated list of trashed (soft-deleted) products.
      */
-    public function trashed()
+    public function trashed(Request $request)
     {
-        $products = Products::getTrashedProducts();
+        $page = request()->input('page');
+        $perPage = min((int) $request->input('perPage', 20), 100);
+        $products = Products::getTrashedProducts($page, $perPage);
 
         return view('products.trashed', compact('products'));
     }

@@ -22,25 +22,49 @@ class OrderService
         private CouponService $couponService
     ) {}
 
-    public function getFilteredOrders(array $filters)
+    public function getFilteredOrders(
+        array $filters,
+        string $role = 'customer',
+        ?int $userId = null,
+        ?string $cursor = null,
+        int $perPage = 20)
     {
         ksort($filters);
-        $user = request()->user();
-        $role = $user?->role;
-        $id = $user?->id;
-        $hash = md5(json_encode($filters));
-        $suffix = $role !== 'admin' ? ".{$id}" : '';
-        $ordersCacheKey = "orders.{$role}{$suffix}.index.{$hash}";
 
-        return Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($filters, $role, $id) {
+        // cache scope: admin sees all, others see only their scoped data
+        $cacheScope = $role === 'admin'
+            ? 'admin'
+            : ($userId ? "user.{$userId}" : 'guest');
+
+        $payload = json_encode([
+            'filters' => $filters,
+            'cursor' => $cursor,
+            'perPage' => $perPage,
+        ], JSON_THROW_ON_ERROR); // throws on failure instead of silent false
+
+        $hash = md5($payload); // faster than md5, still collision-resistant for cache keys
+
+        $ordersCacheKey = "orders.{$cacheScope}.{$hash}";
+
+        return Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($filters, $role, $userId, $perPage, $cursor) {
             return Order::with([
                 'user:id,name,email',
                 'items:id,order_id,product_id,product_name',
                 'items.product:id,image',
-                ])
+            ])
+            ->select([
+                'id',
+                'user_id',
+                'order_number',
+                'total',
+                'payment_status',
+                'payment_method',
+                'status',
+                'created_at'
+            ])
                 ->when(
                     $role !== 'admin',
-                    fn ($q) => $q->where('user_id', $id)
+                    fn ($q) => $q->where('user_id', $userId)
                 )
                 ->when(! empty($filters['search']), function ($q) use ($filters) {
                     $q->where('order_number', 'like', '%'.$filters['search'].'%')
@@ -63,7 +87,8 @@ class OrderService
                     fn ($q) => $q->whereDate('created_at', $filters['date'])
                 )
                 ->latest()
-                ->paginate(10);               
+                ->orderByDesc('id')
+                ->cursorPaginate($perPage, ['*'], 'cursor', $cursor);
         });
     }
 
@@ -239,10 +264,8 @@ class OrderService
         }
     }
 
-    public function getCustomerOrdersAndStats(int $userId): array
+    public function getCustomerOrderStats(int $userId): array
     {
-        $orders = $this->getFilteredOrders([]);
-
         $stats = DB::table('orders')
             ->select([
                 DB::raw('COUNT(*) as total_orders'),
@@ -269,7 +292,6 @@ class OrderService
             ->get();
 
         return [
-            'orders' => $orders,
             'stats' => $stats,
             'topProducts' => $topProducts,
             'ordersByStatus' => $this->getOrderStatusCounts(),

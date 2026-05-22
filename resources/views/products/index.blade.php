@@ -90,10 +90,6 @@
             </div>
         </div>
 
-        {{-- Product count --}}
-        <p class="text-muted small mb-2">
-            {{ trans_choice('products_found', $products->total(), ['count' => $products->total()]) }}
-        </p>
 
         {{-- Product Cards Grid --}}
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4">

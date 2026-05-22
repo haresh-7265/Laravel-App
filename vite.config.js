@@ -19,6 +19,7 @@ export default defineConfig({
                 "resources/js/admin/browsing.js",
                 "resources/js/customer/customer.js",
                 "resources/js/notify.js",
+                "resources/js/admin/orders-infinite.js",
             ],
             refresh: true,
         }),

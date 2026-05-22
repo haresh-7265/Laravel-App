@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ProductHasOrdersException;
 use App\Models\Product;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
@@ -14,43 +14,47 @@ use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
-    public function getAll()
+    public function getAll(string $role = 'customer')
     {
-        $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
         $key = "products.{$role}.all";
 
         return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn () => Product::active()->with('category')->get());
     }
 
-    public function getHomepageProducts(int $page, array $filters, int $perPage = 10): array
+    public function getHomepageProducts(
+        array $filters,
+        string $role = 'customer',
+        ?string $cursor = null,
+        int $perPage = 20): array
     {
-        $role = request()->user()?->isAdmin() ? 'admin' : 'customer';
-
         return Concurrency::run([
             'featured' => fn () => $this->getFeaturedProducts($role),
             'newArrivals' => fn () => $this->getNewArrivalProducts($role),
             'onSale' => fn () => $this->getOnSaleProducts($role),
-            'products' => fn () => $this->getFilteredProducts($page, $filters, $perPage, $role),
+            'products' => fn () => $this->getFilteredProducts($filters, $role, $cursor, $perPage),
         ]);
     }
 
     // GET paginated products
-    public function getFilteredProducts(int $page, array $filters, int $perPage, string $role)
+    public function getFilteredProducts(
+        array $filters,
+        string $role = 'customer',
+        ?string $cursor = null,
+        int $perPage = 20)
     {
         ksort($filters);
 
         $hash = md5(json_encode([
             'filters' => $filters,
-            'page' => $page,
+            'cursor' => $cursor,
             'perPage' => $perPage,
-            'role' => auth()->user()?->role ?? 'customer',
+            'role' => $role,
         ]));
         $cacheKey = "products.{$role}.{$hash}";
 
-        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role) {
+        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role, $cursor) {
             $products = $this->apply($filters, $role)
-                ->paginate($perPage)
-                ->onEachSide(2)
+                ->cursorPaginate($perPage, ['*'], 'cursor', $cursor)
                 ->withQueryString();
 
             return $products;
@@ -225,7 +229,7 @@ class ProductService
     // filters
     public function apply(array $filters, string $role = 'customer'): Builder
     {
-        return DB::table('products')
+        return Product::query()
             ->select([
                 'products.id',
                 'products.name',
@@ -235,11 +239,12 @@ class ProductService
                 'products.discount_price',
                 'products.stock',
                 'products.image',
+                'products.created_at',
                 'categories.id as category_id',
                 'categories.name as category_name',
+                DB::raw('COALESCE(products.discount_price, products.price) as effective_price'),
             ])
             ->join('categories', 'categories.id', '=', 'products.category_id')
-            ->whereNull('products.deleted_at')
             ->when($role !== 'admin', function ($q) {
                 $q->where('products.is_active', true);
             })
@@ -263,22 +268,24 @@ class ProductService
                 })
                     ->addSelect(DB::raw('ROUND((1 - products.discount_price / products.price) * 100) as discount_percent'));
             })
-            ->when($filters['sort'] ?? null, function ($q, $sort) {
+            ->when($filters['sort'] ?? 'newest', function ($q, $sort) {
+                if ($sort == 'popularity') {
+                    $q->addSelect(DB::raw('(SELECT COUNT(*) FROM order_items WHERE order_items.product_id = products.id) as order_count'));
+                }
                 match ($sort) {
-                    'price_low' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'asc'),
-                    'price_high' => $q->orderBy(DB::raw('COALESCE(products.discount_price, products.price)'), 'desc'),
-                    'popularity' => $q->orderByDesc(
-                        DB::raw('(SELECT COUNT(*) FROM order_items WHERE order_items.product_id = products.id)')
-                    ),
-                    'newest' => $q->orderBy('products.created_at', 'desc'),
-                    default => $q->orderBy('products.created_at', 'desc'),
+                    'price_low' => $q->orderBy('effective_price', 'asc')->orderBy('products.id'),
+                    'price_high' => $q->orderBy('effective_price', 'desc')->orderBy('products.id'),
+                    'popularity' => $q->orderBy('order_count', 'desc')->orderBy('products.id'),
+                    'newest' => $q->orderBy('products.created_at', 'desc')->orderBy('products.id'),
+                    default => $q->orderBy('products.created_at', 'desc')->orderBy('products.id'),
                 };
-            }, fn ($q) => $q->orderBy('products.created_at', 'desc'));
+            });
     }
 
     // get featuren products
     public function getFeaturedProducts(string $role = 'customer', int $limit = 8)
     {
+
         return Cache::tags(['products', 'products.list'])
             ->remember("products.{$role}.featured",
                 now()->addHour(),
@@ -321,9 +328,8 @@ class ProductService
     }
 
     // get trashed products
-    public function getTrashedProducts(int $perPage = 10)
+    public function getTrashedProducts(int $page = 1, int $perPage = 10)
     {
-        $page = request()->query('page', 1);
 
         return Cache::tags(['products', 'products.list'])
             ->remember("products.trashed.{$page}.{$perPage}",

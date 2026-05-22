@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\OrderService;
 use Arr;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
@@ -16,19 +16,60 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $filters = [
-            'date' => $request->query('date', ''),
-            'status' => $request->query('status', ''),
-            'search' => $request->query('search', ''),
-            'payment_status' => $request->query('payment_status', ''),
-        ];
+        $user = $request->user();
+        $filters = $request->only(['search', 'status', 'payment_status', 'date']);
+        $cursor = $request->input('cursor');
+        $perPage = min((int) $request->input('perPage', 20), 100);
 
         // Count per status for stats row
         $allCounts = $this->orderService->getOrderStatusCounts();
 
-        $orders = $this->orderService->getFilteredOrders($filters);
+        if (! $request->expectsJson()) {
+            return view('admin.orders.index', compact('allCounts'));
+        }
 
-        return view('admin.orders.index', compact('orders', 'allCounts'));
+        $orders = $this->orderService->getFilteredOrders(
+            filters: $filters,
+            role: $user?->role ?? 'guest',
+            userId: $user?->id,
+            cursor: $cursor,
+            perPage: $perPage,
+        );
+
+        $nextCursor = $orders->nextCursor()?->encode();
+        $hasMore = $orders->hasMorePages();
+
+        return response()->json([
+            'data' => $orders->through(fn ($order) => $this->formatOrder($order))->items(),
+            'next_cursor' => $nextCursor,
+            'has_more' => $hasMore,
+        ]);
+
+    }
+
+    public function indexApi(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $filters = $request->only(['search', 'status', 'payment_status', 'date']);
+        $cursor = $request->input('cursor');
+        $perPage = min((int) $request->input('perPage', 20), 100);
+
+        $orders = $this->orderService->getFilteredOrders(
+            filters: $filters,
+            role: $user?->role ?? 'guest',
+            userId: $user?->id,
+            cursor: $cursor,
+            perPage: $perPage,
+        );
+
+        $nextCursor = $orders->nextCursor()?->encode();
+        $hasMore = $orders->hasMorePages();
+
+        return response()->json([
+            'data' => $orders->through(fn ($order) => $this->formatOrder($order))->items(),
+            'next_cursor' => $nextCursor,
+            'has_more' => $hasMore,
+        ]);
     }
 
     public function show(Order $order)
@@ -97,5 +138,30 @@ class OrderController extends Controller
         })->sortByDesc('lastModified');
 
         return view('admin.invoices', compact('invoices'));
+    }
+
+    private function formatOrder(Order $order): array
+    {
+        return [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'customer_name' => $order->user?->name,
+            'customer_email' => $order->user?->email,
+            'total' => $order->total,
+            'total_formatted' => format_price($order->total),
+            'payment_status' => $order->payment_status,
+            'payment_method' => $order->payment_method,
+            'status' => $order->status,
+            'created_date' => $order->created_at->isoFormat('LL'),
+            'created_time' => $order->created_at->isoFormat('LT'),
+            'created_ago' => $order->created_at->diffForHumans(),
+            'items' => $order->items->map(fn ($item) => [
+                'product_name' => str($item->product_name)->limit(20),
+                'image_url' => $item->product?->image
+                                    ? asset('storage/'.$item->product->image)
+                                    : null,
+                'image' => (bool) $item->product?->image,
+            ])->toArray(),
+        ];
     }
 }

@@ -11,14 +11,6 @@ class Order extends Model
 {
     use SoftDeletes, HasFactory;
 
-    protected static function booted(): void
-    {
-        $flush = fn() => app(CacheService::class)->forgetDashboard();
-
-        static::created($flush);
-        static::updated($flush);
-        static::deleted($flush);
-    }
 
     protected $fillable = [
         'user_id', 'order_number', 'status', 'subtotal',
