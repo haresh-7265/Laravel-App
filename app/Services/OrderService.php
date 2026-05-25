@@ -222,7 +222,7 @@ class OrderService
 
             DB::afterCommit(function () use ($order){
                 OrderPlaced::dispatch($order);
-                GenerateInvoicePdf::dispatch($order);
+                GenerateInvoicePdf::dispatch($order)->onQueue('pdfs');
             });
 
             return $order;

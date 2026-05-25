@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         Log::info('AppServiceProvider register method');
 
         $this->app->bind(PaymentService::class, function () {
-            return new PaymentService();
+            return new PaymentService;
         });
 
         $this->app->bind(TestService1::class);
@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TestService2::class);
 
         $this->app->singleton('greeter', function () {
-            return new Greeter();
+            return new Greeter;
         });
 
         $this->app->singleton(FakeStoreService::class);
@@ -70,7 +70,7 @@ class AppServiceProvider extends ServiceProvider
             return response()->json([
                 'status' => false,
                 'message' => $message,
-                'error' => $error
+                'error' => $error,
             ]);
         });
 
@@ -84,7 +84,7 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo '₹' . number_format((float)$amount, 2); ?>";
         });
 
-        Http::macro('jsonApi', function (string $baseUrl, string $apiKey = '', int $timeout) {
+        Http::macro('jsonApi', function (string $baseUrl, string $apiKey, int $timeout) {
             return Http::baseUrl($baseUrl)
                 ->withHeaders([
                     'Accept' => 'application/json',
@@ -97,16 +97,17 @@ class AppServiceProvider extends ServiceProvider
         Str::macro('initials', function ($value, $limit = 2) {
             return collect(preg_split('/\s+/', trim($value)))
                 ->filter()
-                ->map(fn($word) => strtoupper($word[0] ?? ''))
+                ->map(fn ($word) => strtoupper($word[0] ?? ''))
                 ->take($limit)
                 ->join('');
         });
 
         if (! app()->isProduction()) {
             $listening = false;
-            \DB::listen(function (QueryExecuted $event) use(&$listening) {
-                if($listening)
-                    return; // ✅ skip if already logging
+            \DB::listen(function (QueryExecuted $event) use (&$listening) {
+                if ($listening) {
+                    return;
+                } // ✅ skip if already logging
 
                 $listening = true;
                 Log::channel('db-query')->debug('DB Query', [
@@ -121,10 +122,14 @@ class AppServiceProvider extends ServiceProvider
 
         $isLoggingSlowQuery = false;
         \DB::whenQueryingForLongerThan(100, function (Connection $connection, QueryExecuted $event) use (&$isLoggingSlowQuery) {
-            
-            if ($isLoggingSlowQuery) return;
+
+            if ($isLoggingSlowQuery) {
+                return;
+            }
             // Prevent infinite loop — skip logging the analytics connection itself
-            if ($connection->getName() === 'analytics') return;
+            if ($connection->getName() === 'analytics') {
+                return;
+            }
 
             $isLoggingSlowQuery = true;
 
@@ -141,7 +146,7 @@ class AppServiceProvider extends ServiceProvider
                     'user_id' => rescue(fn () => auth()->id(), null, false),
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]))->afterResponse(); // Runs AFTER response is sent to user
+                ]))->onQueue('analytics'); // Runs AFTER response is sent to user
             } catch (\Throwable $e) {
                 \Log::error('Failed to dispatch slow query job: '.$e->getMessage());
             } finally {
@@ -149,6 +154,6 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        Model::preventLazyLoading(!app()->isProduction());
+        Model::preventLazyLoading(! app()->isProduction());
     }
 }
