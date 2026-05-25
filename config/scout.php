@@ -144,7 +144,7 @@ return [
             /*
              * ── products index ───────────────────────────────────────────────
              */
-            'products' => [
+            env('PRODUCT_INDEX_NAME', 'products_v1') => [
 
                 /*
                  * SEARCHABLE ATTRIBUTES
@@ -327,5 +327,7 @@ return [
         ],
         'import_action' => env('TYPESENSE_IMPORT_ACTION', 'upsert'),
     ],
+
+    'product_index' => env('PRODUCT_INDEX_NAME', 'products_v1'),
 
 ];

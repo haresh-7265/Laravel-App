@@ -114,6 +114,25 @@ class Product extends Model
         return human_file_size(Storage::disk('public')->size($this->image ?? 'products/default.png'));
     }
 
+    // ── Scout: versioned index name ───────────────────────────────────────────
+    public function searchableAs(): string
+    {
+        return config('scout.product_index');
+    }
+
+    // ── Scout: exclude unpublished + soft-deleted ─────────────────────────────
+    public function shouldBeSearchable(): bool
+    {
+        return $this->is_active && ! $this->trashed();
+    }
+
+    // ── Scout: eager-load category before bulk import ─────────────────────────
+    public function makeAllSearchableUsing($query)
+    {
+        return $query->with('category');
+    }
+
+    // ── Scout: document shape ─────────────────────────────────────────────────
     public function toSearchableArray(): array
     {
         return [
@@ -125,12 +144,5 @@ class Product extends Model
         ];
     }
 
-    /**
-     * Eager-load the category relation when bulk-importing via scout:import.
-     * Without this every document would trigger an N+1 query.
-     */
-    public function makeAllSearchableUsing($query)
-    {
-        return $query->with('category');
-    }
+   
 }

@@ -130,9 +130,18 @@ class ProductObserver
         ]);
     }
 
+    public function restored(Product $product): void
+    {
+        if ($product->shouldBeSearchable()) {  // soft-delete restore → re-check shouldBeSearchable
+            $product->load('category')->searchable();
+        }
+    }
+
     public function forceDeleted(Product $product): void
     {
         $this->clearProductCaches($product);
+
+        $product->unsearchable();
 
         // delete image
         $path = $product->image;
@@ -154,8 +163,11 @@ class ProductObserver
 
     public function saved(Product $product): void  // covers created + updated both
     {
-
+        if ($product->shouldBeSearchable()) {
             $product->load('category')->searchable();
+        } else {
+            $product->unsearchable(); // unpublished → remove from index
+        }
     }
 
     public function clearProductCaches(Product $product): void
