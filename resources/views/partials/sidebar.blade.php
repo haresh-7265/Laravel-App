@@ -17,7 +17,8 @@
     ];
     $adminMenuLinks = [
         ['route' => 'products.create',  'icon' => 'bi-plus-circle', 'label' => 'Create Product'],
-        ['route' => 'products.trashed', 'icon' => 'bi-archive',     'label' => 'Trashed Products']
+        ['route' => 'products.trashed', 'icon' => 'bi-archive',     'label' => 'Trashed Products'],
+        ['route' => 'admin.import.index', 'icon' => 'bi-file-earmark-arrow-up',     'label' => 'Import Products'],
     ]
 @endphp
 

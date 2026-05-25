@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\FileManagerController;
+use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\FakeStoreController;
@@ -94,6 +95,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('slow-queries', function () {
             return view('admin.slow-queries');
         })->name('slow-queries.index');
+
+        // ─── Product CSV Import (Job Batching) ─────────
+        Route::get('import',                    [ProductImportController::class, 'index'])->name('import.index');
+        Route::post('import',                   [ProductImportController::class, 'store'])->name('import.store');
+        Route::get('import/status/{batchId}',   [ProductImportController::class, 'status'])->name('import.status');
+        Route::post('import/cancel/{batchId}',  [ProductImportController::class, 'cancel'])->name('import.cancel');
     });
 });
 
