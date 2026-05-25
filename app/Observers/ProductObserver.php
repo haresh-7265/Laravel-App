@@ -116,6 +116,8 @@ class ProductObserver
     {
         $this->clearProductCaches($product);
 
+        $product->unsearchable();
+
         Log::channel('product')->warning('Product deleted', [
             'product_id' => $product->id,
             'product_name' => $product->name,
@@ -148,6 +150,12 @@ class ProductObserver
                 'is_active' => $product->is_active,
             ],
         ]);
+    }
+
+    public function saved(Product $product): void  // covers created + updated both
+    {
+
+            $product->load('category')->searchable();
     }
 
     public function clearProductCaches(Product $product): void

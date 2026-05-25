@@ -120,7 +120,17 @@ class Product extends Model
             'name' => $this->name,
             'description' => $this->description,
             'tags' => $this->tags,
-            // 'category_name' => $this->category?->name,  // # it is not working with database driver
+            'category_id'     => $this->category?->id,
+            'category_name'   => $this->category?->name,
         ];
+    }
+
+    /**
+     * Eager-load the category relation when bulk-importing via scout:import.
+     * Without this every document would trigger an N+1 query.
+     */
+    public function makeAllSearchableUsing($query)
+    {
+        return $query->with('category');
     }
 }

@@ -140,9 +140,130 @@ return [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
-            // 'users' => [
-            //     'filterableAttributes'=> ['id', 'name', 'email'],
-            // ],
+
+            /*
+             * ── products index ───────────────────────────────────────────────
+             */
+            'products' => [
+
+                /*
+                 * SEARCHABLE ATTRIBUTES
+                 * Listed in descending priority order.
+                 * Meilisearch ranks documents with matches in earlier attributes higher.
+                 */
+                'searchableAttributes' => [
+                    'name',          // highest priority
+                    'category_name',
+                    'tags',
+                    'description',   // lowest priority
+                ],
+
+                /*
+                 * FILTERABLE ATTRIBUTES
+                 * Must be declared before you can use them in filter expressions.
+                 * e.g. filter: 'category = "Electronics" AND price < 500'
+                 */
+                'filterableAttributes' => [
+                    'category_name',
+                    'category_id',
+                    'price',
+                    'discount_price',
+                    'avg_rating',
+                    'stock',
+                    'is_active',
+                    'tags',
+                ],
+
+                /*
+                 * SORTABLE ATTRIBUTES
+                 * Must be declared before you can sort on them.
+                 * e.g. sort: ['price:asc', 'rating:desc']
+                 */
+                'sortableAttributes' => [
+                    'price',
+                    'discount_price',
+                    'avg_rating',
+                    'stock',
+                    'name',
+                ],
+
+                /*
+                 * RANKING RULES
+                 * Default order; customise to tune relevance.
+                 *   words       – number of query terms matched
+                 *   typo        – fewer typos = higher rank
+                 *   proximity   – matched terms close together = higher rank
+                 *   attribute   – earlier in searchableAttributes = higher rank
+                 *   sort        – honours sort parameter from request
+                 *   exactness   – exact match ranks higher
+                 *   Custom rule – "rating:desc" boosts highly rated products
+                 */
+                'rankingRules' => [
+                    'words',
+                    'typo',
+                    'proximity',
+                    'attribute',
+                    'sort',
+                    'exactness',
+                    'avg_rating:desc',   // custom: surface better-rated products first
+                ],
+
+                /*
+                 * TYPO TOLERANCE
+                 * Controls the fuzzy-matching behaviour.
+                 */
+                'typoTolerance' => [
+                    'enabled' => true,
+                    'minWordSizeForTypos' => [
+                        'oneTypo' => 4,   // words ≥ 4 chars allow 1 typo  ("phon" → "phone")
+                        'twoTypos' => 8,   // words ≥ 8 chars allow 2 typos
+                    ],
+                    'disableOnWords' => [],            // e.g. brand names
+                    'disableOnAttributes' => [],
+                ],
+
+                /*
+                 * DISTINCT ATTRIBUTE
+                 * Return at most one result per unique value of this field.
+                 * Uncomment if you want one result per brand, for example.
+                 */
+                // 'distinctAttribute' => 'brand',
+
+                /*
+                 * STOP WORDS
+                 * Common words ignored during search.
+                 */
+                'stopWords' => [
+                    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at',
+                    'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was',
+                ],
+
+                /*
+                 * SYNONYMS
+                 * Bi-directional synonym groups.
+                 */
+                'synonyms' => [
+                    'phone' => ['smartphone', 'mobile', 'cell phone'],
+                    'laptop' => ['notebook', 'computer', 'pc'],
+                    'tv' => ['television', 'monitor', 'display', 'screen'],
+                    'shoes' => ['sneakers', 'footwear', 'boots'],
+                ],
+
+                /*
+                 * FACETING
+                 * Max values returned per facet in facetDistribution.
+                 */
+                'faceting' => [
+                    'maxValuesPerFacet' => 100,
+                ],
+
+                /*
+                 * PAGINATION
+                 */
+                'pagination' => [
+                    'maxTotalHits' => 1000,
+                ],
+            ],
         ],
     ],
 
