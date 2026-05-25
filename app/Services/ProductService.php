@@ -52,10 +52,21 @@ class ProductService
         ]));
         $cacheKey = "products.{$role}.{$hash}";
 
-        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role, $cursor) {
-            $products = $this->apply($filters, $role)
-                ->cursorPaginate($perPage, ['*'], 'cursor', $cursor)
-                ->withQueryString();
+        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role) {
+
+            $q = $filters['q'] ?? null;
+            if ($q) {
+                $products = Product::search($q)
+                    ->query(fn ($b) => $this->applyFilters($filters, $role, $b))
+                    ->paginate($perPage, 'cursor')
+                    ->withQueryString();
+            } else {
+                $products = $this->applyFilters(
+                    filters: $filters,
+                    role: $role)
+                    ->paginate($perPage, 'cursor')
+                    ->withQueryString();
+            }
 
             return $products;
         });
@@ -227,9 +238,12 @@ class ProductService
     }
 
     // filters
-    public function apply(array $filters, string $role = 'customer'): Builder
+    public function applyFilters(
+        array $filters,
+        string $role,
+        ?Builder $builder = null): Builder
     {
-        return Product::query()
+        return ($builder ?? Product::query())
             ->select([
                 'products.id',
                 'products.name',

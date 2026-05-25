@@ -1,6 +1,18 @@
+@props(['hasFilters' => false])
+
 <div class="col-lg-3">
-    <div class="position-sticky" style="top: 60px;">
+    <div class="position-sticky" style="top: 120px;">
         <form method="GET" action="{{ route('products.index') }}" id="filterForm">
+            {{-- preserve existing filters --}}
+            @foreach(request()->only('q') as $key => $value)
+                @if(is_array($value))
+                    @foreach($value as $v)
+                        <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                    @endforeach
+                @else
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endif
+            @endforeach
             <div class="filter-panel">
 
                 <div class="d-flex justify-content-between align-items-center mb-3">

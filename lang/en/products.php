@@ -9,6 +9,7 @@ return [
     'new_arrivals'     => 'New Arrivals',
     'on_sale'          => 'On Sale',
     'product_details'  => 'Product Details',
+    'search_placeholder' => 'Search products...',
 
     // ─── CRUD actions ────────────────────────────────────────
     'add_product'      => 'Create Product',

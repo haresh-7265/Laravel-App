@@ -9,6 +9,7 @@ return [
     'new_arrivals'     => 'وصل حديثاً',
     'on_sale'          => 'عروض التخفيض',
     'product_details'  => 'تفاصيل المنتج',
+    'search_placeholder' => 'ابحث عن المنتجات...',
 
     // ─── CRUD actions ────────────────────────────────────────
     'add_product'      => 'إضافة منتج',

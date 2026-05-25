@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Scout\Searchable;
 
 class Product extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, Searchable;
 
     protected $fillable = [
         'name',
@@ -111,5 +112,15 @@ class Product extends Model
 
     public function getImageSizeAttribute(){
         return human_file_size(Storage::disk('public')->size($this->image ?? 'products/default.png'));
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'tags' => $this->tags,
+            // 'category_name' => $this->category?->name,  // # it is not working with database driver
+        ];
     }
 }

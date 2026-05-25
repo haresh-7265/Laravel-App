@@ -8,8 +8,10 @@
 
 <div class="row g-4">
 
+    {{-- SEARCH BAR --}}
+    <x-product-search/>
     {{-- ═══════ LEFT: FILTER SIDEBAR ═══════ --}}
-    <x-product-filter/>
+    <x-product-filter :hasFilters=$hasFilters/>
 
     {{-- ═══════ RIGHT: PRODUCT GRID ═══════ --}}
     <div class="col-lg-9">
@@ -49,7 +51,9 @@
             <hr class="mb-5">
 
             <h3 class="mb-3 text-lg font-semibold">{{ __('products.all_products') }}</h3>
-
+            <div class="text-blue-500">
+                {{ $products->total() ." ". Str::plural('product', $products->total()) . " found" }}
+            </div>
         {{-- Results header --}}
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
             <div>

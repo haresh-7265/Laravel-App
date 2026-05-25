@@ -24,6 +24,7 @@ class ProductController extends Controller
             'in_stock',
             'on_sale',
             'sort',
+            'q'
         ]);
         $user = $request->user();
         $cursor = $request->input('cursor');
