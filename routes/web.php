@@ -105,14 +105,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 // Guest
-Route::get('products', [ProductController::class, 'index'])->name('products.index');
+Route::get('products', [ProductController::class, 'index'])
+    ->middleware('throttle:search')
+    ->name('products.index');
 Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
 Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
 
 // Customer routes
 Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('checkout', [CustomerOrderController::class, 'checkout'])->name('orders.checkout');
-    Route::post('orders', [CustomerOrderController::class, 'store'])->name('orders.store');
+    Route::post('orders', [CustomerOrderController::class, 'store'])
+        ->middleware('throttle:checkout')
+        ->name('orders.store');
     Route::get('my-orders', [CustomerOrderController::class, 'index'])->name('orders.index');
     Route::get('my-orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
     Route::patch('my-orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
