@@ -5,13 +5,18 @@ namespace App\Services;
 use App\Events\Order\OrderPlaced;
 use App\Exceptions\EmptyCartException;
 use App\Exceptions\ProductOutOfStockException;
+use App\Jobs\ChargePayment;
 use App\Jobs\GenerateInvoicePdf;
+use App\Jobs\ReleaseStock;
+use App\Jobs\ReserveStock;
+use App\Jobs\SendOrderConfirmation;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Notifications\OrderShipped;
 use Exception;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -53,16 +58,16 @@ class OrderService
                 'items:id,order_id,product_id,product_name',
                 'items.product:id,image',
             ])
-            ->select([
-                'id',
-                'user_id',
-                'order_number',
-                'total',
-                'payment_status',
-                'payment_method',
-                'status',
-                'created_at'
-            ])
+                ->select([
+                    'id',
+                    'user_id',
+                    'order_number',
+                    'total',
+                    'payment_status',
+                    'payment_method',
+                    'status',
+                    'created_at',
+                ])
                 ->when(
                     $role !== 'admin',
                     fn ($q) => $q->where('user_id', $userId)
@@ -207,22 +212,41 @@ class OrderService
                     'quantity' => $item['quantity'],
                     'subtotal' => $item['quantity'] * ($item['discount_price'] ?? $item['price']),
                 ]);
-
-                $product = Product::findOrFail($item['product_id']);
-
-                $product->decrement('stock', $item['quantity']);
-
-                // refresh updated value
-                $product->refresh();
-
             }
 
             // Clear cart after order (also clears applied coupon)
             $this->cartService->clear();
 
-            DB::afterCommit(function () use ($order){
+            DB::afterCommit(function () use ($order) {
                 OrderPlaced::dispatch($order);
-                GenerateInvoicePdf::dispatch($order)->onQueue('pdfs');
+
+                // ── Post-checkout Job Chain ─────────────────────────
+                // Sequenced steps: each runs only if the previous succeeded.
+                // If any step fails, the catch() rolls back the order.
+                $chain = [
+                    new ChargePayment($order),
+                    new ReserveStock($order),
+                ];
+
+                // unless() — skip invoice generation for COD orders
+                // (COD invoices are generated on delivery confirmation instead)
+                if ($order->payment_method !== 'cod') {
+                    $chain[] = new GenerateInvoicePdf($order);
+                }
+
+                $chain[] = new SendOrderConfirmation($order);
+
+                Bus::chain($chain)
+                    ->catch(function (\Throwable $e) use ($order) {
+                        Log::channel('order')->error("🔴 Checkout chain FAILED for order #{$order->order_number}: {$e->getMessage()}");
+
+                        // Roll back: mark order as failed so admin can investigate
+                        $order->update([
+                            'status' => 'cancelled',
+                            'payment_status' => $order->payment_status === 'paid' ? 'refund_pending' : $order->payment_status,
+                        ]);
+                    })
+                    ->dispatch();
             });
 
             return $order;
@@ -233,15 +257,11 @@ class OrderService
     {
         DB::transaction(function () use ($order) {
 
-            $order->load('items.product');
-
             $order->update(['status' => 'cancelled']);
 
-            foreach ($order->items as $item) {
-                $item->product->increment('stock', $item->quantity);
-            }
-
             DB::afterCommit(function () use ($order) {
+
+                ReleaseStock::dispatch($order);
                 Log::channel('order')->info('Order Cancelled', [
                     'order_number' => $order->order_number,
                     'canceled_by' => auth()->id() ?? 'system',

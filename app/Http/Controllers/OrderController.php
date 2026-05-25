@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCheckoutRequest;
-use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Services\OrderService;
 use Arr;
 use Illuminate\Database\DeadlockException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
@@ -31,7 +29,6 @@ class OrderController extends Controller
 
             $order = $this->orderService->placeOrder($request->validated());
 
-            Mail::to($order->shipping_email, $order->shipping_name)->locale($order->user?->preferredLocale())->later(now()->addMinutes(5), new OrderConfirmation($order));
 
             return redirect()
                 ->route('orders.show', $order)
