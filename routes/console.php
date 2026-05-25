@@ -35,3 +35,9 @@ Schedule::command('products:reindex --fresh')
 Schedule::command('scout:sync-index-settings')
          ->daily()
          ->at('01:00');
+
+// Daily failed-jobs summary email to admins (Module 26.4)
+Schedule::command('jobs:failed-summary')
+    ->dailyAt('07:00')
+    ->withoutOverlapping()
+    ->runInBackground();

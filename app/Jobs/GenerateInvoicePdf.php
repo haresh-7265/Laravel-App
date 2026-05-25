@@ -3,12 +3,15 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Models\User;
+use App\Notifications\JobFailedAlert;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class GenerateInvoicePdf implements ShouldQueue
@@ -49,14 +52,26 @@ class GenerateInvoicePdf implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        // log it
+        // Log the failure
         \Log::channel('order')->error("Failed to Generate Invoice Pdf for order #{$this->order->id}", [
             'error' => $e->getMessage(),
-            'file' => __FILE__,
-            'line' => __LINE__,
+            'file'  => __FILE__,
+            'line'  => __LINE__,
         ]);
 
         $this->order->update(['invoice_path' => null]);
 
+        // Notify all admin users about the failure
+        Notification::send(
+            User::where('role', 'admin')->get(),
+            new JobFailedAlert(
+                jobName: 'GenerateInvoicePdf',
+                errorMessage: $e->getMessage(),
+                context: [
+                    'order_id'     => $this->order->id,
+                    'order_number' => $this->order->order_number,
+                ]
+            )
+        );
     }
 }
