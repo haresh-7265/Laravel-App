@@ -178,21 +178,28 @@ class AppServiceProvider extends ServiceProvider
                 ], 429));
         });
 
-        // ── Login: 5 attempts per minute, keyed by IP ───────────────────────
+        // ── Login: 5 attempts per 5 minutes, keyed by email + IP ────────────
+        // Composite key prevents bypass via proxy rotation.
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)
-                ->by($request->ip())
+            return Limit::perMinutes(5, 5)
+                ->by('login:' . $request->input('email') . '|' . $request->ip())
                 ->response(function () use ($request) {
+                    // Log to security channel 
+                    Log::channel('security')->warning('🔒 Login rate limit hit', [
+                        'email' => $request->input('email'),
+                        'ip'    => $request->ip(),
+                        'user_agent'    => $request->userAgent(),
+                    ]);
+
                     if ($request->expectsJson()) {
                         return response()->json([
-                            'error' => 'rate-limited',
-                            'message' => 'Too many login attempts.',
-                            'retry_after_seconds' => 60,
+                            'error'   => 'rate-limited',
+                            'message' => __('auth.throttle', ['seconds' => 300]),
                         ], 429);
                     }
 
                     return back()
-                        ->withErrors(['email' => 'Too many login attempts. Please wait a minute.'])
+                        ->withErrors(['email' => __('auth.throttle', ['seconds' => 300])])
                         ->withInput($request->except('password'));
                 });
         });
@@ -200,18 +207,23 @@ class AppServiceProvider extends ServiceProvider
         // ── Password Reset: 3 attempts per hour, keyed by email ─────────────
         RateLimiter::for('password-reset', function (Request $request) {
             return Limit::perHour(3)
-                ->by($request->input('email', $request->ip()))
+                ->by('password-reset:' . $request->input('email', $request->ip()))
                 ->response(function () use ($request) {
+                    // Log to security channel 
+                    Log::channel('security')->warning('🔒 Password reset rate limit hit', [
+                        'email' => $request->input('email'),
+                        'ip'    => $request->ip(),
+                    ]);
+
                     if ($request->expectsJson()) {
                         return response()->json([
-                            'error' => 'rate-limited',
-                            'message' => 'Too many password reset requests. Please try again later.',
-                            'retry_after_seconds' => 3600,
+                            'error'   => 'rate-limited',
+                            'message' => __('auth.password_reset_throttle'),
                         ], 429);
                     }
 
                     return back()
-                        ->withErrors(['email' => 'Too many password reset requests for this address. Please try again in an hour.'])
+                        ->withErrors(['email' => __('auth.password_reset_throttle')])
                         ->withInput();
                 });
         });
