@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
+use App\Models\User;
 use App\Services\ExternalApiService;
 use App\Services\FakeStoreService;
 use App\Services\Greeter;
@@ -168,13 +169,67 @@ class AppServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        // ── API: 60 requests per minute, keyed by authenticated user or IP ──
+        // ── API: Tier-based rate limits ────────────────────────────────────
+        // free = 60/min, pro = 600/min, enterprise = 6000/min
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)
-                ->by($request->user()?->id ?: $request->ip())
+            $user = $request->user();
+            $limit = $user?->apiRateLimit() ?? User::API_LIMITS[User::TIER_FREE];
+            $key = $user?->id ?? $request->ip();
+
+            return Limit::perMinute($limit)
+                ->by($key)
                 ->response(fn () => response()->json([
                     'status' => 'error',
                     'message' => 'Too many API requests. Please slow down.',
+                    'tier' => $user?->subscription_tier ?? 'free',
+                    'limit' => $limit,
+                    'retry_after' => RateLimiter::availableIn($key),
+                ], 429)->withHeaders([
+                    'X-RateLimit-Limit' => $limit,
+                    'X-RateLimit-Remaining' => 0, // always 0 on a 429
+                    'Retry-After' => RateLimiter::availableIn($key),
+                ]));
+        });
+
+        // free tier rate limiter
+        RateLimiter::for('api-free', function (Request $request) {
+            $limit = User::API_LIMITS[User::TIER_FREE];
+
+            return Limit::perMinute($limit)
+                ->by(auth()->id() ?? $request->ip())
+                ->response(fn () => response()->json([
+                    'status' => 'error',
+                    'message' => 'Too many API requests. Please slow down.',
+                    'tier' => 'free',
+                    'limit' => $limit,
+                ], 429));
+        });
+
+        // pro tier rate limiter
+        RateLimiter::for('api-pro', function (Request $request) {
+            $limit = User::API_LIMITS[User::TIER_PRO];
+
+            return Limit::perMinute($limit)
+                ->by(auth()->id() ?? $request->ip())
+                ->response(fn () => response()->json([
+                    'status' => 'error',
+                    'message' => 'Too many API requests. Please slow down.',
+                    'tier' => 'pro',
+                    'limit' => $limit,
+                ], 429));
+        });
+
+        // enterprice tier rate limiter
+        RateLimiter::for('api-enterprise', function (Request $request) {
+            $limit = User::API_LIMITS[User::TIER_ENTERPRISE];
+
+            return Limit::perMinute($limit)
+                ->by(auth()->id() ?? $request->ip())
+                ->response(fn () => response()->json([
+                    'status' => 'error',
+                    'message' => 'Too many API requests. Please slow down.',
+                    'tier' => 'enterprise',
+                    'limit' => $limit,
                 ], 429));
         });
 
@@ -182,18 +237,18 @@ class AppServiceProvider extends ServiceProvider
         // Composite key prevents bypass via proxy rotation.
         RateLimiter::for('login', function (Request $request) {
             return Limit::perMinutes(5, 5)
-                ->by('login:' . $request->input('email') . '|' . $request->ip())
+                ->by('login:'.$request->input('email').'|'.$request->ip())
                 ->response(function () use ($request) {
-                    // Log to security channel 
+                    // Log to security channel
                     Log::channel('security')->warning('🔒 Login rate limit hit', [
                         'email' => $request->input('email'),
-                        'ip'    => $request->ip(),
-                        'user_agent'    => $request->userAgent(),
+                        'ip' => $request->ip(),
+                        'user_agent' => $request->userAgent(),
                     ]);
 
                     if ($request->expectsJson()) {
                         return response()->json([
-                            'error'   => 'rate-limited',
+                            'error' => 'rate-limited',
                             'message' => __('auth.throttle', ['seconds' => 300]),
                         ], 429);
                     }
@@ -207,17 +262,17 @@ class AppServiceProvider extends ServiceProvider
         // ── Password Reset: 3 attempts per hour, keyed by email ─────────────
         RateLimiter::for('password-reset', function (Request $request) {
             return Limit::perHour(3)
-                ->by('password-reset:' . $request->input('email', $request->ip()))
+                ->by('password-reset:'.$request->input('email', $request->ip()))
                 ->response(function () use ($request) {
-                    // Log to security channel 
+                    // Log to security channel
                     Log::channel('security')->warning('🔒 Password reset rate limit hit', [
                         'email' => $request->input('email'),
-                        'ip'    => $request->ip(),
+                        'ip' => $request->ip(),
                     ]);
 
                     if ($request->expectsJson()) {
                         return response()->json([
-                            'error'   => 'rate-limited',
+                            'error' => 'rate-limited',
                             'message' => __('auth.password_reset_throttle'),
                         ], 429);
                     }
@@ -231,7 +286,7 @@ class AppServiceProvider extends ServiceProvider
         // ── Checkout: 10 per minute, keyed by authenticated user ────────────
         RateLimiter::for('checkout', function (Request $request) {
             return Limit::perMinute(10)
-                ->by($request->user()?->id ?: $request->ip())
+                ->by($request->user()?->id ?? $request->ip())
                 ->response(function () use ($request) {
                     if ($request->expectsJson()) {
                         return response()->json([
@@ -255,7 +310,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return Limit::perMinute(30)
-                ->by($request->user()?->id ?: $request->ip())
+                ->by($request->user()?->id ?? $request->ip())
                 ->response(function () use ($request) {
                     if ($request->expectsJson()) {
                         return response()->json([

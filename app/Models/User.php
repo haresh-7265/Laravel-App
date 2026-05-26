@@ -15,6 +15,19 @@ class User extends Authenticatable implements HasLocalePreference
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
+    // ── Subscription Tiers ──────────────────────────────────────────────
+    public const TIER_FREE = 'free';
+
+    public const TIER_PRO = 'pro';
+
+    public const TIER_ENTERPRISE = 'enterprise';
+
+    public const API_LIMITS = [
+        self::TIER_FREE => 60,
+        self::TIER_PRO => 600,
+        self::TIER_ENTERPRISE => 6000,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -25,6 +38,7 @@ class User extends Authenticatable implements HasLocalePreference
         'email',
         'password',
         'role',
+        'subscription_tier',
         'preferred_locale',
     ];
 
@@ -59,6 +73,14 @@ class User extends Authenticatable implements HasLocalePreference
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
+    }
+
+    /**
+     * Get the API rate limit for this user's subscription tier.
+     */
+    public function apiRateLimit(): int
+    {
+        return self::API_LIMITS[$this->subscription_tier] ?? self::API_LIMITS[self::TIER_FREE];
     }
 
     public function hasRole($role)
