@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
@@ -26,7 +27,7 @@ class OrderFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'order_number' => strtoupper(uniqid('ORD-')),
+            'order_number' => Str::ulid(),
             'status' => fake()->randomElement(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
             'subtotal' => $subtotal,
             'discount' => $discount,

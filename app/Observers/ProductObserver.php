@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Services\CacheService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductObserver
 {
@@ -161,6 +162,12 @@ class ProductObserver
         ]);
     }
 
+    public function saving(Product $product): void
+    {
+        if (empty($product->slug)) {
+            $product->slug = Str::slug($product->name);
+        }
+    }
     public function saved(Product $product): void  // covers created + updated both
     {
         if ($product->shouldBeSearchable()) {

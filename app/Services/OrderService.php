@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class OrderService
 {
@@ -173,7 +174,7 @@ class OrderService
             $paymentStatus = $paymentMethod == 'cod' ? 'unpaid' : 'paid';
             $order = tap(Order::create([
                 'user_id' => auth()->id(),
-                'order_number' => 'ORD-'.strtoupper(uniqid()),
+                'order_number' => strtoupper(Str::ulid()),
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'discount' => $discount,
