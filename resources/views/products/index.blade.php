@@ -53,7 +53,7 @@
 
             <h3 class="mb-3 text-lg font-semibold">{{ __('products.all_products') }}</h3>
             <div class="text-blue-500">
-                {{ $products->total() ." ". Str::plural('product', $products->total()) . " found" }}
+                {{ trans_choice('products_found', $products->total(), ['count' => $products->total()]) }}
             </div>
         {{-- Results header --}}
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">

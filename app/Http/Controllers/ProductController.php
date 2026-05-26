@@ -196,7 +196,7 @@ class ProductController extends Controller
      */
     public function trashed(Request $request)
     {
-        $page = request()->input('page');
+        $page = request()->input('page', 1);
         $perPage = min((int) $request->input('perPage', 20), 100);
         $products = Products::getTrashedProducts($page, $perPage);
 

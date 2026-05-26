@@ -13,7 +13,7 @@
                 Trashed Products
             </h2>
             <p class="text-sm text-gray-500">
-                {{ $products->total() }} soft-deleted {{ Str::plural('product', $products->total()) }} found
+                {{ trans_choice('products_deleted', $products->total(), ['count' => $products->total()]) }}
             </p>
         </div>
         <a href="{{ route('products.index') }}"

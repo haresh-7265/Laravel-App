@@ -68,6 +68,8 @@
 
     "cart_badge": "{0} 0 items|{1} 1 item|[2,*] :count items",
     "products_found": "{0} No products found|{1} 1 product found|[2,*] :count products found",
+    "products_deleted": "{0} No deleted products|{1} 1 deleted product|[2,*] :count deleted products",
+    "reviews_count": "{0} No reviews|{1} 1 review|[2,*] :count reviews",
 
     "Order #:id confirmed on :date": "Order #:id confirmed on :date",
     "Order #:id": "Order #:id",

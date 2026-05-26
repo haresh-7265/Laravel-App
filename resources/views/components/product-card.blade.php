@@ -45,7 +45,7 @@
 
         {{-- Description --}}
         <p class="text-[13px] text-gray-400 leading-relaxed line-clamp-2">
-            {{ str($product->description ?? __('products.no_description')) }}
+            {{ str($product->description ?? __('products.no_description'))->limit(100) }}
         </p>
 
         {{-- Price --}}

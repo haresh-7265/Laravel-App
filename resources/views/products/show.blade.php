@@ -177,7 +177,7 @@
                                     <i class="bi bi-star text-warning"></i>
                                 @endif
                             @endfor
-                            <div class="text-muted small">{{ $product->reviews->count() }} {{ Str::plural('review', $product->reviews->count()) }}</div>
+                            <div class="text-muted small">{{ trans_choice('reviews_count', $product->reviews->count(), ['count' => $product->reviews->count()]) }}</div>
                         </div>
                     </div>
                 </div>
