@@ -105,7 +105,7 @@ class ImportProducts extends Command
                     // Batch-fetch existing slugs inside this chunk for upsert logic.
                     $slugsInChunk = [];
                     foreach ($rows as $r) {
-                        $s = trim($r['slug'] ?? '') ?: Str::slug(trim($r['name'] ?? ''));
+                        $s = trim($r['slug'] ?? '') ?: str($r['name'] ?? '')->trim()->slug();
                         if ($s !== '') {
                             $slugsInChunk[] = $s;
                         }
@@ -218,7 +218,7 @@ class ImportProducts extends Command
 
         // ── Normalise & coerce ────────────────────────────────────────────────
         $name          = trim($row['name']          ?? '');
-        $slug          = trim($row['slug']          ?? '') ?: Str::slug($name);
+        $slug          = trim($row['slug']          ?? '') ?: str($name)->slug();
         $price         = trim($row['price']         ?? '');
         $discountPrice = trim($row['discount_price'] ?? '') ?: null;
         $stock         = trim($row['stock']         ?? '0');

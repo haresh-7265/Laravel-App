@@ -19,7 +19,7 @@ class LogFailedJob
     public function handle(JobFailed $event): void
     {
         $jobName = $this->resolveJobName($event);
-        $error   = Str::limit($event->exception->getMessage(), 300);
+        $error   = str($event->exception->getMessage())->limit(300);
 
         // ── 1. Log to dedicated channel ─────────────────────────────
         Log::channel('order')->error("🔴 Job Failed [{$jobName}]", [

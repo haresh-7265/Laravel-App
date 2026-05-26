@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $product->name)
+@section('meta_description', meta_description($product->description ?? '', $product->name))
 
 @section('content')
 

@@ -67,7 +67,7 @@ class ImportProductRowJob implements ShouldQueue
 
         $category = Category::firstOrCreate(
             ['name' => $categoryName],
-            ['name' => Str::lower($categoryName)]
+            ['name' => str($categoryName)->lower()]
         );
 
         // ── Tags validation ───────────────────────────────────────────
@@ -78,7 +78,7 @@ class ImportProductRowJob implements ShouldQueue
         // ── Upsert product ────────────────────────────────────────────
         $slug = !empty($row['slug'])
             ? $row['slug']
-            : Str::slug($row['name'] ?? 'untitled-' . uniqid());
+            : str($row['name'] ?? 'untitled-' . uniqid())->slug();
 
         Product::updateOrCreate(
             ['slug' => $slug],

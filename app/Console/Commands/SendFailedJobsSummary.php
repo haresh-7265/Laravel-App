@@ -49,7 +49,7 @@ class SendFailedJobsSummary extends Command
                 'uuid'      => $job->uuid,
                 'job_name'  => $displayName,
                 'queue'     => $job->queue,
-                'error'     => \Str::limit($job->exception, 200),
+                'error'     => str($job->exception)->limit(200),
                 'failed_at' => Carbon::parse($job->failed_at)->toDateTimeString(),
             ];
         });

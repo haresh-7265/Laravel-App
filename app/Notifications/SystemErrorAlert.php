@@ -38,7 +38,7 @@ class SystemErrorAlert extends BaseNotification
     {
         return new static(
             exceptionClass:   get_class($exception),
-            exceptionMessage: Str::limit($exception->getMessage(), 500),
+            exceptionMessage: str($exception->getMessage())->limit(500),
             file:             $exception->getFile(),
             line:             $exception->getLine(),
             requestUrl:       $request ? static::sanitiseUrl($request) : 'N/A',

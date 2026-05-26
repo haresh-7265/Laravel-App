@@ -40,12 +40,12 @@
 
         {{-- Name --}}
         <h3 class="text-[17px] font-semibold text-gray-900 leading-snug tracking-tight">
-            {{ Str::limit($product->name, 20, '...', true) }}
+            {{ str($product->name)->limit(20, '...', true) }}
         </h3>
 
         {{-- Description --}}
         <p class="text-[13px] text-gray-400 leading-relaxed line-clamp-2">
-            {{ Str::limit($product->description ?? __('products.no_description'), 100) }}
+            {{ str($product->description ?? __('products.no_description')) }}
         </p>
 
         {{-- Price --}}

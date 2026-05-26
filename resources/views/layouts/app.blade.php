@@ -12,6 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <title>{{ Str::headline($__env->yieldContent('title', config('admin.name'))) }}</title>
+    <meta name="description" content="@yield('meta_description', config('app.name') . ' — Quality products at great prices.')">
 
     {{-- Bootstrap — load RTL stylesheet for RTL locales --}}
     @if($isRtl)

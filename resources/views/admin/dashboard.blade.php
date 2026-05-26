@@ -197,7 +197,7 @@
                                     <tr>
                                         <td class="fw-medium">
                                             <a href="{{ route('products.show', $product) }}" class="fw-medium hover:text-blue-500 hover:underline">
-                                            {{ Str::limit($product->name, 25) }}
+                                            {{ str($product->name)->limit(25) }}
                                             </a>
                                         </td>
                                         <td>

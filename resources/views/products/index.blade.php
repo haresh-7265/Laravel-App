@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', __('products.title'))
+@section('meta_description', 'Browse our full catalog of quality products. Find featured items, new arrivals, and great deals.')
 
 @section('content')
 

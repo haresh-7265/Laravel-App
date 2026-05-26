@@ -165,7 +165,7 @@ class ProductObserver
     public function saving(Product $product): void
     {
         if (empty($product->slug)) {
-            $product->slug = Str::slug($product->name);
+            $product->slug = str($product->name)->slug();
         }
     }
     public function saved(Product $product): void  // covers created + updated both
