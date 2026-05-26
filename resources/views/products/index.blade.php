@@ -129,6 +129,9 @@
     <div class="container text-center">
         <a href="{{ route('support.tickets.create') }}" class="underline">support</a>
     </div>
+    <div class="container text-center">
+        <a href="{{ route('contact.create') }}" class="underline">contact Us</a>
+    </div>
 </footer>
 @endsection
 

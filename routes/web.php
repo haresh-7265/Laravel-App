@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\LocaleController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\WaitlistController;
 use App\Mail\CouponMail;
@@ -36,6 +38,10 @@ Route::prefix('support')->name('support.')->group(function () {
     Route::post('/tickets', [SupportTicketController::class, 'store'])
         ->name('tickets.store');
 });
+
+// Contact form (public)
+Route::get('contact', [ContactController::class, 'create'])->name('contact.create');
+Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -123,6 +129,8 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('invoices/{order}/download', [CustomerOrderController::class, 'downloadInvoice'])->name('invoices.download');
     Route::post('products/{product}/waitlist', [WaitlistController::class, 'store'])->name('product.waitlist.store');
     Route::delete('products/{product}/waitlist', [WaitlistController::class, 'destroy'])->name('product.waitlist.destroy');
+    Route::post('products/{product}/reviews', [ReviewController::class, 'store'])->name('products.reviews.store');
+    Route::delete('products/{product}/reviews/{review}', [ReviewController::class, 'destroy'])->name('products.reviews.destroy');
 });
 
 require __DIR__ . '/auth.php';

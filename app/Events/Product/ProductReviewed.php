@@ -14,9 +14,7 @@ class ProductReviewed
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public readonly Product $product,
-        public readonly User $user,
-        public readonly ProductReview $review
+        public readonly Product $product
     ) {
     }
 }

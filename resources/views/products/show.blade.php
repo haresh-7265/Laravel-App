@@ -154,8 +154,249 @@
         </div>
     </div>
 
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    {{-- Reviews Section --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════ --}}
+    <div class="mt-5">
+        {{-- Header --}}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">
+                <i class="bi bi-chat-left-text me-2"></i>Customer Reviews
+                <span class="badge bg-secondary ms-2">{{ $product->reviews->count() }}</span>
+            </h3>
+            @if($product->reviews->count() > 0)
+                <div class="text-end">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-4 fw-bold text-warning">{{ number_format($product->avg_rating, 1) }}</span>
+                        <div>
+                            @for ($i = 1; $i <= 5; $i++)
+                                @if ($i <= round($product->avg_rating))
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                @else
+                                    <i class="bi bi-star text-warning"></i>
+                                @endif
+                            @endfor
+                            <div class="text-muted small">{{ $product->reviews->count() }} {{ Str::plural('review', $product->reviews->count()) }}</div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        @auth
+        @if(auth()->user()->isCustomer())
+        @php $userReview = $product->reviews->where('user_id', auth()->id())->first(); @endphp
+        <div class="row">
+            {{-- ─── Left Column: Review Form (customers only) ────────────── --}}
+            <div class="col-md-4 mb-4">
+                <div class="position-sticky" style="top: 80px;">
+                    <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-3" id="formTitle">
+                                <i class="bi bi-pencil-square me-2"></i>
+                                {{ $userReview ? 'Update Your Review' : 'Write a Review' }}
+                            </h5>
+
+                            <form action="{{ route('products.reviews.store', $product) }}" method="POST" id="reviewForm">
+                                @csrf
+
+                                {{-- Star Rating --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Rating <span class="text-danger">*</span></label>
+                                    <div class="star-rating-input d-flex gap-1" id="starRatingInput">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <label class="star-label" data-value="{{ $i }}" style="cursor: pointer; font-size: 1.8rem;">
+                                                <input type="radio"
+                                                       name="rating"
+                                                       value="{{ $i }}"
+                                                       class="d-none"
+                                                       {{ old('rating', $userReview?->rating) == $i ? 'checked' : '' }}
+                                                       required>
+                                                <i class="bi {{ old('rating', $userReview?->rating) >= $i ? 'bi-star-fill text-warning' : 'bi-star text-muted' }}"></i>
+                                            </label>
+                                        @endfor
+                                        <span class="ms-2 align-self-center text-muted small" id="ratingText">
+                                            @if($userReview?->rating)
+                                                {{ ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][$userReview->rating] }}
+                                            @else
+                                                Select a rating
+                                            @endif
+                                        </span>
+                                    </div>
+                                    @error('rating')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Comment --}}
+                                <div class="mb-3">
+                                    <label for="reviewComment" class="form-label fw-semibold">Comment</label>
+                                    <textarea name="comment"
+                                              id="reviewComment"
+                                              class="form-control @error('comment') is-invalid @enderror"
+                                              rows="4"
+                                              maxlength="1000"
+                                              placeholder="Share your experience with this product...">{{ old('comment', $userReview?->comment) }}</textarea>
+                                    <div class="d-flex justify-content-between mt-1">
+                                        @error('comment')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @else
+                                            <div></div>
+                                        @enderror
+                                        <small class="text-muted"><span id="charCount">{{ strlen(old('comment', $userReview?->comment ?? '')) }}</span>/1000</small>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="bi bi-send me-1"></i>
+                                        <span id="submitBtnText">{{ $userReview ? 'Update Review' : 'Submit Review' }}</span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary d-none" id="cancelEditBtn" onclick="cancelEdit()">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ─── Right Column: Reviews List ───────────────────────────── --}}
+            <div class="col-md-8">
+                @include('products._reviews-list', ['reviews' => $product->reviews, 'product' => $product])
+            </div>
+        </div>
+        @else
+            {{-- Admin: full-width reviews (no form) --}}
+            @include('products._reviews-list', ['reviews' => $product->reviews, 'product' => $product])
+        @endif
+        @else
+            {{-- Guest prompt --}}
+            <div class="alert alert-light border mb-4 d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle text-primary fs-5"></i>
+                <span>
+                    <a href="{{ route('login') }}" class="fw-semibold">Log in</a> to write a review.
+                </span>
+            </div>
+
+            {{-- Guest: full-width reviews (read-only) --}}
+            @include('products._reviews-list', ['reviews' => $product->reviews, 'product' => $product])
+        @endauth
+    </div>
+
 @endsection
 
 @push('scripts')
     @vite('resources/js/cart.js')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const labels = document.querySelectorAll('.star-label');
+            const ratingText = document.getElementById('ratingText');
+            const texts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+            if (!labels.length) return;
+
+            labels.forEach(label => {
+                const value = parseInt(label.dataset.value);
+
+                label.addEventListener('mouseenter', () => {
+                    labels.forEach(l => {
+                        const icon = l.querySelector('i');
+                        icon.className = parseInt(l.dataset.value) <= value
+                            ? 'bi bi-star-fill text-warning'
+                            : 'bi bi-star text-muted';
+                    });
+                    ratingText.textContent = texts[value];
+                });
+
+                label.addEventListener('click', () => {
+                    label.querySelector('input').checked = true;
+                    labels.forEach(l => {
+                        const icon = l.querySelector('i');
+                        icon.className = parseInt(l.dataset.value) <= value
+                            ? 'bi bi-star-fill text-warning'
+                            : 'bi bi-star text-muted';
+                    });
+                    ratingText.textContent = texts[value];
+                });
+            });
+
+            const container = document.getElementById('starRatingInput');
+            if (container) {
+                container.addEventListener('mouseleave', () => {
+                    const checked = container.querySelector('input:checked');
+                    const selectedVal = checked ? parseInt(checked.value) : 0;
+                    labels.forEach(l => {
+                        const icon = l.querySelector('i');
+                        icon.className = parseInt(l.dataset.value) <= selectedVal
+                            ? 'bi bi-star-fill text-warning'
+                            : 'bi bi-star text-muted';
+                    });
+                    ratingText.textContent = selectedVal ? texts[selectedVal] : 'Select a rating';
+                });
+            }
+
+            // Character counter
+            const textarea = document.getElementById('reviewComment');
+            const counter = document.getElementById('charCount');
+            if (textarea && counter) {
+                textarea.addEventListener('input', () => {
+                    counter.textContent = textarea.value.length;
+                });
+            }
+        });
+
+        /**
+         * Pre-fill the review form for editing and scroll to it.
+         */
+        function editReview(rating, comment) {
+            // Update form title
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Edit Your Review';
+            document.getElementById('submitBtnText').textContent = 'Update Review';
+            document.getElementById('cancelEditBtn').classList.remove('d-none');
+
+            // Set rating
+            const labels = document.querySelectorAll('.star-label');
+            const ratingText = document.getElementById('ratingText');
+            const texts = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+            labels.forEach(l => {
+                const val = parseInt(l.dataset.value);
+                const input = l.querySelector('input');
+                const icon = l.querySelector('i');
+                input.checked = val === rating;
+                icon.className = val <= rating ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted';
+            });
+            ratingText.textContent = texts[rating];
+
+            // Set comment
+            const textarea = document.getElementById('reviewComment');
+            textarea.value = comment;
+            document.getElementById('charCount').textContent = comment.length;
+
+            // Scroll to form
+            document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            textarea.focus();
+        }
+
+        /**
+         * Reset form to "Write a Review" state.
+         */
+        function cancelEdit() {
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Write a Review';
+            document.getElementById('submitBtnText').textContent = 'Submit Review';
+            document.getElementById('cancelEditBtn').classList.add('d-none');
+
+            // Clear form
+            const labels = document.querySelectorAll('.star-label');
+            labels.forEach(l => {
+                l.querySelector('input').checked = false;
+                l.querySelector('i').className = 'bi bi-star text-muted';
+            });
+            document.getElementById('ratingText').textContent = 'Select a rating';
+            document.getElementById('reviewComment').value = '';
+            document.getElementById('charCount').textContent = '0';
+        }
+    </script>
 @endpush

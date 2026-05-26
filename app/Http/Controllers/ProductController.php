@@ -24,7 +24,7 @@ class ProductController extends Controller
             'in_stock',
             'on_sale',
             'sort',
-            'q'
+            'q',
         ]);
         $user = $request->user();
         $cursor = $request->input('cursor');
@@ -36,7 +36,7 @@ class ProductController extends Controller
             role: $user?->role ?? 'customer',
             cursor: $cursor,
             perPage: $perPage
-            ));
+        ));
 
         if ($request->acceptsHtml()) {
             return view('products.index', compact(
@@ -92,7 +92,16 @@ class ProductController extends Controller
     {
         ProductViewed::dispatch($product, auth()->user(), session()->id());
 
-        return view('products.show')->with('product', $product);
+        $product->load([
+            'reviews' => function ($query) {
+                $query->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [auth()->id()])
+                    ->latest();
+            },
+            'reviews.user',
+            'category',
+        ]);
+
+        return view('products.show', compact('product'));
     }
 
     /**
