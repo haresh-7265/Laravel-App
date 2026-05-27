@@ -44,39 +44,38 @@ if (! function_exists('current_guard')) {
 if (! function_exists('is_impersonating')) {
     function is_impersonating(): bool
     {
-        return session('impersonate.active', false);
+        return session('impersonate.active', false)
+        && Auth::guard('admin')->check() 
+        && Auth::guard('web')->check();
     }
 }
 
-
-if (!function_exists('is_admin')) {
+if (! function_exists('is_admin')) {
     /**
      * Check if the current request is authenticated via the admin guard.
      */
     function is_admin(): bool
     {
-        return Auth::guard('admin')->check();
+        return Auth::guard('admin')->check() && !is_impersonating();
     }
 }
 
-if (!function_exists('is_customer')) {
+if (! function_exists('is_customer')) {
     /**
      * Check if the current request is authenticated as a customer (web guard).
      */
     function is_customer(): bool
     {
-        return Auth::guard('web')->check() && Auth::guard('web')->user()?->role === 'customer' && !is_admin();
+        return Auth::guard('web')->check() && !is_admin();
     }
 }
 
-if (!function_exists('is_guest')) {
+if (! function_exists('is_guest')) {
     /**
      * True when neither admin nor customer guard is active.
      */
     function is_guest(): bool
     {
-        return !Auth::guard('admin')->check() && !Auth::guard('web')->check();
+        return ! Auth::guard('admin')->check() && ! Auth::guard('web')->check();
     }
 }
-
-

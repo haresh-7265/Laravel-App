@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\DeviceController;
 use App\Http\Controllers\FakeStoreController;
@@ -84,7 +85,8 @@ Route::middleware('auth:admin')->group(function () {
         Route::get('invoices', [AdminOrderController::class, 'invoices'])->name('invoices.index');
         // online customer route
         Route::get('online-customers', function () {
-            return view('admin.browsing');
+            $customers = User::where('role', 'customer')->orderBy('name')->get();
+            return view('admin.browsing', compact('customers'));
         })->name('online-customers');
         // cache performance monitor
         Route::get('cache-monitor', [CacheMonitorController::class, 'index'])->name('cache-monitor');
@@ -108,6 +110,10 @@ Route::middleware('auth:admin')->group(function () {
         Route::post('import',                   [ProductImportController::class, 'store'])->name('import.store');
         Route::get('import/status/{batchId}',   [ProductImportController::class, 'status'])->name('import.status');
         Route::post('import/cancel/{batchId}',  [ProductImportController::class, 'cancel'])->name('import.cancel');
+
+        // Impersonation
+        Route::get('impersonate/{id}', [AuthController::class, 'impersonate'])->name('impersonate');
+        Route::get('stop-impersonate', [AuthController::class, 'stopImpersonate'])->name('stop-impersonate');
     });
 });
 
@@ -239,3 +245,8 @@ if (app()->environment('local')) {
 
     Route::get('/test-db', [AnalyticsController::class, 'index']);
 };
+
+// Magic login routes
+Route::get('/magic-login/{id}', [AuthController::class, 'magicLogin'])->name('magic-login');
+Route::get('/generate-magic-link/{id}', [AuthController::class, 'generateMagicLink'])->name('magic-link.generate');
+

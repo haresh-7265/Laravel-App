@@ -32,6 +32,15 @@
 </head>
 
 <body>
+    @if(session('impersonate.active'))
+        <div class="bg-warning text-dark text-center py-2 fw-semibold shadow-sm">
+            <i class="bi bi-person-fill-exclamation me-1"></i>
+            You are impersonating: {{ current_user()?->name }} ({{ current_user()?->email }})
+            <a href="{{ route('admin.stop-impersonate') }}" class="btn btn-sm btn-outline-dark ms-3 py-0.5 px-2 fw-bold">
+                Stop Impersonation
+            </a>
+        </div>
+    @endif
 
     {{-- ════ TOAST ════ --}}
     @include('partials.toast')
