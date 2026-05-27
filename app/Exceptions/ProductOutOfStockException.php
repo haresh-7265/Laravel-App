@@ -66,7 +66,7 @@ class ProductOutOfStockException extends Exception
             'product_name'       => $this->productName,
             'requested_quantity' => $this->requestedQuantity,
             'available_quantity' => $this->availableQuantity,
-            'user_id'            => auth()->id() ?? 'guest',
+            'user_id'            => current_user()?->id ?? 'guest',
             'ip'                 => request()->ip(),
             'url'                => request()->fullUrl(),
             'timestamp'          => now()->toIso8601String(),

@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    @auth
+    @anyauth
         if (window.initNotificationListener) {
-            window.initNotificationListener({{ auth()->id() }});
+            window.initNotificationListener({{ current_user()->id }}, {{ is_customer() ? 'User' : 'Admin' }});
         }
-    @endauth
+    @endanyauth
 });
 </script>

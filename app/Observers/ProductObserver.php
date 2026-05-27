@@ -24,7 +24,7 @@ class ProductObserver
      */
     public function creating(Product $product): void
     {
-        $userId = auth()->id();
+        $userId = current_user()?->id;
         $product->created_by = $product->created_by ?? $userId;
         $product->updated_by = $product->updated_by ?? $userId;
 
@@ -41,7 +41,7 @@ class ProductObserver
     public function updating(Product $product)
     {
         // Populate updated_by audit column
-        $product->updated_by = auth()->id();
+        $product->updated_by = current_user()?->id;
 
         // make active product when product is restocked
         $oldStock = $product->getOriginal('stock');
@@ -122,7 +122,7 @@ class ProductObserver
         Log::channel('product')->warning('Product deleted', [
             'product_id' => $product->id,
             'product_name' => $product->name,
-            'deleted_by' => auth()->id() ?? 'system',
+            'deleted_by' => current_user()?->id ?? 'system',
             'data' => [
                 'price' => $product->price,
                 'stock' => $product->stock,

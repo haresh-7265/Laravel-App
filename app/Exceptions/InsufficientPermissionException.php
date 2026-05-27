@@ -55,7 +55,7 @@ class InsufficientPermissionException extends Exception
  
     public function report(): void
     {
-        $user = auth()->user();
+        $user = current_user();
  
         logger()->error('Insufficient permission — access denied', [
             'required_permission' => $this->requiredPermission,

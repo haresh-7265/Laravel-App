@@ -101,11 +101,11 @@ class OrderService
 
     public function getOrderStatusCounts()
     {
-        $user = request()->user();
-        $role = $user?->role;
+        $user = current_user();
+        $role = is_admin() ? 'admin' : 'customer';
         $id = $user?->id;
-        $suffix = $role !== 'admin' ? ".{$id}" : '';
-        $countsCacheKey = "orders.{$role}{$suffix}.status_counts";
+        $suffix = $role !== 'admin' ? "customer.{$id}" : '';
+        $countsCacheKey = "orders.{$suffix}.status_counts";
 
         return Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () use ($role, $id) {
             return Order::selectRaw('status, count(*) as count')
@@ -173,7 +173,7 @@ class OrderService
             $paymentMethod = $shippingData['payment_method'] ?? 'cod';
             $paymentStatus = $paymentMethod == 'cod' ? 'unpaid' : 'paid';
             $order = tap(Order::create([
-                'user_id' => auth()->id(),
+                'user_id' => current_user()->id,
                 'order_number' => strtoupper(Str::ulid()),
                 'status' => 'pending',
                 'subtotal' => $subtotal,
@@ -265,7 +265,7 @@ class OrderService
                 ReleaseStock::dispatch($order);
                 Log::channel('order')->info('Order Cancelled', [
                     'order_number' => $order->order_number,
-                    'canceled_by' => auth()->id() ?? 'system',
+                    'canceled_by' => current_user()?->id ?? 'system',
                 ]);
             });
 

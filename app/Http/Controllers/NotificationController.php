@@ -14,7 +14,7 @@ class NotificationController extends Controller
      */
     private function cacheKey(): string
     {
-        return 'user.' . auth()->id() . '.unread_notifications_count';
+        return 'user.' . current_user()->id . '.unread_notifications_count';
     }
 
     /**
@@ -22,7 +22,7 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
-        $notifications = $request->user()
+        $notifications = current_user()
             ->notifications()
             ->paginate(10);
 
@@ -39,7 +39,7 @@ class NotificationController extends Controller
     public function unread(Request $request)
     {
         $count = Cache::remember($this->cacheKey(), 60, function () use ($request) {
-            return $request->user()->unreadNotifications()->count();
+            return current_user()->unreadNotifications()->count();
         });
 
         return response()->json(['count' => $count]);
@@ -50,7 +50,7 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, string $id)
     {
-        $notification = $request->user()
+        $notification = current_user()
             ->notifications()
             ->findOrFail($id);
 
@@ -69,7 +69,7 @@ class NotificationController extends Controller
      */
     public function markAllRead(Request $request)
     {
-        $request->user()->unreadNotifications->markAsRead();
+        current_user()->unreadNotifications->markAsRead();
 
         Cache::forget($this->cacheKey());
 
@@ -93,7 +93,7 @@ class NotificationController extends Controller
 
             if ($order) {
                 // Admin sees admin order detail, customer sees customer order detail
-                if (auth()->user()->isAdmin()) {
+                if (is_admin()) {
                     return route('admin.orders.show', $order);
                 }
 

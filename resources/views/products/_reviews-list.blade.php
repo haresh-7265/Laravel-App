@@ -1,6 +1,6 @@
 {{-- Shared reviews list partial — used by guest, customer, and admin views --}}
 @forelse($reviews as $review)
-    <div class="card mb-3 border-0 shadow-sm {{ auth()->check() && $review->user_id === auth()->id() ? 'border-start border-primary border-3' : '' }}" id="review-{{ $review->id }}">
+    <div class="card mb-3 border-0 shadow-sm {{ current_user() && $review->user_id === current_user()->id ? 'border-start border-primary border-3' : '' }}" id="review-{{ $review->id }}">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="d-flex align-items-center gap-3">
@@ -12,7 +12,7 @@
                     <div>
                         <div class="fw-semibold">
                             {{ $review->user->name }}
-                            @if(auth()->check() && $review->user_id === auth()->id())
+                            @if(current_user() && $review->user_id === current_user()->id)
                                 <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 0.7rem;">You</span>
                             @endif
                         </div>
@@ -25,8 +25,8 @@
                     </div>
                 </div>
 
-                {{-- Edit/Delete actions — only for the review's author --}}
-                @if(auth()->check() && $review->user_id === auth()->id())
+                {{-- Edit/Delete actions — only for the review's author (customer guard) --}}
+                @if(is_customer() && $review->user_id === current_user()->id)
                     <div class="d-flex gap-1">
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary"
@@ -55,6 +55,6 @@
 @empty
     <div class="text-center py-5 text-muted">
         <i class="bi bi-chat-left-dots fs-1 d-block mb-2"></i>
-        <p class="mb-0">No reviews yet. {{ (!auth()->check() || auth()->user()->isCustomer()) ? "Be the first to share your thoughts!" : '' }}</p>
+        <p class="mb-0">No reviews yet. {{ (is_guest() || is_customer()) ? "Be the first to share your thoughts!" : '' }}</p>
     </div>
 @endforelse

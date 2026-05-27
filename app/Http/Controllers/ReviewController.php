@@ -18,7 +18,7 @@ class ReviewController extends Controller
     public function store(Request $request, Product $product)
     {
         // Only customer can review product
-        if (! auth()->user()->isCustomer()) {
+        if (!is_customer()) {
             abort(403);
         }
 
@@ -28,7 +28,7 @@ class ReviewController extends Controller
         ]);
 
         // ── Programmatic rate limiting: 5 reviews per hour ──────────────
-        $key = 'reviews:' . auth()->id();
+        $key = 'reviews:' . current_user()->id;
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
@@ -46,7 +46,7 @@ class ReviewController extends Controller
         ProductReview::updateOrCreate(
             [
                 'product_id' => $product->id,
-                'user_id'    => auth()->id(),
+                'user_id'    => current_user()->id,
             ],
             [
                 'rating'  => $validated['rating'],
@@ -65,7 +65,7 @@ class ReviewController extends Controller
     public function destroy(Product $product, ProductReview $review)
     {
         // Only the review author can delete
-        if ($review->user_id !== auth()->id()) {
+        if (is_customer() && $review->user_id !== current_user()->id) {
             abort(403);
         }
 

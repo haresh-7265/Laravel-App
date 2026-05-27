@@ -6,7 +6,7 @@ use App\Events\Order\OrderDelivered;
 use App\Events\Order\OrderPaid;
 use App\Events\Order\OrderPlaced;
 use App\Events\Order\OrderShipped;
-use App\Models\User;
+use App\Models\Admin;
 use App\Notifications\NewOrderReceived;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Broadcast;
@@ -27,7 +27,7 @@ class NotifyAdmin implements ShouldQueue
                 $key,
                 5,       // max 5 notifications
                 function () use ($event) {
-                    $admins = User::where('role', 'admin')->get();
+                    $admins = Admin::all();
                     Notification::send($admins, new NewOrderReceived($event->order));
                 },
                 60       // per 60 seconds

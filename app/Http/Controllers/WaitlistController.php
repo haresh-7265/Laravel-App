@@ -15,7 +15,7 @@ class WaitlistController extends Controller
                 'message' => 'Product is already in stock'], 400);
         }
 
-            $exists = auth()->user()
+            $exists = current_user()
             ->waitlistProducts()
             ->where('product_id', $product->id)
             ->exists();
@@ -26,7 +26,7 @@ class WaitlistController extends Controller
                 'message' => 'Already on waitlist'], 409);
         }
 
-        auth()->user()->waitlistProducts()->attach($product);
+        current_user()->waitlistProducts()->attach($product);
 
         return response()->json([
             'status' => 'success',
@@ -35,7 +35,7 @@ class WaitlistController extends Controller
 
     public function destroy(Product $product): JsonResponse
     {
-        $detached = auth()->user()->waitlistProducts()->detach($product->id);
+        $detached = current_user()->waitlistProducts()->detach($product->id);
 
         if ($detached) {
             return response()->json([

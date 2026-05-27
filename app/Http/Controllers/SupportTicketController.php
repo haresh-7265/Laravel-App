@@ -30,7 +30,7 @@ class SupportTicketController extends Controller
     public function store(StoreSupportTicketRequest $request): RedirectResponse
     {
         // ── Programmatic rate limiting: 3 tickets per day ───────────────
-        $key = 'support-tickets:' . (auth()->id() ?? $request->ip());
+        $key = 'support-tickets:' . (current_user()?->id ?? $request->ip());
 
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);

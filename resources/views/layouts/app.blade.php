@@ -48,11 +48,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    @auth
-        @if (auth()->user()->isCustomer())
-            @vite('resources/js/customer/customer.js')
-        @endif
-    @endauth
+    @customer
+        @vite('resources/js/customer/customer.js')
+    @endcustomer
     @stack('scripts')
 </body>
 

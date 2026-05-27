@@ -25,7 +25,7 @@ class OrderConfirmation extends Mailable implements ShouldQueue
      */
     public function __construct(public Order $order)
     {
-        $this->order->load('items');
+        $this->order->load('items.product');
         $this->onQueue('emails');
     }
 

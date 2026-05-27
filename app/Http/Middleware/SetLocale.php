@@ -42,7 +42,7 @@ class SetLocale
         App::setLocale($locale);
         Carbon::setLocale($locale);
         Number::useLocale($locale);
-        Number::useCurrency(config("admin.currency_code.$locale.code"));
+        Number::useCurrency(config("admin.currency_code.{$locale}.code"));
 
         return $next($request);
     }
@@ -54,8 +54,8 @@ class SetLocale
     private function resolveLocale(Request $request): string
     {
         // 1. Authenticated user's saved preference
-        if ($request->user() && $request->user()->preferred_locale) {
-            return $request->user()->preferred_locale;
+        if (current_user() && current_user()->preferred_locale) {
+            return current_user()->preferred_locale;
         }
 
         // 2. Session value (guest language switcher)

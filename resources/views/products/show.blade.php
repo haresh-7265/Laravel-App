@@ -84,7 +84,7 @@
                         </div>
                     </div>
 
-                    @if (!auth()->check() || auth()->user()->role == 'customer')
+                    @if(is_guest() || is_customer())
                         <hr>
 
                     {{-- Add to Cart --}}
@@ -184,9 +184,9 @@
             @endif
         </div>
 
-        @auth
-        @if(auth()->user()->isCustomer())
-        @php $userReview = $product->reviews->where('user_id', auth()->id())->first(); @endphp
+        @anyauth()
+        @customer
+        @php $userReview = $product->reviews->where('user_id', current_user()->id)->first(); @endphp
         <div class="row">
             {{-- ─── Left Column: Review Form (customers only) ────────────── --}}
             <div class="col-md-4 mb-4">
@@ -271,7 +271,7 @@
         @else
             {{-- Admin: full-width reviews (no form) --}}
             @include('products._reviews-list', ['reviews' => $product->reviews, 'product' => $product])
-        @endif
+        @endcustomer
         @else
             {{-- Guest prompt --}}
             <div class="alert alert-light border mb-4 d-flex align-items-center gap-2">
@@ -283,7 +283,7 @@
 
             {{-- Guest: full-width reviews (read-only) --}}
             @include('products._reviews-list', ['reviews' => $product->reviews, 'product' => $product])
-        @endauth
+        @endanyauth
     </div>
 
 @endsection

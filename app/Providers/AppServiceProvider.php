@@ -150,7 +150,7 @@ class AppServiceProvider extends ServiceProvider
                     'method' => rescue(fn () => request()->method(), null, false),
                     'ip_address' => rescue(fn () => request()->ip(), null, false),
                     'user_agent' => rescue(fn () => request()->userAgent(), null, false),
-                    'user_id' => rescue(fn () => auth()->id(), null, false),
+                    'user_id' => rescue(fn () => current_user()->id, null, false),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]))->onQueue('analytics'); // Runs AFTER response is sent to user
@@ -196,7 +196,7 @@ class AppServiceProvider extends ServiceProvider
             $limit = User::API_LIMITS[User::TIER_FREE];
 
             return Limit::perMinute($limit)
-                ->by(auth()->id() ?? $request->ip())
+                ->by(current_user()?->id ?? $request->ip())
                 ->response(fn () => response()->json([
                     'status' => 'error',
                     'message' => 'Too many API requests. Please slow down.',
@@ -210,7 +210,7 @@ class AppServiceProvider extends ServiceProvider
             $limit = User::API_LIMITS[User::TIER_PRO];
 
             return Limit::perMinute($limit)
-                ->by(auth()->id() ?? $request->ip())
+                ->by(current_user()?->id ?? $request->ip())
                 ->response(fn () => response()->json([
                     'status' => 'error',
                     'message' => 'Too many API requests. Please slow down.',
@@ -224,7 +224,7 @@ class AppServiceProvider extends ServiceProvider
             $limit = User::API_LIMITS[User::TIER_ENTERPRISE];
 
             return Limit::perMinute($limit)
-                ->by(auth()->id() ?? $request->ip())
+                ->by(current_user()?->id ?? $request->ip())
                 ->response(fn () => response()->json([
                     'status' => 'error',
                     'message' => 'Too many API requests. Please slow down.',

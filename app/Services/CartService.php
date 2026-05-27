@@ -27,7 +27,7 @@ class CartService
 
     public function get(): array
     {
-        if (auth()->check()) {
+        if (current_user() !== null) {
             return $this->getDbCart();
         }
 
@@ -38,7 +38,7 @@ class CartService
 
     private function getDbCart(): array
     {
-        $userId = auth()->id();
+        $userId = current_user()->id;
 
         return Cache::tags(['customer', "cart.user.{$userId}"])->remember("cart.items.{$userId}", now()->addMinutes(10), function () use ($userId) {
             return Cart::with('product')
@@ -85,7 +85,7 @@ class CartService
         // Check stock before adding
         $this->checkStock($product, $quantity);
 
-        if (auth()->check()) {
+        if (current_user() !== null) {
             $this->addToDb($product, $quantity);
         } else {
             $this->addToSession($product, $quantity);
@@ -93,7 +93,7 @@ class CartService
 
         ProductAddedToCart::dispatch(
             product: $product,
-            user: auth()->user(),
+            user: current_user(),
             quantity: $quantity,
             price: $product->getFinalPriceAttribute(),
         );
@@ -103,13 +103,13 @@ class CartService
         Log::channel('product')->info('Item added to cart', [
             'product_id' => $product->id,
             'quantity' => $quantity,
-            'user_id' => auth()->id() ?? 'guest',
+            'user_id' => current_user()?->id ?? 'guest',
         ]);
     }
 
     private function addToDb(Product $product, int $quantity): void
     {
-        $existing = Cart::where('user_id', auth()->id())
+        $existing = Cart::where('user_id', current_user()->id)
             ->where('product_id', $product->id)
             ->first();
 
@@ -121,7 +121,7 @@ class CartService
             $existing->update(['quantity' => $newQuantity]);
         } else {
             Cart::create([
-                'user_id' => auth()->id(),
+                'user_id' => current_user()->id,
                 'product_id' => $product->id,
                 'quantity' => $quantity,
             ]);
@@ -171,8 +171,8 @@ class CartService
         // Check stock on update too
         $this->checkStock($product, $quantity);
 
-        if (auth()->check()) {
-            Cart::where('user_id', auth()->id())
+        if (current_user() !== null) {
+            Cart::where('user_id', current_user()->id)
                 ->where('product_id', $productId)
                 ->update(['quantity' => $quantity]);
         } else {
@@ -194,8 +194,8 @@ class CartService
 
     public function remove(int $productId): void
     {
-        if (auth()->check()) {
-            Cart::where('user_id', auth()->id())
+        if (current_user() !== null) {
+            Cart::where('user_id', current_user()->id)
                 ->where('product_id', $productId)
                 ->delete();
         } else {
@@ -213,8 +213,8 @@ class CartService
 
     public function clear(): void
     {
-        if (auth()->check()) {
-            Cart::where('user_id', auth()->id())->delete();
+        if (current_user() !== null) {
+            Cart::where('user_id', current_user()->id)->delete();
         } else {
             Session::forget($this->sessionKey);
         }
@@ -232,7 +232,7 @@ class CartService
     public function mergeSessionCart($sessionCart): void
     {
         // Only merge if logged in AND is a customer
-        if (blank($sessionCart) || !auth()->check() || !auth()->user()->isCustomer()) {
+        if (blank($sessionCart) || current_user() === null || !is_customer()) {
             return;
         }
 
@@ -243,7 +243,7 @@ class CartService
                 continue;   // skip if product was deleted
             }
 
-            $existing = Cart::where('user_id', auth()->id())
+            $existing = Cart::where('user_id', current_user()->id)
                 ->where('product_id', $productId)
                 ->first();
 
@@ -260,7 +260,7 @@ class CartService
 
             Cart::updateOrCreate(
                 [
-                    'user_id' => auth()->id(),
+                    'user_id' => current_user()->id,
                     'product_id' => $productId,
                 ],
                 [
@@ -275,7 +275,7 @@ class CartService
         $this->cacheService->forgetCart();
 
         Log::channel('product')->info('Session cart merged to DB', [
-            'user_id' => auth()->id(),
+            'user_id' => current_user()->id,
             'item_count' => count($sessionCart),
         ]);
     }
@@ -330,11 +330,11 @@ class CartService
 
     public function getSummary(): array
     {
-        if (!auth()->check()) {
+        if (current_user() === null) {
             return $this->computeSummary();
         }
 
-        $userId = auth()->id();
+        $userId = current_user()->id;
 
         return Cache::tags(['cart', "cart.user.{$userId}"])
             ->remember("cart.summary.{$userId}", now()->addMinutes(10), function () {

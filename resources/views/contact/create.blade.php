@@ -27,7 +27,7 @@
                                 <label for="name" class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" id="name"
                                        class="form-control @error('name') is-invalid @enderror"
-                                       value="{{ old('name', auth()->user()?->name) }}"
+                                       value="{{ old('name', current_user()?->name) }}"
                                        required>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -37,7 +37,7 @@
                                 <label for="email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
                                 <input type="email" name="email" id="email"
                                        class="form-control @error('email') is-invalid @enderror"
-                                       value="{{ old('email', auth()->user()?->email) }}"
+                                       value="{{ old('email', current_user()?->email) }}"
                                        required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>

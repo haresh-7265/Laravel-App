@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Models\Admin;
 use App\Models\Order;
-use App\Models\User;
 use App\Notifications\JobFailedAlert;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -63,7 +63,7 @@ class GenerateInvoicePdf implements ShouldQueue
 
         // Notify all admin users about the failure
         Notification::send(
-            User::where('role', 'admin')->get(),
+            Admin::all(),
             new JobFailedAlert(
                 jobName: 'GenerateInvoicePdf',
                 errorMessage: $e->getMessage(),

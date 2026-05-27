@@ -80,7 +80,7 @@
                 </a>
 
             {{-- ═══ CUSTOMER (authenticated) ═══ --}}
-            @elseif(auth()->check() && auth()->user()->isCustomer())
+            @elseif(is_customer())
                 @if($product->stock > 0)
                     <a href="{{ route('products.show', $product->slug) }}"
                        class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-gray-900 text-white transition-opacity hover:opacity-80">
@@ -97,7 +97,7 @@
                         </button>
                     </form>
                 @else
-                    @php $onWaitlist = auth()->user()->waitlistProducts()->where('product_id', $product->id)->exists(); @endphp
+                    @php $onWaitlist = current_user()->waitlistProducts()->where('product_id', $product->id)->exists(); @endphp
 
                     @if($onWaitlist)
                         <button type="button"

@@ -16,7 +16,7 @@ class OrderObserver
      */
     public function creating(Order $order): void
     {
-        $userId = auth()->id();
+        $userId = current_user()->id;
         $order->created_by = $order->created_by ?? $userId;
         $order->updated_by = $order->updated_by ?? $userId;
     }
@@ -27,7 +27,7 @@ class OrderObserver
      */
     public function updating(Order $order): void
     {
-        $order->updated_by = auth()->id();
+        $order->updated_by = current_user()->id;
     }
 
     /**

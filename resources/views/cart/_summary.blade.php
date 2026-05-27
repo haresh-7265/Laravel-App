@@ -86,7 +86,7 @@
 @endif
 
 {{-- ═══ Coupon Input / Applied Badge ═══ --}}
-@auth
+@anyauth
     <div class="coupon-section mb-3" id="coupon-section">
         @if($appliedCoupon)
             {{-- Applied coupon badge --}}
@@ -131,7 +131,7 @@
             </div>
         @endif
     </div>
-@endauth
+@endanyauth
 
 <hr class="summary-divider">
 

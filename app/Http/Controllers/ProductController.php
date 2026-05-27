@@ -15,7 +15,8 @@ class ProductController extends Controller
 {
     public function index(Request $request, RecentlyViewedService $recentlyViewedService)
     {
-        $recentlyViewed = $recentlyViewedService->get(auth()?->id(), session()->getId());
+        $role = is_admin() ? 'admin' : 'customer';
+        $recentlyViewed = $recentlyViewedService->get(current_user()?->id, $role, session()->getId());
         $page_title = 'Product-list';
         $filters = Arr::only($request->query(), [
             'min_price',
@@ -26,14 +27,13 @@ class ProductController extends Controller
             'sort',
             'q',
         ]);
-        $user = $request->user();
         $cursor = $request->input('cursor');
         $perPage = min((int) $request->input('perPage', 20), 100);
         $hasFilters = collect($filters)->hasAny(['min_price', 'max_price', 'categories', 'in_stock', 'on_sale', 'sort']);
 
         extract(Products::getHomepageProducts(
             filters: $filters,
-            role: $user?->role ?? 'customer',
+            role: $role,
             cursor: $cursor,
             perPage: $perPage
         ));
@@ -90,12 +90,16 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        ProductViewed::dispatch($product, auth()->user(), session()->id());
+        $role = is_guest() ? 'guest' : (is_customer() ? 'customer' : 'admin');
+        ProductViewed::dispatch($product, current_user()?->id, $role, session()->id());
 
+        $userId = current_user()?->id;
         $product->load([
-            'reviews' => function ($query) {
-                $query->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [auth()->id()])
-                    ->latest();
+            'reviews' => function ($query) use ($userId) {
+                $query->when(
+                    is_customer() && $userId,
+                    fn ($q) => $q->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$userId])
+                )->latest();
             },
             'reviews.user',
             'category',

@@ -2,6 +2,7 @@
 
 namespace App\Events\Product;
 
+use App\Models\Admin;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -14,7 +15,8 @@ class ProductViewed
 
     public function __construct(
         public readonly Product $product,
-        public readonly ?User $user = null,
+        public readonly ?int $userId = null,
+        public readonly ?string $userType = 'guest',
         public readonly string $sessionId = ''
     ) {}
 }

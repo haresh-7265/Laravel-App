@@ -42,20 +42,20 @@ class OrderController extends Controller
     // Customer order listing
     public function index(Request $request)
     {
-        $user = $request->user();
+        $userId = current_user()->id ;
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
         $perPage = min((int) $request->input('perPage', 20), 100);
 
         $orders = $this->orderService->getFilteredOrders(
             filters: $filters,
-            role: $user?->role ?? 'guest',
-            userId: $user?->id,
+            role: is_admin() ? 'admin' : 'customer',
+            userId: $userId,
             cursor: $cursor,
             perPage: $perPage,
         );
 
-        extract($this->orderService->getCustomerOrderStats($user?->id));
+        extract($this->orderService->getCustomerOrderStats($userId));
     
         return view('orders.index', compact('stats', 'topProducts', 'ordersByStatus', 'orders'));
     }
@@ -64,7 +64,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Ensure customer can only see their own orders
-        abort_if($order->user_id !== auth()->id(), 403);
+        abort_if($order->user_id !== current_user()->id, 403);
 
         $order->load('items.product');
 
@@ -78,7 +78,7 @@ class OrderController extends Controller
     public function cancel(Order $order)
     {
         // Must own the order
-        abort_if($order->user_id !== auth()->id(), 403);
+        abort_if($order->user_id !== current_user()->id, 403);
 
         // Only cancellable before shipping
         abort_if(! in_array($order->status, ['pending', 'processing']), 403, 'Order cannot be cancelled at this stage.');
@@ -114,7 +114,7 @@ class OrderController extends Controller
     private function generateSignedUrl(Order $order)
     {
         // verify order belongs to auth user
-        if ($order->user_id !== auth()->id()) {
+        if ($order->user_id !== current_user()->id) {
             abort(403);
         }
 

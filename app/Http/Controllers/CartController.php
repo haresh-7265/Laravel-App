@@ -106,7 +106,7 @@ class CartController extends Controller
             'coupon_code' => ['required', 'string', 'max:50'],
         ]);
 
-        $user = auth()->user();
+        $user = current_user();
         $cartTotal = $this->cart->totalPrice();
 
         $result = $this->couponService->validate($request->coupon_code, $user, $cartTotal);

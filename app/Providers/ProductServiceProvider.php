@@ -2,11 +2,18 @@
 
 namespace App\Providers;
 
-use App\Models\{Category, Order, Product};
-use App\Observers\{OrderObserver, ProductObserver};
-use App\Services\{CacheService, CartService, CouponService, OrderService, ProductService};
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\Product;
+use App\Observers\OrderObserver;
+use App\Observers\ProductObserver;
+use App\Services\CacheService;
+use App\Services\CartService;
+use App\Services\CouponService;
+use App\Services\OrderService;
+use App\Services\ProductService;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\{Cache, DB, Log};
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,7 +25,7 @@ class ProductServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton('products', function () {
-            return new ProductService();
+            return new ProductService;
         });
 
         $this->app->singleton(CartService::class);
@@ -38,30 +45,30 @@ class ProductServiceProvider extends ServiceProvider
 
         // Number::useCurrency(config('admin.currency_code'));
 
-        \Blade::directive('admin', function () {
-            return "<?php if(auth()->check() && auth()->user()->role === 'admin'): ?>";
+        \Blade::if('admin', function () {
+            return is_admin();
         });
 
-        \Blade::directive('endadmin', function () {
-            return "<?php endif; ?>";
+        \Blade::if('customer', function () {
+            return is_customer();
+        });
+
+        \Blade::if('anyauth', function () {
+            return !is_guest();
         });
 
         \Blade::directive('currency', function ($amount) {
             return "<?php echo format_price($amount); ?>";
         });
 
-        \View::composer(['products._form', 'components.export-filter-popup', 'components.product-filter','products.index'], function ($view) {
-            $categories = Cache::tags(['products', 'categories'])->remember('categories', now()->addHours(2), fn() => Category::all());
+        \View::composer(['products._form', 'components.export-filter-popup', 'components.product-filter', 'products.index'], function ($view) {
+            $categories = Cache::tags(['products', 'categories'])->remember('categories', now()->addHours(2), fn () => Category::all());
             $view->with('categories', $categories);
         });
 
         \View::composer('partials.navbar', function ($view) {
             $cartService = app(CartService::class);
-            $user = auth()->user();
-            $cartCount = 0;
-            if (!$user || $user->hasRole('customer')) {
-                $cartCount = $cartService->count();
-            }
+            $cartCount = is_admin() ? 0 : $cartService->count();
             $view->with('cart_count', $cartCount);
         });
 

@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\Product\ProductStockLow;
-use App\Models\User;
+use App\Models\Admin;
 use App\Notifications\ProductLowStock;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
@@ -25,7 +25,7 @@ class SendStockLowEmail implements ShouldQueue
             'low_stock_alert_'.$event->product->id,
             now()->addHour(),
             function () use ($event) {
-                $admins = User::where('role', 'admin')->get();
+                $admins = Admin::all();
 
                 Notification::send(
                     $admins,

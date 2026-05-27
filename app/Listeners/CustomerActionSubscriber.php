@@ -27,14 +27,15 @@ class CustomerActionSubscriber implements ShouldQueue
             'product_name' => $event->product->name,
             'category' => $event->product->category,
             'price' => $event->product->price,
-            'user_id' => $event->user?->id,
+            'user_id' => $event->userId,
             'session_id' => $event->sessionId,
             'timestamp' => now()->toISOString(),
         ]);
 
         $this->recentlyViewedService->track(
             $event->product->id,
-            $event->user?->id,
+            $event->userId,
+            $event->userType,
             $event->sessionId
         );
     }

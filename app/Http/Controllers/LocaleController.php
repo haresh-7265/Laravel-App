@@ -24,8 +24,8 @@ class LocaleController extends Controller
         session(['locale' => $locale]);
 
         // For authenticated users, also persist to DB so it survives logout/login
-        if ($request->user()) {
-            $request->user()->update(['preferred_locale' => $locale]);
+        if (current_user()) {
+            current_user()->update(['preferred_locale' => $locale]);
         }
 
         return redirect()->back();

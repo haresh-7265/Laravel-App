@@ -74,10 +74,10 @@
         document.head.appendChild(style);
     }
 
-    function initNotificationListener(userId) {
+    function initNotificationListener(userId, userType) {
         if (!window.Echo || !userId) return;
 
-        window.Echo.private(`App.Models.User.${userId}`)
+        window.Echo.private(`App.Models.${userType}.${userId}`)
 
             // ── listen for specific broadcastType() name ──
             .notification((notification) => {

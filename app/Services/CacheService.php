@@ -33,7 +33,7 @@ class CacheService
     // ─── Cart Cache ─────────────────────────────────────
     public function forgetCart(?int $userId = null): void
     {
-        $userId = $userId ?? auth()->id();
+        $userId = $userId ?? current_user()?->id;
 
         if ($userId) {
             Cache::tags(["cart.user.{$userId}"])->flush();

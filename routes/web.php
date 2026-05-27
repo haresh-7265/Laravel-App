@@ -43,7 +43,7 @@ Route::prefix('support')->name('support.')->group(function () {
 Route::get('contact', [ContactController::class, 'create'])->name('contact.create');
 Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,admin')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
@@ -58,8 +58,8 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Admin only
-Route::middleware(['auth', 'role:admin'])->group(function () {
+// Admin only (admin guard)
+Route::middleware('auth:admin')->group(function () {
     // products route
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('products', [ProductController::class, 'store'])->name('products.store');
@@ -118,7 +118,7 @@ Route::get('products/{product}', [ProductController::class, 'show'])->name('prod
 Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
 
 // Customer routes
-Route::middleware(['auth', 'role:customer'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('checkout', [CustomerOrderController::class, 'checkout'])->name('orders.checkout');
     Route::post('orders', [CustomerOrderController::class, 'store'])
         ->middleware('throttle:checkout')

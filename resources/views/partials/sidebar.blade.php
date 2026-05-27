@@ -73,15 +73,15 @@
             @endforeach
         @endadmin
 
-        @auth
-            @if(auth()->user()->isCustomer())
+        @anyauth
+            @customer
                 <a href="{{ route('orders.index') }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
                     'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('orders.index'),
                 ])>
                     <i class="bi bi-bag w-4 text-center"></i> My Orders
                 </a>
-            @endif
+            @endcustomer
 
             <a href="{{ route('notifications.index') }}" @class([
                 'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
@@ -89,7 +89,7 @@
             ])>
                 <i class="bi bi-bell w-4 text-center"></i> Notifications
                 @php
-                    $sidebarUnread = auth()->user()->unreadNotifications()->count();
+                    $sidebarUnread = current_user()->unreadNotifications()->count();
                 @endphp
                 @if($sidebarUnread > 0)
                     <span class="ms-auto bg-indigo-500 text-white text-[10px] font-semibold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1">
@@ -97,7 +97,7 @@
                     </span>
                 @endif
             </a>
-        @endauth
+        @endanyauth
 
         @admin
             <div class="px-3 pt-5 pb-1 text-[10px] uppercase tracking-widest text-gray-500">Admin</div>
@@ -116,20 +116,30 @@
 
     {{-- Footer --}}
     <div class="px-3 py-4 border-t border-gray-700 flex-shrink-0">
-        @auth
-            <form action="{{ route('logout') }}" method="POST">
+        @admin
+            <form action="{{ route('admin.logout') }}" method="POST">
+                @csrf
+                <button class="w-full border border-red-500 text-red-400 py-1.5 rounded
+                               text-sm hover:bg-red-500 hover:text-white transition">
+                    Admin Logout
+                </button>
+            </form>
+        @endadmin
+        @customer
+            <form action="{{ route('logout') }}" method="POST" class="mt-2">
                 @csrf
                 <button class="w-full border border-red-500 text-red-400 py-1.5 rounded
                                text-sm hover:bg-red-500 hover:text-white transition">
                     Log out
                 </button>
             </form>
-        @else
+        @endcustomer
+        @if(is_guest())
             <a href="{{ route('login') }}"
                class="block text-center text-sm text-gray-400 hover:text-white transition">
                 Log in
             </a>
-        @endauth
+        @endif
     </div>
 </aside>
 

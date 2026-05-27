@@ -1,6 +1,6 @@
 {{-- resources/views/partials/notification-bell.blade.php --}}
 {{-- Notification bell dropdown — included in both customer navbar and admin sidebar header --}}
-@auth
+@anyauth
 <div class="notification-bell-wrapper" style="position:relative;display:inline-flex;">
 
     {{-- Bell trigger --}}
@@ -51,9 +51,9 @@
         </div>
     </div>
 </div>
-@endauth
+@endanyauth
 
-@auth
+@anyauth
 <style>
     .notification-dropdown::-webkit-scrollbar { width: 5px; }
     .notification-dropdown::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
@@ -215,4 +215,4 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(refreshBadge, 60000);
 });
 </script>
-@endauth
+@endanyauth

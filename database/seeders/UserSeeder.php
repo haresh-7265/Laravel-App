@@ -15,15 +15,8 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed 4 admin users
-        for ($i = 1; $i <= 4; $i++) {
-            User::factory()->admin()->create([
-                'name' => "Admin {$i}",
-                'email' => "admin{$i}@example.com",
-                'password' => 'password',
-            ]);
-        }
 
+        $this->call(AdminSeeder::class);
         // Seed 1 default customer for easy QA testing
         User::factory()->customer()->create([
             'name' => 'Default Customer',

@@ -104,7 +104,7 @@ class Product extends Model
 
     public function scopeActive($query)
     {
-        return match(request()->user()?->role){
+        return match(current_user()?->role){
             'admin' => $query,
             default => $query->where('is_active', true)
         } ;

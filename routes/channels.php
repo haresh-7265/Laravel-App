@@ -7,9 +7,13 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
+Broadcast::channel('App.Models.Admin.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+}, ['guards' => ['admin']]);
+
 Broadcast::channel('admin.orders', function ($user) {
-    return (bool) $user->isAdmin();
-});
+    return (bool) $user?->isAdmin();
+}, ['guards' => ['admin']]);
 
 Broadcast::channel('order.{orderId}', function ($user, $orderId) {
     return Order::where('id', $orderId)
@@ -25,4 +29,4 @@ Broadcast::channel('store.browsing', function ($user) {
         'role' => $user->role,
         'page' => parse_url(request()->headers->get('referer', '/'), PHP_URL_PATH),
     ];
-});
+}, ['guards' => ['admin', 'web']]);

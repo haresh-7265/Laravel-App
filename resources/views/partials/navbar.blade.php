@@ -29,7 +29,7 @@
             @endadmin
 
             {{-- Cart (guest + customer) --}}
-            @if(!auth()->check() || auth()->user()->role === 'customer')
+            @if(is_guest() || is_customer())
                 <a href="{{ route('cart.index') }}" class="relative">
                     <i class="bi bi-cart text-xl"></i>
                     <span id="cart-badge" class="absolute -top-1.5 -end-1.5 bg-red-500 text-white text-[9px]
@@ -44,12 +44,12 @@
             @include('partials.notification-bell')
 
             {{-- Profile avatar --}}
-            @auth
+            @anyauth
                 <a href="{{ route('profile.edit') }}" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center
                               text-sm font-medium text-white hover:bg-blue-500 transition" title="Profile">
-                    {{ Str::initials(auth()->user()?->name) }}
+                    {{ Str::initials(current_user()?->name) }}
                 </a>
-            @endauth
+            @endanyauth
 
             {{-- Guest login --}}
             @guest

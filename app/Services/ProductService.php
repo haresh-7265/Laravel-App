@@ -86,7 +86,7 @@ class ProductService
                     'product_name' => $product->name,
                     'category_id' => $product->category_id,
                     'has_image' => ! is_null($product->image),
-                    'created_by' => auth()->id() ?? 'system',
+                    'created_by' => current_user()?->id ?? 'system',
                 ]);
             });
 
@@ -97,7 +97,7 @@ class ProductService
             Log::channel('product')->error('Failed to create product', [
                 'error' => $e->getMessage(),
                 'sql' => $e->getSql(),
-                'created_by' => auth()->id(),
+                'created_by' => current_user()?->id ?? 'system',
             ]);
 
             throw $e;   // re-throw so controller/handler can respond
@@ -105,7 +105,7 @@ class ProductService
             // Log unexpected errors
             Log::channel('product')->error('Unexpected error creating product', [
                 'error' => $e->getMessage(),
-                'created_by' => auth()->id(),
+                'created_by' => current_user()?->id,
             ]);
 
             throw $e;
@@ -127,7 +127,7 @@ class ProductService
                 Log::channel('product')->info('Product updated', [
                     'product_id' => $product->id,
                     'changes' => $product->getChanges(),
-                    'updated_by' => auth()->id() ?? 'system',
+                    'updated_by' => current_user()?->id ?? 'system',
                 ]);
             })->refresh();
 
@@ -135,7 +135,7 @@ class ProductService
             Log::channel('product')->error('Failed to update product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'updated_by' => auth()->id(),
+                'updated_by' => current_user()?->id,
             ]);
 
             throw $e;
@@ -143,7 +143,7 @@ class ProductService
             Log::channel('product')->error('Unexpected error updating product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'updated_by' => auth()->id(),
+                'updated_by' => current_user()?->id,
             ]);
 
             throw $e;
@@ -166,7 +166,7 @@ class ProductService
             Log::channel('product')->error('Failed to delete product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'deleted_by' => auth()->id(),
+                'deleted_by' => current_user()?->id,
             ]);
 
             throw $e;
@@ -174,7 +174,7 @@ class ProductService
             Log::channel('product')->error('Unexpected error deleting product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'deleted_by' => auth()->id(),
+                'deleted_by' => current_user()?->id,
             ]);
 
             throw $e;
@@ -194,14 +194,14 @@ class ProductService
             if ($results->isEmpty()) {
                 Log::channel('product')->info('Product search returned no results', [
                     'filters' => $filters,
-                    'user_id' => auth()->id(),
+                    'user_id' => current_user()?->id,
                 ]);
             }
 
             Log::channel('product')->debug('Product search executed', [
                 'filters' => $filters,
                 'result_count' => $results->count(),
-                'user_id' => auth()->id(),
+                'user_id' => current_user()?->id,
             ]);
 
             return $results->toArray();
@@ -210,7 +210,7 @@ class ProductService
             Log::channel('product')->error('Product search query failed', [
                 'filters' => $filters,
                 'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
+                'user_id' => current_user()?->id,
             ]);
 
             throw $e;
@@ -230,7 +230,7 @@ class ProductService
                 'mime_type' => $image->getMimeType(),
                 'size' => $image->getSize(),
                 'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
+                'user_id' => current_user()?->id,
             ]);
 
             throw $e;

@@ -18,7 +18,7 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => current_user(),
         ]);
     }
 
@@ -27,13 +27,13 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        current_user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if (current_user()->isDirty('email')) {
+            current_user()->email_verified_at = null;
         }
 
-        $request->user()->save();
+        current_user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -49,7 +49,7 @@ class ProfileController extends Controller
 
         $locale = $request->input('preferred_locale');
 
-        $request->user()->update(['preferred_locale' => $locale]);
+        current_user()->update(['preferred_locale' => $locale]);
 
         // Sync session so the change takes effect immediately
         session(['locale' => $locale]);
@@ -66,9 +66,9 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
+        $user = current_user();
 
-        Auth::logout();
+        Auth::guard(current_guard())->logout();
 
         $user->delete();
 
