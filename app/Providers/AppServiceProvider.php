@@ -177,6 +177,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-orders', fn ($user) => $user instanceof Admin);
         Gate::define('impersonate-users', fn ($user) => $user instanceof Admin);
         Gate::define('view-analytics', fn ($user) => $user instanceof Admin);
+        Gate::define('edit-comment', fn ($u, $c, $p) => $u->id === $c->user_id || $u->id === $p->user_id);
 
         // Super-admin bypass
         Gate::before(function ($user, string $ability) {

@@ -8,6 +8,16 @@ use App\Models\Product;
 class ProductPolicy
 {
     /**
+     * Perform pre-authorization checks.
+     */
+    public function before($user, string $ability)
+    {
+        if ($user instanceof Admin) {
+            return true;
+        }
+    }
+
+    /**
      * Determine whether the user can view any models.
      */
     public function viewAny($user): bool

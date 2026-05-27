@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Admin;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class OrderPolicy
 {
@@ -19,13 +20,15 @@ class OrderPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view($user, Order $order): bool
+    public function view($user, Order $order)
     {
         if ($user instanceof Admin) {
-            return true;
+            return Response::allow();
         }
 
-        return $user instanceof User && $order->user_id === $user->id;
+        return ($user instanceof User && $order->user_id === $user->id)
+            ? Response::allow()
+            : Response::denyAsNotFound();
     }
 
     /**
@@ -55,12 +58,14 @@ class OrderPolicy
     /**
      * Determine whether the user can cancel the model.
      */
-    public function cancel($user, Order $order): bool
+    public function cancel($user, Order $order)
     {
         if ($user instanceof Admin) {
-            return true;
+            return Response::allow();
         }
-        return $user instanceof User && $order->user_id === $user->id;
+        return ($user instanceof User && $order->user_id === $user->id)
+            ? Response::allow()
+            : Response::denyAsNotFound();
     }
 
     /**
