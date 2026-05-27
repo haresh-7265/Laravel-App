@@ -30,7 +30,7 @@ class AuthController extends Controller
             // 1. Check if the account is currently locked out
             if ($seconds = $throttleService->checkLockout($email, 'web')) {
                 $throttleService->logAttempt($email, 'web', false, $request->ip(), $request->userAgent(), 'Account locked out');
-                
+
                 throw ValidationException::withMessages([
                     'email' => __('auth.throttle', ['seconds' => $seconds]),
                 ]);
@@ -43,7 +43,7 @@ class AuthController extends Controller
                 ]);
 
                 $sessionAnswer = session('captcha_answer');
-                if (!$sessionAnswer || trim($request->input('captcha_answer')) !== (string) $sessionAnswer) {
+                if (! $sessionAnswer || trim($request->input('captcha_answer')) !== (string) $sessionAnswer) {
                     // Generate new question for subsequent attempt
                     $num1 = rand(1, 9);
                     $num2 = rand(1, 9);
@@ -53,7 +53,7 @@ class AuthController extends Controller
                     ]);
 
                     $throttleService->logAttempt($email, 'web', false, $request->ip(), $request->userAgent(), 'Incorrect CAPTCHA answer');
-                    
+
                     throw ValidationException::withMessages([
                         'captcha_answer' => 'Incorrect CAPTCHA answer.',
                     ]);
@@ -71,7 +71,7 @@ class AuthController extends Controller
         if (Auth::guard('web')->attempt($credentials, $remember)) {
             // Reset throttle counters and clear CAPTCHA info
             if ($email) {
-                $throttleService->resetFailedAttempts($email,'web');
+                $throttleService->resetFailedAttempts($email, 'web');
             }
             session()->forget(['captcha_question', 'captcha_answer']);
 
@@ -166,7 +166,7 @@ class AuthController extends Controller
      */
     public function impersonate(Request $request, $id)
     {
-        if (!Auth::guard('admin')->check()) {
+        if (! Auth::guard('admin')->check()) {
             abort(403, 'Only administrators can perform impersonation.');
         }
 
@@ -198,7 +198,7 @@ class AuthController extends Controller
      */
     public function stopImpersonate(Request $request)
     {
-        if (!session('impersonate.active')) {
+        if (! session('impersonate.active')) {
             return redirect()->route('products.index');
         }
 
@@ -235,7 +235,7 @@ class AuthController extends Controller
      */
     public function magicLogin(Request $request, $id)
     {
-        if (!$request->hasValidSignature()) {
+        if (! $request->hasValidSignature()) {
             abort(401, 'Invalid or expired magic link.');
         }
 
@@ -286,5 +286,16 @@ class AuthController extends Controller
             'expires_in' => '15 minutes',
             'magic_link' => $url,
         ]);
+    }
+
+    public function logoutAllDevices(Request $request)
+    {
+        $request->validateWithBag('logoutAll', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        Auth::logoutOtherDevices($request->password);
+
+        return redirect()->route('products.index')->with('success', 'Logout successfull from all devices');
     }
 }

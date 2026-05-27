@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthThrottleService
 {
-    protected const LOCK_TIME_MINUTES = 1;
+    protected const LOCK_TIME_MINUTES = 15;
 
-    protected const MAX_ATTEMPTS_LOCK = 2;
+    protected const MAX_ATTEMPTS_LOCK = 5;
 
-    protected const MAX_ATTEMPTS_CAPTCHA = 1;
+    protected const MAX_ATTEMPTS_CAPTCHA = 10;
 
     // ── guard-aware model resolution ──────────────────
     protected function findUser(string $email, string $guard): mixed

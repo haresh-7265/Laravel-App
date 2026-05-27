@@ -29,6 +29,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [
             SetLocale::class,
             RequestTrackingMiddleware::class,
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
         ]);
         $middleware->appendToPriorityList(
             RequestTrackingMiddleware::class,

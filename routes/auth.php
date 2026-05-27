@@ -61,6 +61,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthController::class, 'logout'])
         ->name('logout');
+    
+    Route::post('/logout/all-devices', [AuthController::class, 'logoutAllDevices'])->name('logout.all');
 });
 
 Route::get('/email/verify', function () {
