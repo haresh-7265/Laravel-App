@@ -81,6 +81,12 @@
                 ])>
                     <i class="bi bi-bag w-4 text-center"></i> My Orders
                 </a>
+                <a href="{{ route('customer.devices') }}" @class([
+                    'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
+                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('customer.devices'),
+                ])>
+                    <i class="bi bi-phone w-4 text-center"></i> My Devices
+                </a>
             @endcustomer
 
             <a href="{{ route('notifications.index') }}" @class([

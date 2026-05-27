@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Customer\DeviceController;
 use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\LocaleController;
@@ -131,6 +132,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('products/{product}/waitlist', [WaitlistController::class, 'destroy'])->name('product.waitlist.destroy');
     Route::post('products/{product}/reviews', [ReviewController::class, 'store'])->name('products.reviews.store');
     Route::delete('products/{product}/reviews/{review}', [ReviewController::class, 'destroy'])->name('products.reviews.destroy');
+
+    Route::get('/customer/devices', [DeviceController::class, 'index'])->name('customer.devices');
+    Route::delete('/customer/devices/{id}', [DeviceController::class, 'revoke'])->name('customer.devices.revoke');
 });
 
 require __DIR__ . '/auth.php';

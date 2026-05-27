@@ -2,6 +2,7 @@
 
 use App\Facades\Products;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Customer\ApiAuthController;
 use App\Http\Controllers\SlackInteractionController;
 use App\Http\Middleware\VerifySlackSignature;
 use Illuminate\Http\Request;
@@ -32,3 +33,15 @@ Route::post('slack/interactions', [SlackInteractionController::class, 'handle'])
     ->middleware(VerifySlackSignature::class);
 
 Route::middleware(['web', 'auth:admin'])->get('/orders', [OrderController::class, 'indexApi'])->name('api.orders.index');
+
+// public
+Route::post('/login',    [ApiAuthController::class, 'login']);
+Route::post('/register', [ApiAuthController::class, 'register']);
+
+// protected
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout',          [ApiAuthController::class, 'logout']);
+    Route::get('/tokens',           [ApiAuthController::class, 'tokens']);
+    Route::delete('/tokens/{id}',   [ApiAuthController::class, 'revokeToken']);
+    Route::get('/profile',          [ApiAuthController::class, 'profile']);
+});
