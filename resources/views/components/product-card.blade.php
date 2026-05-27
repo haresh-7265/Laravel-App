@@ -28,11 +28,11 @@
         @endif
 
         {{-- {{ image filesize }} --}}
-        @admin
+        @can('manage-products')
         <span class="absolute bottom-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
             {{ human_file_size(Storage::disk('public')->size($product->image ?? 'products/default.png')) }}
         </span>
-        @endadmin
+        @endcan
     </div>
 
     {{-- Body --}}
@@ -136,14 +136,14 @@
                 @endif
             @endadmin
 
-            @can('edit-product')
+            @can('manage-products')
                 <a href="{{ route('products.edit', $product->slug) }}"
                    class="flex-1 text-center text-[13px] font-medium py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors">
                     {{ __('products.edit') }}
                 </a>
             @endcan
 
-            @can('delete-product')
+            @can('manage-products')
                 <form action="{{ route('products.destroy', $product->slug) }}"
                       method="POST"
                       onsubmit="return confirm('{{ __('products.delete_short') }}')"

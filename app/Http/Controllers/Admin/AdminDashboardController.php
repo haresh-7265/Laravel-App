@@ -8,11 +8,14 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Concurrency;
+use Illuminate\Support\Facades\Gate;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
+        Gate::authorize('view-admin-dashboard');
+
         $stats = Cache::tags(['admin', 'products', 'products.list', 'orders', 'users'])->remember('admin.dashboard.stats', now()->addMinutes(10), function () {
             [$todayOrders, $monthRevenue, $newCustomers, $lowStockCount] = Concurrency::run([
                 fn() => Order::whereDate('created_at', today())->count(),

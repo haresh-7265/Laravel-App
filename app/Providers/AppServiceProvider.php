@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
+use App\Models\Admin;
 use App\Models\User;
 use App\Services\ExternalApiService;
 use App\Services\FakeStoreService;
@@ -17,12 +18,14 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -162,6 +165,33 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Model::preventLazyLoading(! app()->isProduction());
+
+        // Set default user resolver to check active guards
+        Auth::resolveUsersUsing(fn () => current_user());
+
+        // Define authorization gates
+        Gate::define('view-admin-dashboard', fn ($user) => $user instanceof Admin);
+        Gate::define('manage-products', fn ($user) => $user instanceof Admin);
+        Gate::define('manage-orders', fn ($user) => $user instanceof Admin);
+        Gate::define('impersonate-users', fn ($user) => $user instanceof Admin);
+        Gate::define('view-analytics', fn ($user) => $user instanceof Admin);
+
+        // Super-admin bypass
+        Gate::before(function ($user, string $ability) {
+            if ($user instanceof Admin) {
+                return true;
+            }
+        });
+
+        // Audit log trail
+        Gate::after(function ($user, string $ability, bool $result) {
+            Log::info("Gate authorization decision", [
+                'user_id' => $user?->id,
+                'email' => $user?->email,
+                'ability' => $ability,
+                'result' => $result ? 'allowed' : 'denied',
+            ]);
+        });
     }
 
     /**

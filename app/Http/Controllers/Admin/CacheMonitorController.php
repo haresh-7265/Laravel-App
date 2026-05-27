@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\CacheMonitorService;
+use Illuminate\Support\Facades\Gate;
 
 class CacheMonitorController extends Controller
 {
@@ -16,6 +17,8 @@ class CacheMonitorController extends Controller
      */
     public function index()
     {
+        Gate::authorize('view-admin-dashboard');
+
         $data = $this->cacheMonitor->getStatistics();
 
         return view('admin.cache-monitor', $data);
@@ -26,6 +29,8 @@ class CacheMonitorController extends Controller
      */
     public function clearAll()
     {
+        Gate::authorize('view-admin-dashboard');
+
         $this->cacheMonitor->clearAll();
 
         return redirect()

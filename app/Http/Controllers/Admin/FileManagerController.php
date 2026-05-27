@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
@@ -14,6 +15,8 @@ class FileManagerController extends Controller
 
     public function index()
     {
+        Gate::authorize('view-admin-dashboard');
+
         $perPage = min((int) request()->input('perPage', 10), 100);
 
         $allFiles = collect(Storage::disk($this->disk)->files())
@@ -60,6 +63,8 @@ class FileManagerController extends Controller
 
     public function archive(Request $request)
     {
+        Gate::authorize('view-admin-dashboard');
+
         $path = $request->input('path');
 
         // guard — file must exist
@@ -80,6 +85,8 @@ class FileManagerController extends Controller
 
     public function cleanup()
     {
+        Gate::authorize('view-admin-dashboard');
+
         $files = Storage::disk($this->disk)->files();
         $cutoff = now()->subDays(30)->timestamp;
         $deleted = 0;

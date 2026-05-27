@@ -10,9 +10,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>{{ __('products.product_details') }}</h2>
         <div>
-            @admin
+            @can('manage-products')
             <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">{{ __('products.edit') }}</a>
-            @endadmin
+            @endcan
             <a href="{{ route('products.index') }}" class="btn btn-secondary">{{ __('products.back') }}</a>
         </div>
     </div>
@@ -114,7 +114,7 @@
                     
                     @endif
 
-                    @admin
+                    @can('manage-products')
             
                     <hr>
 
@@ -148,7 +148,7 @@
                         </form>
                     </div>
 
-                    @endadmin
+                    @endcan
 
                 </div>
             </div>

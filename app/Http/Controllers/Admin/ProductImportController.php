@@ -7,6 +7,7 @@ use App\Jobs\ImportProductRowJob;
 use Illuminate\Bus\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\LazyCollection;
 
@@ -17,6 +18,8 @@ class ProductImportController extends Controller
      */
     public function index()
     {
+        Gate::authorize('manage-products');
+
         $batchIds = session()->get('batch_ids', []);
 
         return view('admin.import', compact('batchIds'));
@@ -27,6 +30,8 @@ class ProductImportController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('manage-products');
+
         $request->validate([
             'csv_file' => ['required', 'file', 'mimes:csv', 'max:10240'],
         ]);
@@ -86,6 +91,8 @@ class ProductImportController extends Controller
      */
     public function status(string $batchId)
     {
+        Gate::authorize('manage-products');
+
         $batch = Bus::findBatch($batchId);
 
         if (! $batch) {
@@ -118,6 +125,8 @@ class ProductImportController extends Controller
      */
     public function cancel(string $batchId)
     {
+        Gate::authorize('manage-products');
+
         $batch = Bus::findBatch($batchId);
 
         if (! $batch) {

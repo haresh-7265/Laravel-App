@@ -62,7 +62,7 @@
             <i class="bi bi-grid w-4 text-center"></i> Products
         </a>
 
-        @admin
+        @can('manage-products')
             @foreach($adminMenuLinks as $link)
                 <a href="{{ route($link['route']) }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
@@ -71,7 +71,7 @@
                     <i class="{{ $link['icon'] }} w-4 text-center"></i> {{ $link['label'] }}
                 </a>
             @endforeach
-        @endadmin
+        @endcan
 
         @anyauth
             @customer
@@ -105,7 +105,7 @@
             </a>
         @endanyauth
 
-        @admin
+        @can('view-admin-dashboard')
             <div class="px-3 pt-5 pb-1 text-[10px] uppercase tracking-widest text-gray-500">Admin</div>
 
             @foreach($adminLinks as $link)
@@ -116,13 +116,13 @@
                     <i class="{{ $link['icon'] }} w-4 text-center"></i> {{ $link['label'] }}
                 </a>
             @endforeach
-        @endadmin
+        @endcan
 
     </div>
 
     {{-- Footer --}}
     <div class="px-3 py-4 border-t border-gray-700 flex-shrink-0">
-        @admin
+        @can('view-admin-dashboard')
             <form action="{{ route('admin.logout') }}" method="POST">
                 @csrf
                 <button class="w-full border border-red-500 text-red-400 py-1.5 rounded
@@ -130,7 +130,7 @@
                     Admin Logout
                 </button>
             </form>
-        @endadmin
+        @endcan
         @customer
             <form action="{{ route('logout') }}" method="POST" class="mt-2">
                 @csrf

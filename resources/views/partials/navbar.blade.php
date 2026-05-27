@@ -21,12 +21,12 @@
         <div class="flex items-center gap-4 ms-auto">
 
             {{-- Export (admin only) --}}
-            @admin
+            @can('manage-products')
             <a href="{{ route('products.export') }}" class="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600
                           text-sm px-3 py-1.5 rounded transition">
                 <i class="bi bi-download text-lg"></i> Export
             </a>
-            @endadmin
+            @endcan
 
             {{-- Cart (guest + customer) --}}
             @if(is_guest() || is_customer())

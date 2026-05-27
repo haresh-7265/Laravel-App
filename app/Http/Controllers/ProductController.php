@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Services\RecentlyViewedService;
 use Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ProductController extends Controller
 {
@@ -58,6 +59,8 @@ class ProductController extends Controller
      */
     public function create()
     {
+        Gate::authorize('manage-products');
+
         return view('products.create');
     }
 
@@ -66,6 +69,8 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
+        Gate::authorize('manage-products');
+
         $data = Arr::only($request->all(), [
             'name',
             'slug',
@@ -113,6 +118,8 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        Gate::authorize('manage-products');
+
         return view('products.edit')->with('product', $product);
     }
 
@@ -121,6 +128,8 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
+        Gate::authorize('manage-products');
+
         $data = Arr::except($request->all(), [
             '_token',
             '_method',
@@ -139,6 +148,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        Gate::authorize('manage-products');
+
         Products::delete($product);
 
         return redirect()->route('products.index')
@@ -157,6 +168,8 @@ class ProductController extends Controller
     // export csv file
     public function exportCsv()
     {
+        Gate::authorize('manage-products');
+
         return response()->streamDownload(function () {
             $handle = fopen('php://output', 'w');
 
@@ -200,6 +213,8 @@ class ProductController extends Controller
      */
     public function trashed(Request $request)
     {
+        Gate::authorize('manage-products');
+
         $page = request()->input('page', 1);
         $perPage = min((int) $request->input('perPage', 20), 100);
         $products = Products::getTrashedProducts($page, $perPage);
@@ -212,6 +227,8 @@ class ProductController extends Controller
      */
     public function restore(int $id)
     {
+        Gate::authorize('manage-products');
+
         $product = Products::restoreProduct($id);
 
         return redirect()->route('products.trashed')
@@ -223,6 +240,8 @@ class ProductController extends Controller
      */
     public function forceDelete(int $id)
     {
+        Gate::authorize('manage-products');
+
         $product = Products::forceDeleteProduct($id);
 
         return redirect()->route('products.trashed')

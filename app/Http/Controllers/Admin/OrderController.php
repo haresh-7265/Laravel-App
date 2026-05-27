@@ -8,6 +8,7 @@ use App\Services\OrderService;
 use Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
@@ -16,6 +17,8 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        Gate::authorize('manage-orders');
+
         $user = $request->user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
@@ -49,6 +52,8 @@ class OrderController extends Controller
 
     public function indexApi(Request $request): JsonResponse
     {
+        Gate::authorize('manage-orders');
+
         $user = $request->user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
@@ -74,6 +79,8 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
+        Gate::authorize('manage-orders');
+
         $order->load('items.product', 'user');
         $productNames = Arr::pluck($order->items->toArray(), 'product_name');
         $summary = 'Items: '.implode(', ', $productNames);
@@ -83,6 +90,8 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        Gate::authorize('manage-orders');
+
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
         ]);
@@ -114,6 +123,8 @@ class OrderController extends Controller
 
     public function updatePayment(Request $request, Order $order)
     {
+        Gate::authorize('manage-orders');
+
         $request->validate([
             'payment_status' => 'required|in:paid,unpaid',
         ]);
@@ -125,6 +136,8 @@ class OrderController extends Controller
 
     public function invoices()
     {
+        Gate::authorize('manage-orders');
+
         $files = Storage::disk('public')->files('invoices');
 
         $invoices = collect($files)->map(function ($path) {

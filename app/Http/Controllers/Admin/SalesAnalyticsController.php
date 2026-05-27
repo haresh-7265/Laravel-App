@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\SalesAnalyticsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SalesAnalyticsController extends Controller
@@ -13,6 +14,8 @@ class SalesAnalyticsController extends Controller
     }
     public function index(Request $request)
     {
+        Gate::authorize('view-analytics');
+
         $selectedYear = $request->input('year', now()->year);
 
         // Monthly sales 
@@ -49,6 +52,8 @@ class SalesAnalyticsController extends Controller
 
     public function exportCsv(Request $request): StreamedResponse
     {
+        Gate::authorize('view-analytics');
+
         $type = $request->input('type', 'monthly');
         $year = $request->input('year', now()->year);
 

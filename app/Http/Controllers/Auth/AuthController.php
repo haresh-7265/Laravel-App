@@ -10,6 +10,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
@@ -166,9 +167,7 @@ class AuthController extends Controller
      */
     public function impersonate(Request $request, $id)
     {
-        if (! Auth::guard('admin')->check()) {
-            abort(403, 'Only administrators can perform impersonation.');
-        }
+        Gate::authorize('impersonate-users');
 
         $admin = Auth::guard('admin')->user();
         $user = User::findOrFail($id);
