@@ -59,7 +59,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        Gate::authorize('manage-products');
+        $this->authorize('create', Product::class);
 
         return view('products.create');
     }
@@ -69,7 +69,7 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        Gate::authorize('manage-products');
+        $this->authorize('create', Product::class);
 
         $data = Arr::only($request->all(), [
             'name',
@@ -118,7 +118,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        Gate::authorize('manage-products');
+        $this->authorize('update', $product);
 
         return view('products.edit')->with('product', $product);
     }
@@ -128,7 +128,7 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        Gate::authorize('manage-products');
+        $this->authorize('update', $product);
 
         $data = Arr::except($request->all(), [
             '_token',
@@ -148,7 +148,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        Gate::authorize('manage-products');
+        $this->authorize('delete', $product);
 
         Products::delete($product);
 
@@ -168,7 +168,7 @@ class ProductController extends Controller
     // export csv file
     public function exportCsv()
     {
-        Gate::authorize('manage-products');
+        $this->authorize('create', Product::class);
 
         return response()->streamDownload(function () {
             $handle = fopen('php://output', 'w');
@@ -213,7 +213,7 @@ class ProductController extends Controller
      */
     public function trashed(Request $request)
     {
-        Gate::authorize('manage-products');
+        $this->authorize('create', Product::class);
 
         $page = request()->input('page', 1);
         $perPage = min((int) $request->input('perPage', 20), 100);
@@ -227,7 +227,8 @@ class ProductController extends Controller
      */
     public function restore(int $id)
     {
-        Gate::authorize('manage-products');
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $this->authorize('restore', $product);
 
         $product = Products::restoreProduct($id);
 
@@ -240,7 +241,8 @@ class ProductController extends Controller
      */
     public function forceDelete(int $id)
     {
-        Gate::authorize('manage-products');
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $this->authorize('forceDelete', $product);
 
         $product = Products::forceDeleteProduct($id);
 

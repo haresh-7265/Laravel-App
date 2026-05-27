@@ -42,6 +42,8 @@ class OrderController extends Controller
     // Customer order listing
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Order::class);
+
         $userId = current_user()->id ;
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
@@ -64,7 +66,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Ensure customer can only see their own orders
-        abort_if($order->user_id !== current_user()->id, 403);
+        $this->authorize('view', $order);
 
         $order->load('items.product');
 
@@ -78,7 +80,7 @@ class OrderController extends Controller
     public function cancel(Order $order)
     {
         // Must own the order
-        abort_if($order->user_id !== current_user()->id, 403);
+        $this->authorize('cancel', $order);
 
         // Only cancellable before shipping
         abort_if(! in_array($order->status, ['pending', 'processing']), 403, 'Order cannot be cancelled at this stage.');
@@ -98,6 +100,8 @@ class OrderController extends Controller
             abort(403, 'Link expired or invalid.');
         }
 
+        $this->authorize('view', $order);
+
         $path = $order->invoice_path;
 
         // check file exists
@@ -114,9 +118,7 @@ class OrderController extends Controller
     private function generateSignedUrl(Order $order)
     {
         // verify order belongs to auth user
-        if ($order->user_id !== current_user()->id) {
-            abort(403);
-        }
+        $this->authorize('view', $order);
 
         $signedUrl = URL::temporarySignedRoute(
             'invoices.download',

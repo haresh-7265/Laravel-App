@@ -17,6 +17,8 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $this->authorize('view', current_user());
+
         return view('profile.edit', [
             'user' => current_user(),
         ]);
@@ -27,6 +29,8 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        $this->authorize('update', current_user());
+
         current_user()->fill($request->validated());
 
         if (current_user()->isDirty('email')) {
@@ -43,6 +47,8 @@ class ProfileController extends Controller
      */
     public function updateLocale(Request $request): RedirectResponse
     {
+        $this->authorize('update', current_user());
+
         $request->validate([
             'preferred_locale' => ['required', 'string', 'in:'.implode(',', SetLocale::SUPPORTED)],
         ]);
@@ -62,11 +68,12 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = current_user();
+        $this->authorize('delete', $user);
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = current_user();
 
         Auth::guard(current_guard())->logout();
 

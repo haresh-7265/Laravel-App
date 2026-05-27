@@ -17,7 +17,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        Gate::authorize('manage-orders');
+        $this->authorize('viewAny', Order::class);
 
         $user = $request->user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
@@ -52,7 +52,7 @@ class OrderController extends Controller
 
     public function indexApi(Request $request): JsonResponse
     {
-        Gate::authorize('manage-orders');
+        $this->authorize('viewAny', Order::class);
 
         $user = $request->user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
@@ -79,7 +79,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        Gate::authorize('manage-orders');
+        $this->authorize('view', $order);
 
         $order->load('items.product', 'user');
         $productNames = Arr::pluck($order->items->toArray(), 'product_name');
@@ -90,7 +90,7 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
-        Gate::authorize('manage-orders');
+        $this->authorize('update', $order);
 
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
@@ -123,7 +123,7 @@ class OrderController extends Controller
 
     public function updatePayment(Request $request, Order $order)
     {
-        Gate::authorize('manage-orders');
+        $this->authorize('update', $order);
 
         $request->validate([
             'payment_status' => 'required|in:paid,unpaid',
@@ -136,7 +136,7 @@ class OrderController extends Controller
 
     public function invoices()
     {
-        Gate::authorize('manage-orders');
+        $this->authorize('viewAny', Order::class);
 
         $files = Storage::disk('public')->files('invoices');
 

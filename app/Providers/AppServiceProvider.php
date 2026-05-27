@@ -3,14 +3,9 @@
 namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
-use App\Models\Admin;
-use App\Models\User;
-use App\Services\ExternalApiService;
-use App\Services\FakeStoreService;
-use App\Services\Greeter;
-use App\Services\PaymentService;
-use App\Services\TestService1;
-use App\Services\TestService2;
+use App\Models\{Admin, Product, Order, ProductReview, User};
+use App\Policies\{OrderPolicy, ProductPolicy, ReviewPolicy, ProfilePolicy};
+use App\Services\{ExternalApiService, FakeStoreService, Greeter, PaymentService, TestService1, TestService2};
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -168,6 +163,13 @@ class AppServiceProvider extends ServiceProvider
 
         // Set default user resolver to check active guards
         Auth::resolveUsersUsing(fn () => current_user());
+
+        // Register policies
+        Gate::policy(Product::class, ProductPolicy::class);
+        Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(ProductReview::class, ReviewPolicy::class);
+        Gate::policy(User::class,  ProfilePolicy::class);
+        Gate::policy(Admin::class, ProfilePolicy::class);
 
         // Define authorization gates
         Gate::define('view-admin-dashboard', fn ($user) => $user instanceof Admin);

@@ -25,15 +25,16 @@
                     </div>
                 </div>
 
-                {{-- Edit/Delete actions — only for the review's author (customer guard) --}}
-                @if(is_customer() && $review->user_id === current_user()->id)
-                    <div class="d-flex gap-1">
+                <div class="d-flex gap-1">
+                    @can('update', $review)
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary"
                                 onclick="editReview({{ $review->rating }}, '{{ addslashes($review->comment ?? '') }}')"
                                 title="Edit">
                             <i class="bi bi-pencil"></i>
                         </button>
+                    @endcan
+                    @can('delete', $review)
                         <form action="{{ route('products.reviews.destroy', [$product, $review]) }}"
                               method="POST"
                               onsubmit="return confirm('Delete your review?')">
@@ -43,8 +44,8 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
-                    </div>
-                @endif
+                    @endcan
+                </div>
             </div>
 
             @if($review->comment)

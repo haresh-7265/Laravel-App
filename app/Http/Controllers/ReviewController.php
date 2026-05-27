@@ -17,9 +17,14 @@ class ReviewController extends Controller
      */
     public function store(Request $request, Product $product)
     {
-        // Only customer can review product
-        if (!is_customer()) {
-            abort(403);
+        $review = ProductReview::where('product_id', $product->id)
+            ->where('user_id', current_user()?->id)
+            ->first();
+
+        if ($review) {
+            $this->authorize('update', $review);
+        } else {
+            $this->authorize('create', ProductReview::class);
         }
 
         $validated = $request->validate([
@@ -65,9 +70,7 @@ class ReviewController extends Controller
     public function destroy(Product $product, ProductReview $review)
     {
         // Only the review author can delete
-        if (is_customer() && $review->user_id !== current_user()->id) {
-            abort(403);
-        }
+        $this->authorize('delete', $review);
 
         $review->delete();
 
