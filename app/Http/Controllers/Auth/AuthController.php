@@ -23,6 +23,44 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $email = $request->input('email');
+        $throttleService = app(\App\Services\AuthThrottleService::class);
+
+        if ($email) {
+            // 1. Check if the account is currently locked out
+            if ($seconds = $throttleService->checkLockout($email, 'web')) {
+                $throttleService->logAttempt($email, 'web', false, $request->ip(), $request->userAgent(), 'Account locked out');
+                
+                throw ValidationException::withMessages([
+                    'email' => __('auth.throttle', ['seconds' => $seconds]),
+                ]);
+            }
+
+            // 2. CAPTCHA verification if required
+            if ($throttleService->requiresCaptcha($email, 'web')) {
+                $request->validate([
+                    'captcha_answer' => ['required', 'string'],
+                ]);
+
+                $sessionAnswer = session('captcha_answer');
+                if (!$sessionAnswer || trim($request->input('captcha_answer')) !== (string) $sessionAnswer) {
+                    // Generate new question for subsequent attempt
+                    $num1 = rand(1, 9);
+                    $num2 = rand(1, 9);
+                    session([
+                        'captcha_question' => "What is {$num1} + {$num2}?",
+                        'captcha_answer' => $num1 + $num2,
+                    ]);
+
+                    $throttleService->logAttempt($email, 'web', false, $request->ip(), $request->userAgent(), 'Incorrect CAPTCHA answer');
+                    
+                    throw ValidationException::withMessages([
+                        'captcha_answer' => 'Incorrect CAPTCHA answer.',
+                    ]);
+                }
+            }
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
@@ -31,6 +69,12 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::guard('web')->attempt($credentials, $remember)) {
+            // Reset throttle counters and clear CAPTCHA info
+            if ($email) {
+                $throttleService->resetFailedAttempts($email,'web');
+            }
+            session()->forget(['captcha_question', 'captcha_answer']);
+
             $request->session()->regenerate();
 
             $cartService = app(CartService::class);
@@ -39,16 +83,24 @@ class AuthController extends Controller
 
             $user = Auth::guard('web')->user();
 
-            Log::channel('security')->info('User logged in (Manual)', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'remember_me' => $remember,
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'timestamp' => now()->toIso8601String(),
-            ]);
+            $throttleService->logAttempt($email, 'web', true, $request->ip(), $request->userAgent());
 
             return redirect()->intended(route('products.index'))->with('success', __('Welcome back, :name!', ['name' => $user->name]));
+        }
+
+        // On authentication failure
+        if ($email) {
+            $throttleService->handleFailedAttempt($email, 'web', $request->ip());
+            $throttleService->logAttempt($email, 'web', false, $request->ip(), $request->userAgent(), 'Invalid credentials');
+
+            if ($throttleService->requiresCaptcha($email, 'web')) {
+                $num1 = rand(1, 9);
+                $num2 = rand(1, 9);
+                session([
+                    'captcha_question' => "What is {$num1} + {$num2}?",
+                    'captcha_answer' => $num1 + $num2,
+                ]);
+            }
         }
 
         throw ValidationException::withMessages([

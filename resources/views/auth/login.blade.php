@@ -66,6 +66,26 @@
             >
         </div>
 
+        {{-- CAPTCHA --}}
+        @if(session('captcha_question'))
+            <div class="mb-4 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <label for="captcha_answer" class="block text-sm font-medium text-gray-700 mb-1">
+                    Security Verification: <strong>{{ session('captcha_question') }}</strong>
+                </label>
+                <input
+                    type="text"
+                    id="captcha_answer"
+                    name="captcha_answer"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('captcha_answer') border-red-400 bg-red-50 @enderror"
+                    placeholder="Enter the answer"
+                    required
+                >
+                @error('captcha_answer')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        @endif
+
         {{-- Remember me --}}
         <div class="flex items-center justify-between mb-6">
             <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">

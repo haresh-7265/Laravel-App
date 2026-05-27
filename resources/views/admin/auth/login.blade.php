@@ -105,6 +105,23 @@
                        required>
             </div>
 
+            {{-- CAPTCHA --}}
+            @if(session('admin_captcha_question'))
+                <div class="mb-3 p-3 rounded text-light" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                    <label for="admin_captcha_answer" class="form-label text-warning">
+                        Security Verification: <strong>{{ session('admin_captcha_question') }}</strong>
+                    </label>
+                    <input type="text" name="admin_captcha_answer" id="admin_captcha_answer"
+                           class="form-control text-light @error('admin_captcha_answer') is-invalid @enderror"
+                           style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);"
+                           placeholder="Enter the answer"
+                           required>
+                    @error('admin_captcha_answer')
+                        <div class="invalid-feedback text-danger mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+            @endif
+
             <div class="mb-4 form-check">
                 <input type="checkbox" name="remember" id="remember" class="form-check-input"
                        style="background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">
