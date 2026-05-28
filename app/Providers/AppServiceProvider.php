@@ -20,6 +20,7 @@ use App\Services\TestService1;
 use App\Services\TestService2;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -214,6 +215,15 @@ class AppServiceProvider extends ServiceProvider
                 'ability' => $ability,
                 'result' => (bool) $result ? 'allowed' : 'denied',
             ]);
+        });
+
+        // Enforce strong password rules globally
+        Password::defaults(function () {
+            return Password::min(12)
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+                ->uncompromised();
         });
     }
 

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,7 +17,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, HasApiTokens, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     // ── Subscription Tiers ──────────────────────────────────────────────
     public const TIER_FREE = 'free';
@@ -32,6 +33,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     ];
 
     protected string $guard = 'web';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -154,5 +156,41 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         }
 
         return parent::getAuthPassword();
+    }
+
+    /**
+     * Get the password history for the user.
+     */
+    public function passwordHistories(): MorphMany
+    {
+        return $this->morphMany(PasswordHistory::class, 'historyable');
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (User $user) {
+            if ($user->wasChanged('password')) {
+                // Record the password history
+                $user->passwordHistories()->create([
+                    'password' => $user->password,
+                ]);
+
+                $count = $user->passwordHistories()->count();
+                // Keep only the last 5 entries
+                if ($count > 5) {
+                    // get oldest records beyond limit — delete them
+                    $user->passwordHistories()
+                        ->oldest()
+                        ->limit($count - 5)
+                        ->get()
+                        ->each
+                        ->delete();
+                }
+
+            }
+        });
     }
 }

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\NotUsedPassword;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -31,10 +33,12 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = User::where('email', $request->email)->first();
+
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults(), new NotUsedPassword($user)],
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we
@@ -49,6 +53,11 @@ class NewPasswordController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+
+                // Invalidate all existing sessions for that user on other devices
+                Auth::guard('web')->login($user);
+                Auth::guard('web')->logoutOtherDevices($request->password);
+                Auth::guard('web')->logout();
             }
         );
 
