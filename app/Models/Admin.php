@@ -84,7 +84,7 @@ class Admin extends Authenticatable implements HasLocalePreference, MustVerifyEm
      */
     protected static function booted(): void
     {
-        static::saved(function (User $user) {
+        static::saved(function (Admin $user) {
             if ($user->wasChanged('password')) {
                 // Record the password history
                 $user->passwordHistories()->create([

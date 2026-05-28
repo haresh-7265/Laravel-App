@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AdminAuthController extends Controller
@@ -78,6 +79,13 @@ class AdminAuthController extends Controller
             session()->forget(['admin_captcha_question', 'admin_captcha_answer']);
 
             $request->session()->regenerate();
+
+            $admin = Auth::guard('admin')->user();
+            if (Hash::needsRehash($admin->password)) {
+                $admin->update([
+                    'password' => Hash::make($request->password),
+                ]);
+            }
 
             $throttleService->logAttempt($email, 'admin', true, $request->ip(), $request->userAgent());
 

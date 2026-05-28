@@ -84,6 +84,12 @@ class AuthController extends Controller
 
             $user = Auth::guard('web')->user();
 
+            if (Hash::needsRehash($user->password)) {
+                $user->update([
+                    'password' => Hash::make($request->password),
+                ]);
+            }
+
             $throttleService->logAttempt($email, 'web', true, $request->ip(), $request->userAgent());
 
             return redirect()->intended(route('products.index'))->with('success', __('Welcome back, :name!', ['name' => $user->name]));

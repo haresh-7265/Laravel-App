@@ -81,6 +81,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Migration Path: Bcrypt to Argon2id
+    |--------------------------------------------------------------------------
+    |
+    | To upgrade existing user accounts from Bcrypt to Argon2id without forcing
+    | a password reset:
+    |
+    | 1. On successful login, the application verifies the password using
+    |    `Hash::check()`. Bcrypt hashes will be successfully verified since
+    |    PHP's password_verify() automatically reads the hash prefix.
+    | 2. Immediately after successful login, the application checks if the
+    |    hash needs to be upgraded using `Hash::needsRehash($user->password)`.
+    | 3. If `needsRehash` returns true (which it will for all legacy Bcrypt
+    |    hashes or outdated Argon2id settings), the application transparently
+    |    re-hashes the plain password using the current driver and parameters,
+    |    and updates the database record.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
     | Rehash On Login
     |--------------------------------------------------------------------------
     |
