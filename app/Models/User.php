@@ -46,6 +46,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'role',
         'subscription_tier',
         'preferred_locale',
+        'force_password_reset',
     ];
 
     /**
@@ -68,6 +69,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'force_password_reset' => 'boolean',
         ];
     }
 

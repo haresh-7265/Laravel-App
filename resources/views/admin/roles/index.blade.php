@@ -97,6 +97,14 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-flex align-items-center justify-content-end gap-2">
+                                    <span class="force-reset-status-badge" id="force-reset-status-{{ $user->id }}">
+                                        @if($user->force_password_reset)
+                                            <span class="badge bg-danger bg-opacity-10 text-danger fw-normal" style="font-size:11px">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>Reset Pending
+                                            </span>
+                                        @endif
+                                    </span>
+
                                     <span class="verification-status-badge" id="verification-status-{{ $user->id }}">
                                         @if($user->email_verified_at)
                                             <span class="badge bg-success bg-opacity-10 text-success fw-normal" style="font-size:11px">
@@ -117,6 +125,17 @@
                                             <i class="bi bi-x-circle me-1"></i>Unverify
                                         @else
                                             <i class="bi bi-check-circle me-1"></i>Verify
+                                        @endif
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-warning force-reset-btn"
+                                            data-user-id="{{ $user->id }}"
+                                            id="force-reset-btn-{{ $user->id }}"
+                                            {{ $user->force_password_reset ? 'disabled' : '' }}>
+                                        @if($user->force_password_reset)
+                                            <i class="bi bi-shield-slash me-1"></i>Forced
+                                        @else
+                                            <i class="bi bi-shield-slash me-1"></i>Force Reset
                                         @endif
                                     </button>
 
@@ -421,6 +440,46 @@ document.addEventListener('click', function (e) {
         })
         .finally(() => {
             btn.disabled = false;
+        });
+});
+
+// ── force password reset (ajax) ───────────────────────────────────────
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.force-reset-btn');
+    if (!btn) return;
+
+    if (!confirm('Are you sure you want to force a password reset for this user? They will be blocked from accessing the site until they complete the reset.')) {
+        return;
+    }
+
+    const userId = btn.dataset.userId;
+    const url = `/admin/roles/${userId}/force-reset`;
+
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    ajax(url, {}, 'POST')
+        .then(res => {
+            if (res.success) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-shield-slash me-1"></i>Forced';
+                
+                const statusContainer = document.getElementById(`force-reset-status-${userId}`);
+                if (statusContainer) {
+                    statusContainer.innerHTML = `<span class="badge bg-danger bg-opacity-10 text-danger fw-normal" style="font-size:11px"><i class="bi bi-exclamation-triangle me-1"></i>Reset Pending</span>`;
+                }
+                notify('success', 'Forced Reset Triggered', res.message || 'User password reset forced successfully.');
+            } else {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                notify('error', 'Failed', res.message || 'Could not force password reset.');
+            }
+        })
+        .catch(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+            notify('error', 'Error', 'Something went wrong. Please try again.');
         });
 });
 </script>

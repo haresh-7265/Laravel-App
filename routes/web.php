@@ -130,6 +130,7 @@ Route::middleware('auth:admin')->group(function () {
         Route::post('/roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.sync');
         Route::post('/roles/{user}/verify', [RoleController::class, 'verifyUser'])->name('roles.verify');
         Route::post('/roles/{user}/unverify', [RoleController::class, 'unverifyUser'])->name('roles.unverify');
+        Route::post('/roles/{user}/force-reset', [RoleController::class, 'forcePasswordReset'])->name('roles.force-reset');
     });
 });
 

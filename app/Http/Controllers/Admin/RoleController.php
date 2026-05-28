@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ForcedPasswordResetMail;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -110,6 +112,29 @@ class RoleController extends Controller
         return response()->json([
             'success' => true,
             'message' => "User {$user->name} has been un-verified.",
+        ]);
+    }
+
+    public function forcePasswordReset(Request $request, User $user)
+    {
+        $user->forceFill([
+            'force_password_reset' => true,
+        ])->save();
+
+        // Send warning/explanation email
+        Mail::to($user->email)->send(new ForcedPasswordResetMail($user));
+
+        \Log::channel('security')->info('Forced password reset triggered by admin', [
+            'admin_id' => auth('admin')->id(),
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip' => $request->ip(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Forced password reset enabled for {$user->name}. An email has been sent.",
         ]);
     }
 }

@@ -30,6 +30,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             RequestTrackingMiddleware::class,
             \Illuminate\Session\Middleware\AuthenticateSession::class,
+            \App\Http\Middleware\RedirectIfPasswordResetForced::class,
         ]);
         $middleware->appendToPriorityList(
             RequestTrackingMiddleware::class,
