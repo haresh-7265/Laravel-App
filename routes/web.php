@@ -46,6 +46,10 @@ Route::prefix('support')->name('support.')->group(function () {
 Route::get('contact', [ContactController::class, 'create'])->name('contact.create');
 Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
+Route::get('/profile/cancel-email-change/{user}', [ProfileController::class, 'cancelEmailChange'])
+    ->name('profile.cancel-email-change')
+    ->middleware('signed');
+
 Route::middleware('auth:web,admin')->group(function () {
     Route::middleware('verified')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
