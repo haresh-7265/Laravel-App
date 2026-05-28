@@ -60,9 +60,9 @@
                 <table class="table table-hover align-middle" id="users-table">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 40%">User</th>
-                            <th style="width: 45%">Roles</th>
-                            <th style="width: 15%" class="text-end">Action</th>
+                            <th style="width: 35%">User</th>
+                            <th style="width: 30%">Roles</th>
+                            <th style="width: 35%" class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -96,14 +96,39 @@
                                 </div>
                             </td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-secondary"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#assignRoleModal"
-                                        data-user-id="{{ $user->id }}"
-                                        data-user-name="{{ $user->name }}"
-                                        data-user-roles="{{ $user->getRoleNames()->implode(',') }}">
-                                    <i class="bi bi-pencil me-1"></i>Edit
-                                </button>
+                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                    <span class="verification-status-badge" id="verification-status-{{ $user->id }}">
+                                        @if($user->email_verified_at)
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-normal" style="font-size:11px">
+                                                <i class="bi bi-check-circle me-1"></i>Verified
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning bg-opacity-10 text-warning fw-normal" style="font-size:11px">
+                                                <i class="bi bi-exclamation-circle me-1"></i>Unverified
+                                            </span>
+                                        @endif
+                                    </span>
+
+                                    <button class="btn btn-sm {{ $user->email_verified_at ? 'btn-outline-danger' : 'btn-outline-success' }} toggle-verification-btn"
+                                            data-user-id="{{ $user->id }}"
+                                            data-verified="{{ $user->email_verified_at ? '1' : '0' }}"
+                                            id="verify-btn-{{ $user->id }}">
+                                        @if($user->email_verified_at)
+                                            <i class="bi bi-x-circle me-1"></i>Unverify
+                                        @else
+                                            <i class="bi bi-check-circle me-1"></i>Verify
+                                        @endif
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#assignRoleModal"
+                                            data-user-id="{{ $user->id }}"
+                                            data-user-name="{{ $user->name }}"
+                                            data-user-roles="{{ $user->getRoleNames()->implode(',') }}">
+                                        <i class="bi bi-pencil me-1"></i>Roles
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -343,6 +368,60 @@ document.querySelectorAll('.save-role-perms').forEach(btn => {
                 self.innerHTML = '<i class="bi bi-check2 me-1"></i>Save permissions';
             });
     });
+});
+
+// ── toggle verification (ajax) ────────────────────────────────────────
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.toggle-verification-btn');
+    if (!btn) return;
+
+    const userId = btn.dataset.userId;
+    const isVerified = btn.dataset.verified === '1';
+    const action = isVerified ? 'unverify' : 'verify';
+    const url = `/admin/roles/${userId}/${action}`;
+
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    ajax(url, {}, 'POST')
+        .then(res => {
+            if (res.success) {
+                // update button state
+                if (isVerified) {
+                    // user is now unverified
+                    btn.className = 'btn btn-sm btn-outline-success toggle-verification-btn';
+                    btn.dataset.verified = '0';
+                    btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Verify';
+                    
+                    const badge = document.getElementById(`verification-status-${userId}`);
+                    if (badge) {
+                        badge.innerHTML = `<span class="badge bg-warning bg-opacity-10 text-warning fw-normal" style="font-size:11px"><i class="bi bi-exclamation-circle me-1"></i>Unverified</span>`;
+                    }
+                } else {
+                    // user is now verified
+                    btn.className = 'btn btn-sm btn-outline-danger toggle-verification-btn';
+                    btn.dataset.verified = '1';
+                    btn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Unverify';
+                    
+                    const badge = document.getElementById(`verification-status-${userId}`);
+                    if (badge) {
+                        badge.innerHTML = `<span class="badge bg-success bg-opacity-10 text-success fw-normal" style="font-size:11px"><i class="bi bi-check-circle me-1"></i>Verified</span>`;
+                    }
+                }
+                notify('success', 'Status updated', res.message || 'Verification status changed successfully.');
+            } else {
+                btn.innerHTML = originalHtml;
+                notify('error', 'Failed', res.message || 'Could not update verification status.');
+            }
+        })
+        .catch(() => {
+            btn.innerHTML = originalHtml;
+            notify('error', 'Error', 'Something went wrong. Please try again.');
+        })
+        .finally(() => {
+            btn.disabled = false;
+        });
 });
 </script>
 @endpush

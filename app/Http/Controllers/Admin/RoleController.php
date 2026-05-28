@@ -74,4 +74,42 @@ class RoleController extends Controller
             'message' => "Permissions updated for {$role->name}",
         ]);
     }
+
+    public function verifyUser(Request $request, User $user)
+    {
+        $user->markEmailAsVerified();
+
+        \Log::channel('security')->info('User email manually verified by admin', [
+            'admin_id' => auth('admin')->id(),
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip' => $request->ip(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "User {$user->name} has been marked as verified.",
+        ]);
+    }
+
+    public function unverifyUser(Request $request, User $user)
+    {
+        $user->forceFill([
+            'email_verified_at' => null,
+        ])->save();
+
+        \Log::channel('security')->info('User email manually un-verified by admin', [
+            'admin_id' => auth('admin')->id(),
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'ip' => $request->ip(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "User {$user->name} has been un-verified.",
+        ]);
+    }
 }

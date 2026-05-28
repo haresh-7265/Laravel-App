@@ -124,6 +124,8 @@ Route::middleware('auth:admin')->group(function () {
         Route::post('/roles/{user}/assign', [RoleController::class, 'assign'])->name('roles.assign');
         Route::get('/roles/{role}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
         Route::post('/roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.sync');
+        Route::post('/roles/{user}/verify', [RoleController::class, 'verifyUser'])->name('roles.verify');
+        Route::post('/roles/{user}/unverify', [RoleController::class, 'unverifyUser'])->name('roles.unverify');
     });
 });
 
