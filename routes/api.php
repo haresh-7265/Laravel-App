@@ -45,3 +45,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tokens/{id}',   [ApiAuthController::class, 'revokeToken']);
     Route::get('/profile',          [ApiAuthController::class, 'profile']);
 });
+
+// API Key authenticated test route
+Route::middleware('auth.apikey')->get('/secure-data', function () {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'You have accessed secure data using a custom API Key.',
+        'user' => auth()->user()->only('id', 'name', 'email'),
+    ]);
+});

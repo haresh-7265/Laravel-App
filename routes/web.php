@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Customer\ApiKeyController;
 use App\Http\Controllers\Customer\DeviceController;
 use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\GithubController;
@@ -162,6 +163,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/customer/devices', [DeviceController::class, 'index'])->name('customer.devices');
     Route::delete('/customer/devices/{id}', [DeviceController::class, 'revoke'])->name('customer.devices.revoke');
+
+    
+    // Web API Key Management routes 
+    Route::get('/api-keys', [ApiKeyController::class, 'indexPage'])->name('customer.api-keys');
+    Route::get('/api-keys/data', [ApiKeyController::class, 'index'])->name('api-keys.index');
+    Route::post('/api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
+    Route::delete('/api-keys/{id}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 });
 
 require __DIR__.'/auth.php';

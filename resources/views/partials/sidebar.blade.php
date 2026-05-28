@@ -89,6 +89,12 @@ $adminMenuLinks = [
                 ])>
                     <i class="bi bi-phone w-4 text-center"></i> My Devices
                 </a>
+                <a href="{{ route('customer.api-keys') }}" @class([
+                    'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
+                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('customer.api-keys'),
+                ])>
+                    <i class="bi bi-key w-4 text-center"></i> API Keys
+                </a>
             @endcustomer
 
             <a href="{{ route('notifications.index') }}" @class([

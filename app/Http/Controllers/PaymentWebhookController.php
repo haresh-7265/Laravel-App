@@ -12,6 +12,25 @@ class PaymentWebhookController extends Controller
      */
     public function __invoke(Request $request)
     {
+        $signature = $request->header('X-Webhook-Signature');
+        $secret = env('WEBHOOK_SIGNING_SECRET', 'webhook_secret_key');
+
+        if (!$signature) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Signature header missing.',
+            ], 400);
+        }
+
+        $computedSignature = hash_hmac('sha256', $request->getContent(), $secret);
+
+        if (!hash_equals($computedSignature, $signature)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid webhook signature.',
+            ], 403);
+        }
+
         $payload = [
             'event' => 'payment.completed',
             'data' => [
