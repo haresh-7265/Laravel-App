@@ -6,6 +6,7 @@ use App\Listeners\CacheEventListener;
 use App\Models\{Admin, Product, Order, ProductReview, User};
 use App\Policies\{OrderPolicy, ProductPolicy, ReviewPolicy, ProfilePolicy};
 use App\Services\{ExternalApiService, FakeStoreService, Greeter, PaymentService, TestService1, TestService2};
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -13,11 +14,14 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Gate;
@@ -163,6 +167,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Set default user resolver to check active guards
         Auth::resolveUsersUsing(fn () => current_user());
+
+        $this->customiseVerificationEmail();
 
         // Register policies
         Gate::policy(Product::class, ProductPolicy::class);
@@ -359,4 +365,34 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
     }
+
+    private function customiseVerificationEmail(): void
+{
+    // ✅ custom signed URL
+    VerifyEmail::createUrlUsing(function ($notifiable) {
+        return URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(60), // 60 min expiry
+            [
+                'id'   => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ]
+        );
+    });
+
+    // ✅ custom email template — localised
+    VerifyEmail::toMailUsing(function ($notifiable, $url) {
+        $locale = $notifiable->preferred_locale        // user's saved locale
+            ?? app()->getLocale();                     // fallback to app locale
+
+        return (new MailMessage)
+            ->subject(__('auth.verify_email_subject', [], $locale))
+            ->greeting(__('auth.verify_greeting', ['name' => $notifiable->name], $locale))
+            ->line(__('auth.verify_line_1', [], $locale))
+            ->action(__('auth.verify_action', [], $locale), $url)
+            ->line(__('auth.verify_line_2', ['minutes' => 60], $locale))
+            ->line(__('auth.verify_line_3', [], $locale));
+    });
+}
+
 }

@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\CacheMonitorController;
 use App\Http\Controllers\Admin\FileManagerController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductImportController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
@@ -11,12 +14,9 @@ use App\Http\Controllers\Customer\DeviceController;
 use App\Http\Controllers\FakeStoreController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\OrderController as CustomerOrderController;
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\CacheMonitorController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrderController as CustomerOrderController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
@@ -27,7 +27,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function(){
+Route::get('/', function () {
     return redirect()->route('products.index');
 });
 
@@ -47,17 +47,19 @@ Route::get('contact', [ContactController::class, 'create'])->name('contact.creat
 Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::middleware('auth:web,admin')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::middleware('verified')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
     Route::patch('/profile/locale', [ProfileController::class, 'updateLocale'])->name('profile.locale');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ─── Notifications ─────────────────────────────────
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/',              [NotificationController::class, 'index'])->name('index');
-        Route::get('/unread-count',  [NotificationController::class, 'unread'])->name('unread');
-        Route::patch('/{id}/read',   [NotificationController::class, 'markAsRead'])->name('markAsRead');
-        Route::post('/mark-all-read',[NotificationController::class, 'markAllRead'])->name('markAllRead');
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [NotificationController::class, 'unread'])->name('unread');
+        Route::patch('/{id}/read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('markAllRead');
     });
 });
 
@@ -75,7 +77,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('products/trashed', [ProductController::class, 'trashed'])->name('products.trashed');
     Route::patch('products/{id}/restore', [ProductController::class, 'restore'])->name('products.restore');
     Route::delete('products/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('products.forceDelete');
-    //fakestore products route
+    // fakestore products route
     Route::get('/fakestore/products', [FakeStoreController::class, 'index'])->name('fakestore.index');
     // orders route
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -87,6 +89,7 @@ Route::middleware('auth:admin')->group(function () {
         // online customer route
         Route::get('online-customers', function () {
             $customers = User::where('role', 'customer')->orderBy('name')->get();
+
             return view('admin.browsing', compact('customers'));
         })->name('online-customers');
         // cache performance monitor
@@ -107,10 +110,10 @@ Route::middleware('auth:admin')->group(function () {
         })->name('slow-queries.index');
 
         // ─── Product CSV Import (Job Batching) ─────────
-        Route::get('import',                    [ProductImportController::class, 'index'])->name('import.index');
-        Route::post('import',                   [ProductImportController::class, 'store'])->name('import.store');
-        Route::get('import/status/{batchId}',   [ProductImportController::class, 'status'])->name('import.status');
-        Route::post('import/cancel/{batchId}',  [ProductImportController::class, 'cancel'])->name('import.cancel');
+        Route::get('import', [ProductImportController::class, 'index'])->name('import.index');
+        Route::post('import', [ProductImportController::class, 'store'])->name('import.store');
+        Route::get('import/status/{batchId}', [ProductImportController::class, 'status'])->name('import.status');
+        Route::post('import/cancel/{batchId}', [ProductImportController::class, 'cancel'])->name('import.cancel');
 
         // Impersonation
         Route::get('impersonate/{id}', [AuthController::class, 'impersonate'])->name('impersonate');
@@ -133,13 +136,17 @@ Route::get('products/search', [ProductController::class, 'search'])->name('produ
 
 // Customer routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('checkout', [CustomerOrderController::class, 'checkout'])->name('orders.checkout');
-    Route::post('orders', [CustomerOrderController::class, 'store'])
-        ->middleware('throttle:checkout')
-        ->name('orders.store');
-    Route::get('my-orders', [CustomerOrderController::class, 'index'])->name('orders.index');
-    Route::get('my-orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
-    Route::patch('my-orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
+    // varified routes
+    Route::middleware('verified')->group(function () {
+        Route::get('checkout', [CustomerOrderController::class, 'checkout'])->name('orders.checkout');
+        Route::post('orders', [CustomerOrderController::class, 'store'])
+            ->middleware('throttle:checkout')
+            ->name('orders.store');
+        Route::get('my-orders', [CustomerOrderController::class, 'index'])->name('orders.index');
+        Route::get('my-orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
+        Route::patch('my-orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
+    });
+
     Route::get('invoices/{order}/download', [CustomerOrderController::class, 'downloadInvoice'])->name('invoices.download');
     Route::post('products/{product}/waitlist', [WaitlistController::class, 'store'])->name('product.waitlist.store');
     Route::delete('products/{product}/waitlist', [WaitlistController::class, 'destroy'])->name('product.waitlist.destroy');
@@ -150,14 +157,14 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/customer/devices/{id}', [DeviceController::class, 'revoke'])->name('customer.devices.revoke');
 });
 
-require __DIR__ . '/auth.php';
-require __DIR__ . '/cart.php';
+require __DIR__.'/auth.php';
+require __DIR__.'/cart.php';
 
 // ─── Locale Switcher ───────────────────────────────
 Route::post('/locale', [LocaleController::class, 'switch'])->name('locale.switch');
 
 Route::get('res-string', function () {
-    return "String Response";
+    return 'String Response';
 });
 
 Route::get('res-json', function () {
@@ -187,16 +194,17 @@ Route::get('/test-signed/{user?}', function ($user = 1) {
         now()->addMinutes(10), // expires in 10 minutes
         ['user' => $user]
     );
+
     return "<a href='$signedUrl'> $signedUrl</a>";
 });
 
 // Validate signed URL
 Route::get('/unsubscribe/{user}', function (Request $request, $user) {
-    if (!$request->hasValidSignature()) {
+    if (! $request->hasValidSignature()) {
         abort(403, 'Invalid or expired link');
     }
 
-    return "User unsubscribed successfully";
+    return 'User unsubscribed successfully';
 })->name('unsubscribe');
 
 // Display session data
@@ -224,12 +232,11 @@ Route::get('/payment-webhook', PaymentWebhookController::class);
 // ─── Github API ────────────────────────────────────
 
 Route::prefix('github')->group(function () {
-    Route::get('profile',      [GithubController::class, 'profile']);
-    Route::get('repos',        [GithubController::class, 'repos']);
-    Route::get('user/{name}',  [GithubController::class, 'user']);
-    Route::get('broken',       [GithubController::class, 'broken']);
+    Route::get('profile', [GithubController::class, 'profile']);
+    Route::get('repos', [GithubController::class, 'repos']);
+    Route::get('user/{name}', [GithubController::class, 'user']);
+    Route::get('broken', [GithubController::class, 'broken']);
 });
-
 
 // Local environment routes
 
@@ -246,14 +253,13 @@ if (app()->environment('local')) {
             'text' => 'Hello from Laravel',
         ]);
 
-    // Check
+        // Check
         return $response->successful();
     });
 
     Route::get('/test-db', [AnalyticsController::class, 'index']);
-};
+}
 
 // Magic login routes
 Route::get('/magic-login/{id}', [AuthController::class, 'magicLogin'])->name('magic-login');
 Route::get('/generate-magic-link/{id}', [AuthController::class, 'generateMagicLink'])->name('magic-link.generate');
-

@@ -2,7 +2,6 @@
 
 namespace App\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
@@ -12,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * Listens for NotificationSent and NotificationFailed events
  * to provide admin-level audit logging of all notification activity.
  */
-class LogNotificationEvents implements ShouldQueue
+class LogNotificationEvents
 {
     /**
      * Handle NotificationSent — log every successful delivery.
