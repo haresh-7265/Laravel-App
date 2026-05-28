@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -18,7 +19,7 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+        $adminIds = Admin::pluck('id')->toArray();
         $categoryIds = Category::pluck('id')->toArray();
 
         if (empty($adminIds) || empty($categoryIds)) {

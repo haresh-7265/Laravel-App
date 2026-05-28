@@ -131,6 +131,8 @@ class AuthController extends Controller
         $sessionCart = session($cartService->sessionKey, []);
         Cache::tags(['users'])->flush();
 
+        $user->assignRole('customer');
+
         event(new Registered($user));
 
         Auth::guard('web')->login($user);

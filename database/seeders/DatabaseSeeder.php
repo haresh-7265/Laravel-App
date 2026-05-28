@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(RolesPermissionsSeeder::class);
         // 1. Run ProductionSeeder (seeding essential reference data for all environments)
         $this->call(ProductionSeeder::class);
 

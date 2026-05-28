@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -36,15 +37,15 @@ class ProductionSeeder extends Seeder
         }
 
         // 2. Seed default admin user
-        User::firstOrCreate(
+        $admin = Admin::firstOrCreate(
             ['email' => config('admin.email', 'admin@example.com')],
             [
                 'name' => config('admin.name', 'Admin'),
                 'password' => Hash::make(config('admin.password', 'password')),
-                'role' => 'admin',
                 'email_verified_at' => now(),
             ]
         );
+        $admin->assignRole('admin');
 
         $this->command->info('ProductionSeeder: Reference data seeded successfully.');
     }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -20,7 +21,7 @@ class OrderSeeder extends Seeder
     public function run(): void
     {
         $customerIds = User::where('role', 'customer')->pluck('id')->toArray();
-        $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+        $adminIds = Admin::pluck('id')->toArray();;
         $productIds = Product::pluck('id')->toArray();
 
         if (empty($customerIds) || empty($adminIds) || empty($productIds)) {

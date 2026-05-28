@@ -24,4 +24,9 @@ return new class extends Migration
     {
         Schema::connection($this->connection)->dropIfExists('order_analytics');
     }
+
+    public function shouldRun(): bool
+    {
+        return false;
+    }
 };

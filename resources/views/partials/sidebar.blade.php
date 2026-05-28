@@ -6,20 +6,22 @@
 
 @php
     $adminLinks = [
-        ['route' => 'admin.dashboard',        'icon' => 'bi-speedometer2',   'label' => 'Dashboard'],
-        ['route' => 'admin.orders.index',     'icon' => 'bi-receipt',        'label' => 'Orders'],
-        ['route' => 'admin.online-customers', 'icon' => 'bi-people',         'label' => 'Online'],
-        ['route' => 'admin.cache-monitor',    'icon' => 'bi-speedometer',    'label' => 'Cache'],
-        ['route' => 'admin.sales-analytics',  'icon' => 'bi-graph-up-arrow', 'label' => 'Sales'],
-        ['route' => 'admin.invoices.index',   'icon' => 'bi-receipt-cutoff', 'label' => 'Invoices'],
-        ['route' => 'admin.files.index',      'icon' => 'bi-bar-chart-line', 'label' => 'Reports'],
-        ['route' => 'admin.slow-queries.index', 'icon' => 'bi-hourglass-split', 'label' => 'Slow Queries'],
-    ];
-    $adminMenuLinks = [
-        ['route' => 'products.create',  'icon' => 'bi-plus-circle', 'label' => 'Create Product'],
-        ['route' => 'products.trashed', 'icon' => 'bi-archive',     'label' => 'Trashed Products'],
-        ['route' => 'admin.import.index', 'icon' => 'bi-file-earmark-arrow-up',     'label' => 'Import Products'],
-    ]
+    ['route' => 'admin.dashboard',          'icon' => 'bi-speedometer2',    'label' => 'Dashboard',          'permission' => ['manage_orders', 'manage_products']],
+    ['route' => 'admin.orders.index',       'icon' => 'bi-receipt',         'label' => 'Orders',             'permission' => 'manage_orders'],
+    ['route' => 'admin.online-customers',   'icon' => 'bi-people',          'label' => 'Online',             'permission' => 'manage_users'],
+    ['route' => 'admin.cache-monitor',      'icon' => 'bi-speedometer',     'label' => 'Cache',              'permission' => 'manage_cache'],
+    ['route' => 'admin.sales-analytics',    'icon' => 'bi-graph-up-arrow',  'label' => 'Sales',              'permission' => 'view_reports'],
+    ['route' => 'admin.invoices.index',     'icon' => 'bi-receipt-cutoff',  'label' => 'Invoices',           'permission' => 'manage_orders'],
+    ['route' => 'admin.files.index',        'icon' => 'bi-bar-chart-line',  'label' => 'Reports',            'permission' => 'view_reports'],
+    ['route' => 'admin.slow-queries.index', 'icon' => 'bi-hourglass-split', 'label' => 'Slow Queries',       'permission' => 'manage_cache'],
+    ['route' => 'admin.roles.index',        'icon' => 'bi-shield-lock',     'label' => 'Roles & Permissions','permission' => 'assign_roles'],
+];
+
+$adminMenuLinks = [
+    ['route' => 'products.create',    'icon' => 'bi-plus-circle',           'label' => 'Create Product',     'permission' => 'manage_products'],
+    ['route' => 'products.trashed',   'icon' => 'bi-archive',               'label' => 'Trashed Products',   'permission' => 'manage_products'],
+    ['route' => 'admin.import.index', 'icon' => 'bi-file-earmark-arrow-up', 'label' => 'Import Products',    'permission' => 'manage_products'],
+];
 @endphp
 
 {{-- Overlay --}}
@@ -105,18 +107,25 @@
             </a>
         @endanyauth
 
-        @can('view-admin-dashboard')
-            <div class="px-3 pt-5 pb-1 text-[10px] uppercase tracking-widest text-gray-500">Admin</div>
+        {{-- @can('view-admin-dashboard') --}}
+            @foreach($adminLinks as $link)
+                @if(is_null($link['permission']) || Gate::check($link['permission']))
+                <div class="px-3 pt-5 pb-1 text-[10px] uppercase tracking-widest text-gray-500">Admin</div>
+                @break
+                @endif
+            @endforeach
 
             @foreach($adminLinks as $link)
+            @if(is_null($link['permission']) || Gate::check($link['permission']))
                 <a href="{{ route($link['route']) }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
                     'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs($link['route']),
                 ])>
                     <i class="{{ $link['icon'] }} w-4 text-center"></i> {{ $link['label'] }}
                 </a>
+            @endif
             @endforeach
-        @endcan
+        {{-- @endcan --}}
 
     </div>
 

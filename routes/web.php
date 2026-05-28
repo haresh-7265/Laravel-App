@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductImportController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalesAnalyticsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
@@ -114,6 +115,12 @@ Route::middleware('auth:admin')->group(function () {
         // Impersonation
         Route::get('impersonate/{id}', [AuthController::class, 'impersonate'])->name('impersonate');
         Route::get('stop-impersonate', [AuthController::class, 'stopImpersonate'])->name('stop-impersonate');
+
+        // User roles manager
+        Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('/roles/{user}/assign', [RoleController::class, 'assign'])->name('roles.assign');
+        Route::get('/roles/{role}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
+        Route::post('/roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.sync');
     });
 });
 

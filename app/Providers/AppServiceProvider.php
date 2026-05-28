@@ -187,12 +187,12 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Audit log trail
-        Gate::after(function ($user, string $ability, bool $result) {
+        Gate::after(function ($user, string $ability, $result) {
             Log::info("Gate authorization decision", [
                 'user_id' => $user?->id,
                 'email' => $user?->email,
                 'ability' => $ability,
-                'result' => $result ? 'allowed' : 'denied',
+                'result' => (bool) $result ? 'allowed' : 'denied',
             ]);
         });
     }

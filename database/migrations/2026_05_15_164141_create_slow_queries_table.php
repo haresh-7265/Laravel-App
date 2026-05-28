@@ -48,4 +48,9 @@ return new class extends Migration
     {
         Schema::connection($this->connection)->dropIfExists('slow_queries');
     }
+
+    public function shouldRun(): bool
+    {
+        return false;
+    }
 };

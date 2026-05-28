@@ -14,11 +14,13 @@ class AdminSeeder extends Seeder
     {
         // Seed 4 admin users
         for ($i = 1; $i <= 4; $i++) {
-            Admin::create([
+            $admin = Admin::create([
                 'name' => "Admin {$i}",
                 'email' => "admin{$i}@example.com",
                 'password' => 'password',
             ]);
+
+            $admin->assignRole('admin');
         }
     }
 }

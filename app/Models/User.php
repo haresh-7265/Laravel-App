@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, HasApiTokens;
+    use HasFactory, Notifiable, SoftDeletes, HasApiTokens, HasRoles;
 
     // ── Subscription Tiers ──────────────────────────────────────────────
     public const TIER_FREE = 'free';
@@ -29,6 +30,7 @@ class User extends Authenticatable implements HasLocalePreference
         self::TIER_ENTERPRISE => 6000,
     ];
 
+    protected string $guard = 'web';
     /**
      * The attributes that are mass assignable.
      *
@@ -134,5 +136,22 @@ class User extends Authenticatable implements HasLocalePreference
     {
         // Return the user's specific channel, or fallback to the system default
         return $this->slack_channel ?? config('services.slack.notifications.channel', '#orders');
+    }
+
+    /**
+     * Get the password for the user.
+     * When impersonating, we return the original admin's password hash
+     * to satisfy the AuthenticateSession middleware checks without modifying the resolver.
+     */
+    public function getAuthPassword()
+    {
+        if (session('impersonate.active') && $adminId = session('impersonate.original_admin_id')) {
+            $admin = Admin::find($adminId);
+            if ($admin) {
+                return $admin->getAuthPassword();
+            }
+        }
+
+        return parent::getAuthPassword();
     }
 }
