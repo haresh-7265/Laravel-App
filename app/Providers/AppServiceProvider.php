@@ -3,9 +3,22 @@
 namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
-use App\Models\{Admin, Product, Order, ProductReview, User};
-use App\Policies\{OrderPolicy, ProductPolicy, ReviewPolicy, ProfilePolicy};
-use App\Services\{ExternalApiService, FakeStoreService, Greeter, PaymentService, TestService1, TestService2};
+use App\Models\Admin;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductReview;
+use App\Models\User;
+use App\Policies\OrderPolicy;
+use App\Policies\ProductPolicy;
+use App\Policies\ProfilePolicy;
+use App\Policies\ReviewPolicy;
+use App\Services\ExternalApiService;
+use App\Services\FakeStoreService;
+use App\Services\Greeter;
+use App\Services\PaymentService;
+use App\Services\TestService1;
+use App\Services\TestService2;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
@@ -18,13 +31,13 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -169,12 +182,13 @@ class AppServiceProvider extends ServiceProvider
         Auth::resolveUsersUsing(fn () => current_user());
 
         $this->customiseVerificationEmail();
+        $this->customisePasswordResetEmail();
 
         // Register policies
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(ProductReview::class, ReviewPolicy::class);
-        Gate::policy(User::class,  ProfilePolicy::class);
+        Gate::policy(User::class, ProfilePolicy::class);
         Gate::policy(Admin::class, ProfilePolicy::class);
 
         // Define authorization gates
@@ -194,7 +208,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Audit log trail
         Gate::after(function ($user, string $ability, $result) {
-            Log::info("Gate authorization decision", [
+            Log::info('Gate authorization decision', [
                 'user_id' => $user?->id,
                 'email' => $user?->email,
                 'ability' => $ability,
@@ -367,32 +381,59 @@ class AppServiceProvider extends ServiceProvider
     }
 
     private function customiseVerificationEmail(): void
-{
-    // ✅ custom signed URL
-    VerifyEmail::createUrlUsing(function ($notifiable) {
-        return URL::temporarySignedRoute(
-            'verification.verify',
-            Carbon::now()->addMinutes(60), // 60 min expiry
-            [
-                'id'   => $notifiable->getKey(),
-                'hash' => sha1($notifiable->getEmailForVerification()),
-            ]
-        );
-    });
+    {
+        // ✅ custom signed URL
+        VerifyEmail::createUrlUsing(function ($notifiable) {
+            return URL::temporarySignedRoute(
+                'verification.verify',
+                Carbon::now()->addMinutes(60), // 60 min expiry
+                [
+                    'id' => $notifiable->getKey(),
+                    'hash' => sha1($notifiable->getEmailForVerification()),
+                ]
+            );
+        });
 
-    // ✅ custom email template — localised
-    VerifyEmail::toMailUsing(function ($notifiable, $url) {
-        $locale = $notifiable->preferred_locale        // user's saved locale
-            ?? app()->getLocale();                     // fallback to app locale
+        // ✅ custom email template — localised
+        VerifyEmail::toMailUsing(function ($notifiable, $url) {
+            $locale = $notifiable->preferred_locale        // user's saved locale
+                ?? app()->getLocale();                     // fallback to app locale
 
-        return (new MailMessage)
-            ->subject(__('auth.verify_email_subject', [], $locale))
-            ->greeting(__('auth.verify_greeting', ['name' => $notifiable->name], $locale))
-            ->line(__('auth.verify_line_1', [], $locale))
-            ->action(__('auth.verify_action', [], $locale), $url)
-            ->line(__('auth.verify_line_2', ['minutes' => 60], $locale))
-            ->line(__('auth.verify_line_3', [], $locale));
-    });
-}
+            return (new MailMessage)
+                ->subject(__('auth.verify_email_subject', [], $locale))
+                ->greeting(__('auth.verify_greeting', ['name' => $notifiable->name], $locale))
+                ->line(__('auth.verify_line_1', [], $locale))
+                ->action(__('auth.verify_action', [], $locale), $url)
+                ->line(__('auth.verify_line_2', ['minutes' => 60], $locale))
+                ->line(__('auth.verify_line_3', [], $locale));
+        });
+    }
 
+    private function customisePasswordResetEmail(): void
+    {
+        // ✅ custom reset URL
+        ResetPassword::createUrlUsing(function ($notifiable, string $token) {
+            return url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+        });
+
+        // ✅ custom email template — branded and localised
+        ResetPassword::toMailUsing(function ($notifiable, string $token) {
+            $locale = $notifiable->preferred_locale ?? app()->getLocale();
+            $url = url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+
+            return (new MailMessage)
+                ->subject(__('auth.reset_email_subject', [], $locale))
+                ->greeting(__('auth.reset_greeting', ['name' => $notifiable->name], $locale))
+                ->line(__('auth.reset_line_1', [], $locale))
+                ->action(__('auth.reset_action', [], $locale), $url)
+                ->line(__('auth.reset_line_2', ['minutes' => 15], $locale))
+                ->line(__('auth.reset_line_3', [], $locale));
+        });
+    }
 }

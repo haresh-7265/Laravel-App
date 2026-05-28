@@ -27,4 +27,10 @@ return [
     'email_verified' => 'Email verified successfully.',
     'verification_sent' => 'Verification link sent to your email.',
 
+    'reset_email_subject' => 'Reset Your Password',
+    'reset_greeting' => 'Hello :name,',
+    'reset_line_1' => 'You are receiving this email because we received a password reset request for your account.',
+    'reset_action' => 'Reset Password',
+    'reset_line_2' => 'This password reset link will expire in :minutes minutes.',
+    'reset_line_3' => 'If you did not request a password reset, no further action is required.',
 ];
