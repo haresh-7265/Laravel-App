@@ -36,13 +36,23 @@
                     </button>
                 </form>
                 @elseif ($order->invoice_path)
-                <a href="{{ $signedUrl }}"
-                    class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-download me-1"></i> Download Invoice
-                </a>
-                <p class="text-muted mt-1 mb-0" style="font-size:12px">
-                    <i class="bi bi-clock me-1"></i> Link expires after 10 minutes
-                </p>
+                <div class="d-flex flex-column align-items-end gap-1">
+                    <a href="{{ $signedUrl }}"
+                        class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-download me-1"></i> Download Invoice
+                    </a>
+                    <p class="text-muted mb-2 text-end" style="font-size:10px">
+                        <i class="bi bi-clock me-1"></i> (Signed URL: 10m expiry)
+                    </p>
+
+                    <a href="{{ $sharedUrl }}"
+                        class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-share me-1"></i> Guest Shared Invoice
+                    </a>
+                    <p class="text-muted mb-0 text-end" style="font-size:10px">
+                        <i class="bi bi-clock me-1"></i> (Encrypted payload: 2h expiry)
+                    </p>
+                </div>
                 @endif
                 </div>
             </div>

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCheckoutRequest;
 use App\Models\Order;
 use App\Services\OrderService;
 use Arr;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\DeadlockException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -72,7 +73,16 @@ class OrderController extends Controller
 
         $signedUrl = $this->generateSignedUrl($order);
 
-        return view('orders.show', compact('order', 'signedUrl'));
+        // Generate temporary encrypted shared payload (valid for 2 hours)
+        // json_encode avoids PHP object serialization/deserialization risks
+        $jsonData = json_encode([
+            'order_id' => $order->id,
+            'expires_at' => now()->addHours(2)->timestamp,
+        ]);
+        $payload = \Crypt::encrypt($jsonData, false);
+        $sharedUrl = route('shared-invoice.download', ['payload' => $payload]);
+
+        return view('orders.show', compact('order', 'signedUrl', 'sharedUrl'));
     }
 
     // cancel the order
@@ -105,6 +115,43 @@ class OrderController extends Controller
         $path = $order->invoice_path;
 
         // check file exists
+        if ($path && ! Storage::disk('public')->exists($path)) {
+            return back()->with('error', 'Invoice not found. Please contact support.');
+        }
+
+        return Storage::disk('public')->download(
+            $path,
+            'Invoice-'.$order->order_number.'.pdf'
+        );
+    }
+
+    /**
+     * Download shared invoice via temporary encrypted payload (Guest access).
+     */
+    public function downloadSharedInvoice(Request $request)
+    {
+        $payload = $request->query('payload');
+
+        if (! $payload) {
+            abort(400, 'Missing encrypted payload.');
+        }
+
+        try {
+            // Decrypt the raw string without deserializing PHP objects
+            $decrypted = \Crypt::decrypt($payload, false);
+            $data = json_decode($decrypted, true);
+        } catch (DecryptException $e) {
+            abort(403, 'Invalid or tampered payload.');
+        }
+
+        // Validate expiration
+        if (! isset($data['expires_at']) || now()->timestamp > $data['expires_at']) {
+            abort(403, 'This shared link has expired.');
+        }
+
+        $order = Order::findOrFail($data['order_id']);
+        $path = $order->invoice_path;
+
         if ($path && ! Storage::disk('public')->exists($path)) {
             return back()->with('error', 'Invoice not found. Please contact support.');
         }

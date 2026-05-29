@@ -47,6 +47,8 @@ Route::prefix('support')->name('support.')->group(function () {
 Route::get('contact', [ContactController::class, 'create'])->name('contact.create');
 Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
+Route::get('/shared-invoice', [CustomerOrderController::class, 'downloadSharedInvoice'])->name('shared-invoice.download');
+
 Route::get('/profile/cancel-email-change/{user}', [ProfileController::class, 'cancelEmailChange'])
     ->name('profile.cancel-email-change')
     ->middleware('signed');
