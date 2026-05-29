@@ -48,6 +48,9 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         'subscription_tier',
         'preferred_locale',
         'force_password_reset',
+        'phone',
+        'address',
+        'tax_id',
     ];
 
     /**
@@ -71,7 +74,19 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'force_password_reset' => 'boolean',
+            'phone' => 'encrypted',
+            'address' => 'encrypted:array',
+            'tax_id' => 'encrypted',
         ];
+    }
+
+    /**
+     * Scope a query to find a user by their phone number using the blind index.
+     */
+    public function scopeWherePhone($query, $phone)
+    {
+        $hash = $phone ? hash_hmac('sha256', $phone, env('BLIND_INDEX_SECRET', 'blind_index_secret_key')) : null;
+        return $query->where('phone_blind_index', $hash);
     }
 
     public function isAdmin(): bool
@@ -182,6 +197,14 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
      */
     protected static function booted(): void
     {
+        static::saving(function (User $user) {
+            if ($user->isDirty('phone')) {
+                $user->phone_blind_index = $user->phone
+                    ? hash_hmac('sha256', $user->phone, env('BLIND_INDEX_SECRET', 'blind_index_secret_key'))
+                    : null;
+            }
+        });
+
         static::saved(function (User $user) {
             if ($user->wasChanged('password')) {
                 // Record the password history
