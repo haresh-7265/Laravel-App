@@ -14,7 +14,7 @@ class SalesAnalyticsController extends Controller
     }
     public function index(Request $request)
     {
-        Gate::authorize('view-analytics');
+        Gate::authorize('view_reports');
 
         $selectedYear = $request->input('year', now()->year);
 
@@ -52,7 +52,7 @@ class SalesAnalyticsController extends Controller
 
     public function exportCsv(Request $request): StreamedResponse
     {
-        Gate::authorize('view-analytics');
+        Gate::authorize('view_reports');
 
         $type = $request->input('type', 'monthly');
         $year = $request->input('year', now()->year);

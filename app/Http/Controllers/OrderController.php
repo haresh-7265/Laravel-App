@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCheckoutRequest;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Services\OrderService;
 use Arr;
@@ -19,6 +20,7 @@ class OrderController extends Controller
     // Show checkout page
     public function checkout()
     {
+        $this->authorize('checkout', Cart::class);
         return view('orders.checkout');
     }
 
@@ -43,22 +45,23 @@ class OrderController extends Controller
     // Customer order listing
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Order::class);
+        if(!current_user() && !current_user()->hasRole('customer')){
+            abort(404);
+        }
 
-        $userId = current_user()->id ;
+        $user = current_user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
         $perPage = min((int) $request->input('perPage', 20), 100);
 
-        $orders = $this->orderService->getFilteredOrders(
+        $orders = $this->orderService->getOwnOrders(
             filters: $filters,
-            role: is_admin() ? 'admin' : 'customer',
-            userId: $userId,
+            user: $user,
             cursor: $cursor,
             perPage: $perPage,
         );
 
-        extract($this->orderService->getCustomerOrderStats($userId));
+        extract($this->orderService->getCustomerOrderStats($user->id));
     
         return view('orders.index', compact('stats', 'topProducts', 'ordersByStatus', 'orders'));
     }

@@ -170,8 +170,8 @@
                 <tbody>
                     @foreach($order->items as $item)
                     @php
-                        $hasDiscount = !is_null($item->product->discount_price) && $item->product->discount_price < $item->product->price;
-                        $effectivePrice = $hasDiscount ? $item->product->discount_price : $item->product->price;
+                        $hasDiscount = !is_null($item->discount_price) && $item->discount_price < $item->price;
+                        $effectivePrice = $hasDiscount ? $item->discount_price : $item->price;
                     @endphp
                     <tr>
                         {{-- Product --}}
@@ -192,7 +192,7 @@
                                     @if($hasDiscount)
                                         <small class="text-success">
                                             <i class="bi bi-tag me-1"></i>Saved
-                                            @currency(($item->product->price - $item->product->discount_price) * $item->quantity)
+                                            @currency(($item->price - $item->discount_price) * $item->quantity)
                                         </small>
                                     @endif
                                 </div>
@@ -203,20 +203,20 @@
                         <td>
                             @if($hasDiscount)
                                 <small class="text-muted text-decoration-line-through d-block">
-                                    @currency($item->product->price)
+                                    @currency($item->price)
                                 </small>
                                 <span class="fw-semibold text-success">
-                                    @currency($item->product->discount_price)
+                                    @currency($item->discount_price)
                                 </span>
                                 @php
-                                    $pct = round((($item->product->price - $item->product->discount_price) / $item->price) * 100);
+                                    $pct = round((($item->price - $item->discount_price) / $item->price) * 100);
                                 @endphp
                                 <span class="badge bg-success-subtle text-success border border-success-subtle ms-1"
                                     style="font-size: 10px;">
                                     -{{ $pct }}%
                                 </span>
                             @else
-                                <span class="fw-medium">@currency($item->product->price)</span>
+                                <span class="fw-medium">@currency($item->price)</span>
                             @endif
                         </td>
 

@@ -3,8 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
+class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
@@ -86,6 +88,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     public function scopeWherePhone($query, $phone)
     {
         $hash = $phone ? hash_hmac('sha256', $phone, env('BLIND_INDEX_SECRET', 'blind_index_secret_key')) : null;
+
         return $query->where('phone_blind_index', $hash);
     }
 
@@ -105,15 +108,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     public function apiRateLimit(): int
     {
         return self::API_LIMITS[$this->subscription_tier] ?? self::API_LIMITS[self::TIER_FREE];
-    }
-
-    public function hasRole($role)
-    {
-        if (is_array($role)) {
-            return in_array($this->role, $role);
-        }
-
-        return $this->role === $role;
     }
 
     public function orders()
@@ -226,5 +220,10 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
             }
         });
+    }
+
+    public function scopeCustomers(Builder $query): Builder
+    {
+        return $query->role('customer');
     }
 }

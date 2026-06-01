@@ -32,7 +32,7 @@ Route::middleware('throttle:api')->group(function () {
 Route::post('slack/interactions', [SlackInteractionController::class, 'handle'])
     ->middleware(VerifySlackSignature::class);
 
-Route::middleware(['web', 'auth:admin'])->get('/orders', [OrderController::class, 'indexApi'])->name('api.orders.index');
+Route::middleware(['web', 'auth:admin,web', 'permission:manage_orders'])->get('/orders', [OrderController::class, 'indexApi'])->name('api.orders.index');
 
 // public
 Route::post('/login',    [ApiAuthController::class, 'login']);

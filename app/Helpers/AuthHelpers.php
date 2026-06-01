@@ -1,12 +1,13 @@
 <?php
 
-use Illuminate\Contracts\Auth\Authenticatable;
+use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 // ─── Multi-Guard Auth Helpers ──────────────────────────────────────────────
 
 if (! function_exists('current_user')) {
-    function current_user(): ?Authenticatable
+    function current_user(): User|Admin|null
     {
         // if impersonating, return customer
         if (session('impersonate.active')) {

@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Admin;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Redis;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
@@ -23,10 +26,22 @@ Broadcast::channel('order.{orderId}', function ($user, $orderId) {
 
 Broadcast::channel('store.browsing', function ($user) {
     // return user data to populate presence channel
-    return [
-        'id'   => $user->id,
-        'name' => $user->name,
-        'role' => $user->role,
-        'page' => parse_url(request()->headers->get('referer', '/'), PHP_URL_PATH),
-    ];
+    if ($user instanceof User) {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'joinedToday' => (int) Redis::scard('browse.today:'.now()->toDateString()),
+            // 'joinedAt' => 
+            'page' => parse_url(request()->headers->get('referer', '/'), PHP_URL_PATH),
+        ];
+    }
+    if ($user instanceof Admin) {
+        return [
+            'id' => 'admin-' . $user->id,
+            'name' => $user->name,
+            'is_admin' => true,
+        ];
+    }
+
+    return false;
 }, ['guards' => ['admin', 'web']]);

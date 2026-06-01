@@ -6,7 +6,7 @@
 
 @php
     $adminLinks = [
-    ['route' => 'admin.dashboard',          'icon' => 'bi-speedometer2',    'label' => 'Dashboard',          'permission' => ['manage_orders', 'manage_products']],
+    ['route' => 'admin.dashboard',          'icon' => 'bi-speedometer2',    'label' => 'Dashboard',        'permission' => 'view-admin-dashboard'],
     ['route' => 'admin.orders.index',       'icon' => 'bi-receipt',         'label' => 'Orders',             'permission' => 'manage_orders'],
     ['route' => 'admin.online-customers',   'icon' => 'bi-people',          'label' => 'Online',             'permission' => 'manage_users'],
     ['route' => 'admin.cache-monitor',      'icon' => 'bi-speedometer',     'label' => 'Cache',              'permission' => 'manage_cache'],
@@ -14,13 +14,13 @@
     ['route' => 'admin.invoices.index',     'icon' => 'bi-receipt-cutoff',  'label' => 'Invoices',           'permission' => 'manage_orders'],
     ['route' => 'admin.files.index',        'icon' => 'bi-bar-chart-line',  'label' => 'Reports',            'permission' => 'view_reports'],
     ['route' => 'admin.slow-queries.index', 'icon' => 'bi-hourglass-split', 'label' => 'Slow Queries',       'permission' => 'manage_cache'],
-    ['route' => 'admin.roles.index',        'icon' => 'bi-shield-lock',     'label' => 'Roles & Permissions','permission' => 'assign_roles'],
+    ['route' => 'admin.roles.index',        'icon' => 'bi-people-fill',     'label' => 'Manage Users',       'permission' => 'manage_users'],
 ];
 
-$adminMenuLinks = [
+$menuLinks = [
     ['route' => 'products.create',    'icon' => 'bi-plus-circle',           'label' => 'Create Product',     'permission' => 'manage_products'],
     ['route' => 'products.trashed',   'icon' => 'bi-archive',               'label' => 'Trashed Products',   'permission' => 'manage_products'],
-    ['route' => 'admin.import.index', 'icon' => 'bi-file-earmark-arrow-up', 'label' => 'Import Products',    'permission' => 'manage_products'],
+    ['route' => 'products.import.index', 'icon' => 'bi-file-earmark-arrow-up', 'label' => 'Import Products',    'permission' => 'manage_products'],
 ];
 @endphp
 
@@ -64,34 +64,38 @@ $adminMenuLinks = [
             <i class="bi bi-grid w-4 text-center"></i> Products
         </a>
 
-        @can('manage-products')
-            @foreach($adminMenuLinks as $link)
+        {{-- @can('manage-products') --}}
+            @foreach($menuLinks as $link)
+                @if(is_null($link['permission']) || Gate::check($link['permission']))
                 <a href="{{ route($link['route']) }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
                     'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs($link['route']),
                 ])>
                     <i class="{{ $link['icon'] }} w-4 text-center"></i> {{ $link['label'] }}
                 </a>
+                @endif
             @endforeach
-        @endcan
+        {{-- @endcan --}}
 
         @anyauth
             @customer
+                @role('customer')
                 <a href="{{ route('orders.index') }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
                     'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('orders.index'),
                 ])>
                     <i class="bi bi-bag w-4 text-center"></i> My Orders
                 </a>
-                <a href="{{ route('customer.devices') }}" @class([
+                @endrole
+                <a href="{{ route('user.devices') }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
-                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('customer.devices'),
+                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('user.devices'),
                 ])>
                     <i class="bi bi-phone w-4 text-center"></i> My Devices
                 </a>
-                <a href="{{ route('customer.api-keys') }}" @class([
+                <a href="{{ route('user.api-keys') }}" @class([
                     'flex items-center gap-2.5 px-4 py-2.5 text-sm transition hover:bg-gray-700',
-                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('customer.api-keys'),
+                    'bg-gray-700 border-s-2 border-blue-500 text-white' => request()->routeIs('user.api-keys'),
                 ])>
                     <i class="bi bi-key w-4 text-center"></i> API Keys
                 </a>
@@ -106,7 +110,7 @@ $adminMenuLinks = [
                     $sidebarUnread = current_user()->unreadNotifications()->count();
                 @endphp
                 @if($sidebarUnread > 0)
-                    <span class="ms-auto bg-indigo-500 text-white text-[10px] font-semibold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1">
+                    <span class="ms-auto bg-indigo-500 text-white text-[10px] font-semibold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1" id="sidebar-unread">
                         {{ $sidebarUnread > 99 ? '99+' : $sidebarUnread }}
                     </span>
                 @endif
@@ -137,7 +141,7 @@ $adminMenuLinks = [
 
     {{-- Footer --}}
     <div class="px-3 py-4 border-t border-gray-700 flex-shrink-0">
-        @can('view-admin-dashboard')
+        @admin
             <form action="{{ route('admin.logout') }}" method="POST">
                 @csrf
                 <button class="w-full border border-red-500 text-red-400 py-1.5 rounded
@@ -145,7 +149,7 @@ $adminMenuLinks = [
                     Admin Logout
                 </button>
             </form>
-        @endcan
+        @endadmin
         @customer
             <form action="{{ route('logout') }}" method="POST" class="mt-2">
                 @csrf

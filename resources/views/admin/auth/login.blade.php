@@ -129,7 +129,11 @@
                     Remember me
                 </label>
             </div>
-
+            @if (Route::has('admin.password.request'))
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-2" href="{{ route('admin.password.request') }}">
+                    {{ __('Forgot your password?') }}
+                </a>
+            @endif
             <button type="submit" class="btn btn-admin text-white w-100">
                 <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
             </button>

@@ -10,12 +10,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Str;
 
 class ImportProductRowJob implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
 
     public function __construct(
         public readonly array $row
@@ -32,19 +30,21 @@ class ImportProductRowJob implements ShouldQueue
         // ── Price validation ──────────────────────────────────────────
         $price = (float) ($row['price'] ?? 0);
 
-        if ($price < 0) {
+        if ($price <= 0) {
             $this->fail(new \InvalidArgumentException(
-                "Row [{$row['name']}]: price cannot be negative ({$price})."
+                "Row [{$row['name']}]: price cannot be negative or zero ({$price})."
             ));
+
             return;
         }
 
-        $discountPrice = !empty($row['discount_price']) ? (float) $row['discount_price'] : null;
+        $discountPrice = ! empty($row['discount_price']) ? (float) $row['discount_price'] : null;
 
-        if ($discountPrice !== null && $discountPrice < 0) {
+        if ($discountPrice !== null && $discountPrice <= 0) {
             $this->fail(new \InvalidArgumentException(
-                "Row [{$row['name']}]: discount_price cannot be negative ({$discountPrice})."
+                "Row [{$row['name']}]: discount_price cannot be negative or zero ({$discountPrice})."
             ));
+
             return;
         }
 
@@ -52,6 +52,7 @@ class ImportProductRowJob implements ShouldQueue
             $this->fail(new \InvalidArgumentException(
                 "Row [{$row['name']}]: discount_price ({$discountPrice}) must be lower than price ({$price})."
             ));
+
             return;
         }
 
@@ -62,6 +63,7 @@ class ImportProductRowJob implements ShouldQueue
             $this->fail(new \InvalidArgumentException(
                 "Row [{$row['name']}]: category name is required."
             ));
+
             return;
         }
 
@@ -76,24 +78,32 @@ class ImportProductRowJob implements ShouldQueue
         $tags = $this->parseTags($row['tags'] ?? null);
 
         // ── Upsert product ────────────────────────────────────────────
-        $slug = !empty($row['slug'])
+        $slug = ! empty($row['slug'])
             ? $row['slug']
-            : str($row['name'] ?? 'untitled-' . uniqid())->slug();
+            : str($row['name'] ?? 'untitled-'.uniqid())->slug();
 
         Product::updateOrCreate(
             ['slug' => $slug],
             [
-                'name'           => $row['name'] ?? 'Untitled',
-                'slug'           => $slug,
-                'price'          => $price,
+                'name' => $row['name'] ?? 'Untitled',
+                'slug' => $slug,
+                'price' => $price,
                 'discount_price' => $discountPrice,
-                'stock'          => max(0, (int) ($row['stock'] ?? 0)),
-                'description'    => $row['description'] ?? null,
-                'category_id'    => $category->id,
-                'is_active'      => filter_var($row['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
-                'tags'           => $tags,
+                'stock' => max(0, (int) ($row['stock'] ?? 0)),
+                'description' => $row['description'] ?? null,
+                'category_id' => $category->id,
+                'is_active' => filter_var($row['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'tags' => $tags,
             ]
         );
+    }
+
+    public function failed(\Throwable $e)
+    {
+        \Log::channel('product')->error('Product import failded', [
+            'error' => $e->getMessage(),
+            'data' => $this->row,
+        ]);
     }
 
     /**
@@ -118,8 +128,10 @@ class ImportProductRowJob implements ShouldQueue
             $decoded = json_decode($raw, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 $tags = array_values(array_filter(array_map('trim', $decoded)));
-                return !empty($tags) ? $tags : null;
+
+                return ! empty($tags) ? $tags : null;
             }
+
             return null; // invalid JSON → discard
         }
 
@@ -130,6 +142,6 @@ class ImportProductRowJob implements ShouldQueue
             fn ($tag) => $tag !== '' && preg_match('/^[\w\-]+$/u', $tag)
         ));
 
-        return !empty($tags) ? $tags : null;
+        return ! empty($tags) ? $tags : null;
     }
 }

@@ -20,11 +20,11 @@ class RedirectIfPasswordResetForced
 
         if ($user instanceof User && $user->force_password_reset) {
             // Exclude profile edit, password update route, and logout route
-            if (!$request->routeIs('profile.edit') &&
+            if (!$request->routeIs('password.show') &&
                 !$request->routeIs('password.update') &&
                 !$request->routeIs('logout')) {
                 
-                return redirect()->route('profile.edit')
+                return redirect()->route('password.show')
                     ->with('warning', 'You must reset your password before continuing.');
             }
         }

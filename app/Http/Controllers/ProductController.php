@@ -16,8 +16,9 @@ class ProductController extends Controller
 {
     public function index(Request $request, RecentlyViewedService $recentlyViewedService)
     {
-        $role = is_admin() ? 'admin' : 'customer';
-        $recentlyViewed = $recentlyViewedService->get(current_user()?->id, $role, session()->getId());
+        $user = current_user();
+        $model = $user ? class_basename($user) : 'Guest';
+        $recentlyViewed = $recentlyViewedService->get($user?->id, $model, session()->getId());
         $page_title = 'Product-list';
         $filters = Arr::only($request->query(), [
             'min_price',
@@ -34,7 +35,7 @@ class ProductController extends Controller
 
         extract(Products::getHomepageProducts(
             filters: $filters,
-            role: $role,
+            user: $user,
             cursor: $cursor,
             perPage: $perPage
         ));
@@ -93,20 +94,10 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        $role = is_guest() ? 'guest' : (is_customer() ? 'customer' : 'admin');
-        ProductViewed::dispatch($product, current_user()?->id, $role, session()->id());
+        $user = current_user();
+        ProductViewed::dispatch($product, $user, session()->id());
 
-        $userId = current_user()?->id;
-        $product->load([
-            'reviews' => function ($query) use ($userId) {
-                $query->when(
-                    is_customer() && $userId,
-                    fn ($q) => $q->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$userId])
-                )->latest();
-            },
-            'reviews.user',
-            'category',
-        ]);
+        $product = Products::loadShowRelations($product, $user);
 
         return view('products.show', compact('product'));
     }

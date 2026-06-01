@@ -10,32 +10,75 @@ class UserPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view($currentUser, User $model): bool
+    public function view(Admin|User|null $currentUser, User $model): bool
     {
-        return $currentUser instanceof Admin || ($currentUser instanceof User && $currentUser->id === $model->id);
+        if(is_null($currentUser)){
+            return false;
+        }
+        if($currentUser->hasRole('admin')){
+            return true;
+        }
+        
+        return $currentUser->can('manage_users') || $currentUser->id === $model->id;
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create($currentUser): bool
+    public function create(Admin|User|null $currentUser): bool
     {
-        return $currentUser instanceof Admin;
+        if(is_null($currentUser)){
+            return false;
+        }
+        
+        return $currentUser->hasRole('admin');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update($currentUser, User $model): bool
+    public function update(Admin|User|null $currentUser, User $model): bool
     {
-        return $currentUser instanceof Admin || ($currentUser instanceof User && $currentUser->id === $model->id);
+        if(is_null($currentUser)){
+            return false;
+        }
+        if($currentUser->hasRole('admin')){
+            return true;
+        }
+        
+        return $currentUser->can('manage_users') || $currentUser->id === $model->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete($currentUser, User $model): bool
+    public function delete(Admin|User|null $currentUser, User $model): bool
     {
-        return $currentUser instanceof Admin || ($currentUser instanceof User && $currentUser->id === $model->id);
+        if(is_null($currentUser)){
+            return false;
+        }
+        if($currentUser->hasRole('admin')){
+            return true;
+        }
+        
+        return $currentUser->can('manage_users') || $currentUser->id === $model->id;
+    }
+
+    public function forceDelete(Admin|User|null $currentUser, User $model): bool
+    {
+        if(is_null($currentUser)){
+            return false;
+        }
+        
+        return $currentUser->hasRole('admin') || $currentUser->id === $model->id;
+    }
+
+    public function restore(Admin|User|null $currentUser, User $model): bool
+    {
+        if(is_null($currentUser)){
+            return false;
+        }
+        
+        return $currentUser->hasRole('admin');
     }
 }

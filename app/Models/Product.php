@@ -28,8 +28,8 @@ class Product extends Model
         'is_active',
         'tags',
         'avg_rating',
-        'created_by',
-        'updated_by',
+        'created_by_id', 'created_by_type',
+        'updated_by_id', 'updated_by_type',
     ];
 
     protected $casts = [
@@ -44,14 +44,14 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function creator()
+    public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->morphTo('created_by');
     }
 
-    public function updater()
+    public function updatedBy()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->morphTo('updated_by');
     }
 
     public function reviews(): HasMany
@@ -104,10 +104,7 @@ class Product extends Model
 
     public function scopeActive($query)
     {
-        return match(current_user()?->role){
-            'admin' => $query,
-            default => $query->where('is_active', true)
-        } ;
+        return $query->where('is_active', true);
     }
 
     public function getImageSizeAttribute(){

@@ -24,9 +24,10 @@ class ProductObserver
      */
     public function creating(Product $product): void
     {
-        $userId = current_user()?->id;
-        $product->created_by = $product->created_by ?? $userId;
-        $product->updated_by = $product->updated_by ?? $userId;
+        if(current_user()){
+            $product->created_by_id = $product->created_by_id ?? current_user()->id;
+            $product->created_by_type = $product->created_by_type ?? current_user()->getMorphClass();
+        }
 
     }
 
@@ -41,7 +42,9 @@ class ProductObserver
     public function updating(Product $product)
     {
         // Populate updated_by audit column
-        $product->updated_by = current_user()?->id;
+        current_user()
+        ? $product->updatedBy()->associate(current_user())
+        : $product->updatedBy()->dissociate();
 
         // make active product when product is restocked
         $oldStock = $product->getOriginal('stock');

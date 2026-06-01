@@ -2,10 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Admin;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,10 +20,28 @@ class RequestTrackingMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $user = current_user();
+
+        if ($user instanceof User) {
+            $this->trackBrowse($user);
+        }
+        $this->trackRequest($request, $user);
+
+        $response = $next($request);
+
+        Log::channel('request')->info('Outgoing response', [
+            'status' => $response->getStatusCode(),
+            'content_type' => $response->headers->get('Content-Type'),
+        ]);
+
+        return $response;
+    }
+
+    private function trackRequest(Request $request, User|Admin|null $user): void
+    {
         $requestId = $request->header('X-Request-ID') ?: (string) Str::uuid();
-        $user     = $request->user();
-        $userId   = $user?->id   ?? null;
-        $userType = $user?->role ?? 'guest';
+        $userId = $user?->id ?? null;
+        $userType = $user ? class_basename($user) : 'Guest';
         $ipAddress = $request->ip();
 
         Context::add('request_id', $requestId);
@@ -30,17 +51,16 @@ class RequestTrackingMiddleware
 
         Log::channel('request')->info('Incoming request', [
             'method' => $request->method(),
-            'path'   => $request->path(),
-            'url'    => $request->fullUrl(),
+            'path' => $request->path(),
+            'url' => $request->fullUrl(),
         ]);
+    }
 
-        $response = $next($request);
+    private function trackBrowse(User $user): void
+    {
+        $key = 'browse.today:'.now()->toDateString();
 
-        Log::channel('request')->info('Outgoing response', [
-            'status'       => $response->getStatusCode(),
-            'content_type' => $response->headers->get('Content-Type'),
-        ]);
-
-        return $response;
+        Redis::sadd($key, $user->id);
+        Redis::expireat($key, now()->endOfDay()->timestamp);
     }
 }

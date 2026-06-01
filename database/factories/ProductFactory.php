@@ -37,8 +37,6 @@ class ProductFactory extends Factory
             'description' => fake()->paragraph(),
             'tags' => [],
             'image' => null,
-            'created_by' => User::factory(),
-            'updated_by' => User::factory(),
         ];
     }
 

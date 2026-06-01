@@ -15,7 +15,9 @@ class Handler extends ExceptionHandler
     {
         parent::report($e);
 
-        $this->sendSlackAlert($e);
+        if(app()->isProduction()){
+            $this->sendSlackAlert($e);
+        }
     }
 
     private function sendSlackAlert(Throwable $e): void

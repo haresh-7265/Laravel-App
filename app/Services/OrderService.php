@@ -10,10 +10,12 @@ use App\Jobs\GenerateInvoicePdf;
 use App\Jobs\ReleaseStock;
 use App\Jobs\ReserveStock;
 use App\Jobs\SendOrderConfirmation;
+use App\Models\Admin;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\User;
 use App\Notifications\OrderShipped;
 use Exception;
 use Illuminate\Support\Facades\Bus;
@@ -29,31 +31,19 @@ class OrderService
         private CouponService $couponService
     ) {}
 
-    public function getFilteredOrders(
+    public function getAllOrders(
         array $filters,
-        string $role = 'customer',
-        ?int $userId = null,
+        Admin|User|null $user = null,
         ?string $cursor = null,
         int $perPage = 20)
     {
         ksort($filters);
 
-        // cache scope: admin sees all, others see only their scoped data
-        $cacheScope = $role === 'admin'
-            ? 'admin'
-            : ($userId ? "user.{$userId}" : 'guest');
+        $filterHash = md5(json_encode($filters));
 
-        $payload = json_encode([
-            'filters' => $filters,
-            'cursor' => $cursor,
-            'perPage' => $perPage,
-        ], JSON_THROW_ON_ERROR); // throws on failure instead of silent false
+        $ordersCacheKey = "orders.all.{$filterHash}.{$perPage}.{$cursor}";
 
-        $hash = md5($payload); // faster than md5, still collision-resistant for cache keys
-
-        $ordersCacheKey = "orders.{$cacheScope}.{$hash}";
-
-        return Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($filters, $role, $userId, $perPage, $cursor) {
+        return Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($filters, $perPage, $cursor) {
             return Order::with([
                 'user:id,name,email',
                 'items:id,order_id,product_id,product_name',
@@ -69,10 +59,6 @@ class OrderService
                     'status',
                     'created_at',
                 ])
-                ->when(
-                    $role !== 'admin',
-                    fn ($q) => $q->where('user_id', $userId)
-                )
                 ->when(! empty($filters['search']), function ($q) use ($filters) {
                     $q->where('order_number', 'like', '%'.$filters['search'].'%')
                         ->orWhereHas(
@@ -99,20 +85,67 @@ class OrderService
         });
     }
 
-    public function getOrderStatusCounts()
+    public function getOwnOrders(
+        array $filters,
+        User $user,
+        ?string $cursor = null,
+        int $perPage = 20)
     {
-        $user = current_user();
-        $role = is_admin() ? 'admin' : 'customer';
-        $id = $user?->id;
-        $suffix = $role !== 'admin' ? "customer.{$id}" : '';
-        $countsCacheKey = "orders.{$suffix}.status_counts";
+        ksort($filters);
 
-        return Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () use ($role, $id) {
-            return Order::selectRaw('status, count(*) as count')
+        $filterHash = md5(json_encode($filters));
+
+        $ordersCacheKey = "orders.own.{$user->id}.{$filterHash}.{$perPage}.{$cursor}";
+
+        return Cache::tags(['orders'])->remember($ordersCacheKey, now()->addMinutes(10), function () use ($filters, $user, $perPage, $cursor) {
+            return Order::with([
+                'user:id,name,email',
+                'items:id,order_id,product_id,product_name',
+                'items.product:id,image',
+            ])
+                ->select([
+                    'id',
+                    'user_id',
+                    'order_number',
+                    'total',
+                    'payment_status',
+                    'payment_method',
+                    'status',
+                    'created_at',
+                ])
+                ->where('user_id', $user->id)
+                ->when(! empty($filters['search']), function ($q) use ($filters) {
+                    $q->where('order_number', 'like', '%'.$filters['search'].'%')
+                        ->orWhereHas(
+                            'user',
+                            fn ($q) => $q->where('name', 'like', '%'.$filters['search'].'%')
+                                ->orWhere('email', 'like', '%'.$filters['search'].'%')
+                        );
+                })
                 ->when(
-                    $role != 'admin',
-                    fn ($q) => $q->where('user_id', $id)
+                    ! empty($filters['status']),
+                    fn ($q) => $q->where('status', $filters['status'])
                 )
+                ->when(
+                    ! empty($filters['payment_status']),
+                    fn ($q) => $q->where('payment_status', $filters['payment_status'])
+                )
+                ->when(
+                    ! empty($filters['date']),
+                    fn ($q) => $q->whereDate('created_at', $filters['date'])
+                )
+                ->latest()
+                ->orderByDesc('id')
+                ->cursorPaginate($perPage, ['*'], 'cursor', $cursor);
+        });
+    }
+
+    public function getAllOrdersStatusCounts()
+    {
+        $countsCacheKey = 'orders.all.status_counts';
+
+        return Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () {
+            return Order::selectRaw('status, count(*) as count')
                 ->groupBy('status')
                 ->pluck('count', 'status')
                 ->toArray();
@@ -201,13 +234,21 @@ class OrderService
                     ]);
                 });
             });
-
+            $productIds = collect($cartItems)->pluck('product_id')->toArray();
+            $products = Product::with('category')
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
             // Create order items + decrement stock
             foreach ($cartItems as $item) {
+                $product = $products[$item['product_id']];
+                $category = $product->category;
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
                     'product_name' => $item['name'],
+                    'category_id' => $category->id,
+                    'category_name' => $category->name,
                     'price' => $item['price'],
                     'discount_price' => $item['discount_price'] ?? null,
                     'quantity' => $item['quantity'],
@@ -319,8 +360,21 @@ class OrderService
         return [
             'stats' => $stats,
             'topProducts' => $topProducts,
-            'ordersByStatus' => $this->getOrderStatusCounts(),
+            'ordersByStatus' => $this->getOwnOrdersStatusCounts($userId),
         ];
+    }
+
+    public function getOwnOrdersStatusCounts(int $userId)
+    {
+        $countsCacheKey = 'orders.own.status_counts';
+
+        return Cache::tags(['orders'])->remember($countsCacheKey, now()->addMinutes(10), function () use ($userId) {
+            return Order::selectRaw('status, count(*) as count')
+                ->where('user_id', $userId)
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toArray();
+        });
     }
 
     public function getShippingEstimate(Order $order): array

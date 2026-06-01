@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Admin;
 use App\Models\User;
 use App\Notifications\FailedJobsSummary;
 use Illuminate\Console\Command;
@@ -57,7 +58,7 @@ class SendFailedJobsSummary extends Command
         // Group by job name for the overview
         $grouped = $summary->groupBy('job_name')->map->count();
 
-        $admins = User::where('role', 'admin')->get();
+        $admins = Admin::all();
 
         if ($admins->isEmpty()) {
             $this->warn('No admin users found to notify.');

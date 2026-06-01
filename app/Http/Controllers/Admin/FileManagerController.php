@@ -15,7 +15,7 @@ class FileManagerController extends Controller
 
     public function index()
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('view_reports');
 
         $perPage = min((int) request()->input('perPage', 10), 100);
 
@@ -63,7 +63,7 @@ class FileManagerController extends Controller
 
     public function archive(Request $request)
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('view_reports');
 
         $path = $request->input('path');
 
@@ -85,7 +85,7 @@ class FileManagerController extends Controller
 
     public function cleanup()
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('view_reports');
 
         $files = Storage::disk($this->disk)->files();
         $cutoff = now()->subDays(30)->timestamp;

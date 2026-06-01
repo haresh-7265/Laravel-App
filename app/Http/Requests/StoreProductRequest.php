@@ -15,7 +15,7 @@ class StoreProductRequest extends FormRequest
     // protected $stopOnFirstFailure = true;
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Product::class) ?? false;
+        return current_user()?->can('create', Product::class) ?? false;
     }
 
     /**

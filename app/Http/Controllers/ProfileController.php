@@ -60,26 +60,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Update the user's preferred locale.
-     */
-    public function updateLocale(Request $request): RedirectResponse
-    {
-        $this->authorize('update', current_user());
-
-        $request->validate([
-            'preferred_locale' => ['required', 'string', 'in:'.implode(',', SetLocale::SUPPORTED)],
-        ]);
-
-        $locale = $request->input('preferred_locale');
-
-        current_user()->update(['preferred_locale' => $locale]);
-
-        // Sync session so the change takes effect immediately
-        session(['locale' => $locale]);
-
-        return Redirect::route('profile.edit')->with('success', 'locale-updated');
-    }
 
     /**
      * Delete the user's account.

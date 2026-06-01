@@ -46,7 +46,6 @@ class OrderFactory extends Factory
             'shipping_state' => fake()->state(),
             'shipping_pincode' => fake()->postcode(),
             'created_by' => User::factory(),
-            'updated_by' => User::factory(),
         ];
     }
 

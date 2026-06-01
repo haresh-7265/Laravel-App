@@ -29,6 +29,8 @@ class RolesPermissionsSeeder extends Seeder
             // users
             ['name' => 'manage_users',    'group' => 'users'],
             ['name' => 'assign_roles',    'group' => 'users'],
+
+            ['name' => 'manage_cache',    'group' => 'cache'],
         ];
 
         foreach ($permissions as $p) {

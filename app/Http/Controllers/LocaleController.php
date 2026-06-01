@@ -28,6 +28,6 @@ class LocaleController extends Controller
             current_user()->update(['preferred_locale' => $locale]);
         }
 
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Locale changed successfully'));
     }
 }

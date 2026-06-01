@@ -73,7 +73,9 @@
         `;
         document.head.appendChild(style);
     }
-
+    function updateNotificationBadge(count){
+        
+    };
     function initNotificationListener(userId, userType) {
         if (!window.Echo || !userId) return;
 

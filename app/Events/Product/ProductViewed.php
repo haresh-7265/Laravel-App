@@ -15,8 +15,7 @@ class ProductViewed
 
     public function __construct(
         public readonly Product $product,
-        public readonly ?int $userId = null,
-        public readonly ?string $userType = 'guest',
+        public readonly User|Admin|null $user = null,
         public readonly string $sessionId = ''
     ) {}
 }

@@ -9,7 +9,7 @@ class StoreCheckoutRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Order::class) ?? false;
+        return current_user()?->can('create', Order::class) ?? false;
     }
 
     public function rules(): array

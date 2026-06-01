@@ -29,7 +29,7 @@
             Upload CSV File
         </h2>
 
-        <form action="{{ route('admin.import.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
+        <form action="{{ route('products.import.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
             @csrf
 
             <div id="dropZone"
@@ -257,8 +257,8 @@
 
 @push('scripts')
 <script>
-const statusBase = "{{ url('admin/import/status') }}";
-const cancelBase = "{{ url('admin/import/cancel') }}";
+const statusBase = "{{ url('products/import/status') }}";
+const cancelBase = "{{ url('products/import/cancel') }}";
 const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content;
 
 // ── Upload form ────────────────────────────────────────────────────────

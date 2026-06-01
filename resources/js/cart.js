@@ -1,40 +1,46 @@
 $(document).ready(function () {
-    $(document).on("submit", "#cart-form, .ajax-add-to-cart-form", function (e) {
-        e.preventDefault();
-        let $form = $(this);
-        let url = $form.attr("action");
-        let submitBtn = $form.find('button[type="submit"]');
-        let originalLabel = submitBtn.html();
-        submitBtn.prop("disabled", true);
+    $(document).on(
+        "submit",
+        "#cart-form, .ajax-add-to-cart-form",
+        function (e) {
+            e.preventDefault();
+            let $form = $(this);
+            let url = $form.attr("action");
+            let submitBtn = $form.find('button[type="submit"]');
+            let originalLabel = submitBtn.html();
+            submitBtn.prop("disabled", true);
 
-        $.ajax({
-            url: url,
-            method: "POST",
-            data: $form.serialize(),
-            dataType: "json",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                Accept: "application/json",
-            },
-            beforeSend: function () {
-                submitBtn.text("Adding...");
-            },
-            success: function (res) {
-                submitBtn.prop("disabled", false).html(originalLabel);
-                if (res.status === "success") {
-                    updateCartBadge(res.cart_count ?? res.count ?? 0);
-                }
-                window.notify(res.status, res.message);
-            },
-            error: function (xhr) {
-                submitBtn.prop("disabled", false).html(originalLabel);
-                window.notify(
-                    "error",
-                    xhr.responseJSON?.message ?? xhr.responseJSON?.error ?? "Something went wrong.",
-                );
-            },
-        });
-    });
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: $form.serialize(),
+                dataType: "json",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    Accept: "application/json",
+                },
+                beforeSend: function () {
+                    submitBtn.text("Adding...");
+                },
+                success: function (res) {
+                    submitBtn.prop("disabled", false).html(originalLabel);
+                    if (res.status === "success") {
+                        updateCartBadge(res.cart_count ?? res.count ?? 0);
+                    }
+                    window.notify(res.status, res.message);
+                },
+                error: function (xhr) {
+                    submitBtn.prop("disabled", false).html(originalLabel);
+                    window.notify(
+                        "error",
+                        xhr.responseJSON?.message ??
+                            xhr.responseJSON?.error ??
+                            "Something went wrong.",
+                    );
+                },
+            });
+        },
+    );
 
     let productId = $("#productId").val();
 
@@ -106,7 +112,7 @@ $("#cart-items-list").on("click", '[data-action="qty"]', function (e) {
             applyCartResponse(data);
         })
         .fail(() => {
-            window.notify("error" ,"Could not update cart");
+            window.notify("error", "Could not update cart");
             $row.removeClass("item-loading");
         });
 });
@@ -165,7 +171,7 @@ $(document).on("click", "#apply-coupon-btn", function () {
 
     // Loading state
     $btn.prop("disabled", true).html(
-        '<span class="spinner-border spinner-border-sm me-1"></span>Applying...'
+        '<span class="spinner-border spinner-border-sm me-1"></span>Applying...',
     );
     $input.prop("disabled", true);
     $feedback.hide();
@@ -175,8 +181,7 @@ $(document).on("click", "#apply-coupon-btn", function () {
             applyCartResponse(data);
         })
         .fail((xhr) => {
-            const msg =
-                xhr.responseJSON?.message ?? "Could not apply coupon.";
+            const msg = xhr.responseJSON?.message ?? "Could not apply coupon.";
             showCouponFeedback($feedback, msg, "danger");
             window.notify("error", msg);
         })
@@ -217,28 +222,24 @@ function showCouponFeedback($el, message, type) {
         .slideDown(200);
 }
 
-
 function updateStockUI(data) {
-
-    let stock = data.stock; 
+    let stock = data.stock;
 
     // 🔹 Update stock badge
-    $('#stockCount')
-        .text(stock > 0 ? stock+' units' : 'Out of Stock')
-        .removeClass('text-primary text-danger')
-        .addClass(stock > 0 ? 'text-primary' : 'text-danger');
+    $("#stockCount")
+        .text(stock > 0 ? stock + " units" : "Out of Stock")
+        .removeClass("text-primary text-danger")
+        .addClass(stock > 0 ? "text-primary" : "text-danger");
 
     // 🔹 Disable/Enable button
     if (stock <= 0) {
-        $('#addToCartBtn')
-            .prop('disabled', true);
-        $('#cartWrapper').hide();
-        $('#outOfStockBtn').show();
+        $("#addToCartBtn").prop("disabled", true);
+        $("#cartWrapper").hide();
+        $("#outOfStockBtn").show();
     } else {
-        $('#addToCartBtn')
-            .prop('disabled', false);
-        $('#cartWrapper').show();
-        $('#outOfStockBtn').hide();
+        $("#addToCartBtn").prop("disabled", false);
+        $("#cartWrapper").show();
+        $("#outOfStockBtn").hide();
     }
 }
 
@@ -267,8 +268,10 @@ $(document).on("click", ".waitlist-btn", function () {
             window.notify(res.status, res.message);
             // Swap to "Remove Notify" state
             $btn.removeClass("waitlist-btn bg-violet-600 text-white")
-                .addClass("waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200")
-                .html("✓ Remove Notify")
+                .addClass(
+                    "waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200",
+                )
+                .html("<i class='bi bi-bell-slash me-1'> Remove Notify")
                 .prop("disabled", false);
         },
         error: function (xhr) {
@@ -278,8 +281,10 @@ $(document).on("click", ".waitlist-btn", function () {
             if (xhr.status === 409) {
                 // Already on waitlist — swap to remove state
                 $btn.removeClass("waitlist-btn bg-violet-600 text-white")
-                    .addClass("waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200")
-                    .html("✓ Remove Notify")
+                    .addClass(
+                        "waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200",
+                    )
+                    .html("<i class='bi bi-bell-slash me-1'> Remove Notify")
                     .prop("disabled", false);
             } else {
                 $btn.prop("disabled", false).html(originalLabel);
@@ -308,9 +313,11 @@ $(document).on("click", ".waitlist-remove-btn", function () {
         success: function (res) {
             window.notify(res.status, res.message);
             // Swap to "Notify Me" state
-            $btn.removeClass("waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200")
+            $btn.removeClass(
+                "waitlist-remove-btn bg-violet-100 text-violet-700 border border-violet-200",
+            )
                 .addClass("waitlist-btn bg-violet-600 text-white")
-                .html("🔔 Notify Me")
+                .html("<i class='bi bi-bell me-1'> Notify Me")
                 .prop("disabled", false);
         },
         error: function (xhr) {

@@ -23,6 +23,18 @@ Route::prefix('admin')->group(function () {
         Route::post('login', [AdminAuthController::class, 'login'])
             ->middleware('throttle:login')
             ->name('admin.login.submit');
+        
+        Route::get('forgot-password', [AdminAuthController::class, 'showPasswordResetForm'])->name('admin.password.request');
+
+        Route::post('forgot-password', [AdminAuthController::class, 'sendPasswordResetLink'])
+        ->middleware('throttle:password-reset')
+        ->name('admin.password.email');
+
+        Route::get('reset-password/{token}', [AdminAuthController::class, 'showNewPasswordForm'])
+        ->name('admin.password.reset');
+
+        Route::post('reset-password', [AdminAuthController::class, 'storeNewPassword'])
+        ->name('admin.password.store');
     });
 
     // Authenticated admin

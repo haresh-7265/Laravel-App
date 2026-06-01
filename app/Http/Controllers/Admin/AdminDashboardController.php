@@ -25,7 +25,7 @@ class AdminDashboardController extends Controller
                         now()->endOfMonth()
                     ])
                     ->sum('total'),
-                fn() => User::where('role', 'customer')
+                fn() => User::customers()
                     ->whereDate('created_at', today())
                     ->count(),
                 fn() => Product::where('stock', '<=', 5)->count(),

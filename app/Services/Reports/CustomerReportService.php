@@ -11,11 +11,11 @@ class CustomerReportService
     public function generate(): array
     {
         // Only role = 'customer' users (based on your 'role' column)
-        $newRegistrations = User::where('role', 'customer')
+        $newRegistrations = User::customers()
             ->where('created_at', '>=', now()->subDays(30))
             ->count();
 
-        $totalCustomers = User::where('role', 'customer')->count();
+        $totalCustomers = User::customers()->count();
 
         // Top buyers using 'total' column and relationship
         $topBuyers = Order::select(

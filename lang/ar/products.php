@@ -47,7 +47,7 @@ return [
     'back'             => 'رجوع',
     'cancel'           => 'إلغاء',
     'export'           => 'تصدير',
-    'add_to_cart'      => '🛒 أضف إلى السلة',
+    'add_to_cart'      => 'أضف إلى السلة',
     'notify_me'        => 'أعلمني',
     'remove_notify'    => 'إلغاء الإشعار',
     'email_placeholder'=> 'أدخل بريدك الإلكتروني',

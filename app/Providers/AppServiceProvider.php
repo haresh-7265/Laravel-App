@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Listeners\CacheEventListener;
 use App\Models\Admin;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
+use App\Policies\CartPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\ProfilePolicy;
@@ -20,7 +22,6 @@ use App\Services\TestService1;
 use App\Services\TestService2;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -39,6 +40,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -98,7 +100,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         \View::composer('*', function ($view) {
-            $view->with('current_logged_user', auth()->user());
+            $view->with('current_logged_user', current_user());
         });
 
         \View::share('company_name', 'Intern Training App');
@@ -179,6 +181,7 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(! app()->isProduction());
 
+        Auth::shouldUse(current_guard());
         // Set default user resolver to check active guards
         Auth::resolveUsersUsing(fn () => current_user());
 
@@ -191,17 +194,31 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ProductReview::class, ReviewPolicy::class);
         Gate::policy(User::class, ProfilePolicy::class);
         Gate::policy(Admin::class, ProfilePolicy::class);
+        Gate::policy(Cart::class, CartPolicy::class);
 
         // Define authorization gates
         Gate::define('view-admin-dashboard', fn ($user) => $user instanceof Admin);
-        Gate::define('manage-products', fn ($user) => $user instanceof Admin);
-        Gate::define('manage-orders', fn ($user) => $user instanceof Admin);
+        // Gate::define('manage-products', fn ($user) => $user instanceof Admin);
+        // Gate::define('manage-orders', fn ($user) => $user instanceof Admin);
         Gate::define('impersonate-users', fn ($user) => $user instanceof Admin);
         Gate::define('view-analytics', fn ($user) => $user instanceof Admin);
         Gate::define('edit-comment', fn ($u, $c, $p) => $u->id === $c->user_id || $u->id === $p->user_id);
 
         // Super-admin bypass
-        Gate::before(function ($user, string $ability) {
+        Gate::before(function ($user, string $ability, $model) {
+            $modelClass = is_array($model) ? reset($model) : $model;
+
+            $skip = [
+                [Cart::class, 'view'],
+                [Cart::class, 'checkout'],
+                [Product::class, 'waitlist'],
+            ];
+
+            foreach ($skip as [$skipModel, $skipAbility]) {
+                if (is_a($modelClass, $skipModel, true) && $ability === $skipAbility) {
+                    return null;
+                }
+            }
             if ($user instanceof Admin) {
                 return true;
             }
@@ -423,7 +440,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // ✅ custom reset URL
         ResetPassword::createUrlUsing(function ($notifiable, string $token) {
-            return url(route('password.reset', [
+            $route = $notifiable instanceof Admin ? 'admin.password.reset' : 'password.reset';
+            return url(route($route, [
                 'token' => $token,
                 'email' => $notifiable->getEmailForPasswordReset(),
             ], false));
@@ -432,7 +450,8 @@ class AppServiceProvider extends ServiceProvider
         // ✅ custom email template — branded and localised
         ResetPassword::toMailUsing(function ($notifiable, string $token) {
             $locale = $notifiable->preferred_locale ?? app()->getLocale();
-            $url = url(route('password.reset', [
+            $route = $notifiable instanceof Admin ? 'admin.password.reset' : 'password.reset';
+            $url = url(route($route, [
                 'token' => $token,
                 'email' => $notifiable->getEmailForPasswordReset(),
             ], false));

@@ -22,20 +22,22 @@ class CustomerActionSubscriber implements ShouldQueue
     // -------------------------------------------------------
     public function onProductViewed(ProductViewed $event): void
     {
+        $user = $event->user;
+        $model = $user ? class_basename($user) : 'Guest';
         analytics()->track('product_viewed', [
             'product_id' => $event->product->id,
             'product_name' => $event->product->name,
             'category' => $event->product->category,
             'price' => $event->product->price,
-            'user_id' => $event->userId,
+            'user_id' => $user?->id,
             'session_id' => $event->sessionId,
             'timestamp' => now()->toISOString(),
         ]);
 
         $this->recentlyViewedService->track(
             $event->product->id,
-            $event->userId,
-            $event->userType,
+            $user,
+            $model,
             $event->sessionId
         );
     }

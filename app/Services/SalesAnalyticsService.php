@@ -30,20 +30,20 @@ class SalesAnalyticsService
         return DB::table('order_items')
             ->select([
                 'order_items.product_id',
-                'products.name as product_name',
-                'categories.name as category_name',
+                'order_items.product_name',
+                'order_items.category_id',    // ← from order_items
+                'order_items.category_name',  // ← from order_items
                 DB::raw('SUM(order_items.quantity) as total_sold'),
                 DB::raw('SUM(order_items.subtotal) as revenue'),
             ])
-            ->join('products', 'products.id', '=', 'order_items.product_id')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
             ->where('orders.status', 'delivered')
             ->whereYear('orders.created_at', $year)
             ->groupBy(
                 'order_items.product_id',
-                'products.name',
-                'categories.name'
+                'order_items.product_name',
+                'order_items.category_id',
+                'order_items.category_name',
             )
             ->orderByDesc('total_sold')
             ->limit($limit)
@@ -77,20 +77,18 @@ class SalesAnalyticsService
     {
         return DB::table('order_items')
             ->select([
-                'categories.id as category_id',
-                'categories.name as category_name',
+                'order_items.category_id',
+                'order_items.category_name',
                 DB::raw('SUM(order_items.quantity) as total_quantity'),
-                DB::raw('SUM(order_items.price * order_items.quantity) as total_revenue'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue'),
                 DB::raw('COUNT(DISTINCT order_items.order_id) as total_orders'),
             ])
-            ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->join('categories', 'categories.id', '=', 'products.category_id')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->where('orders.status', 'delivered')
             ->whereYear('orders.created_at', $year)
             ->groupBy(
-                'categories.id',
-                'categories.name',
+                'order_items.category_id',
+                'order_items.category_name',
             )
             ->orderByDesc('total_revenue')
             ->get();

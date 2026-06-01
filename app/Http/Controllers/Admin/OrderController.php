@@ -19,22 +19,21 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $user = $request->user();
+        $user = current_user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
         $perPage = min((int) $request->input('perPage', 20), 100);
 
         // Count per status for stats row
-        $allCounts = $this->orderService->getOrderStatusCounts();
+        $allCounts = $this->orderService->getAllOrdersStatusCounts();
 
         if (! $request->expectsJson()) {
             return view('admin.orders.index', compact('allCounts'));
         }
 
-        $orders = $this->orderService->getFilteredOrders(
+        $orders = $this->orderService->getAllOrders(
             filters: $filters,
-            role: $user?->role ?? 'guest',
-            userId: $user?->id,
+            user: $user,
             cursor: $cursor,
             perPage: $perPage,
         );
@@ -54,15 +53,14 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $user = $request->user();
+        $user = current_user();
         $filters = $request->only(['search', 'status', 'payment_status', 'date']);
         $cursor = $request->input('cursor');
         $perPage = min((int) $request->input('perPage', 20), 100);
 
-        $orders = $this->orderService->getFilteredOrders(
+        $orders = $this->orderService->getAllOrders(
             filters: $filters,
-            role: $user?->role ?? 'guest',
-            userId: $user?->id,
+            user: $user,
             cursor: $cursor,
             perPage: $perPage,
         );
@@ -96,6 +94,9 @@ class OrderController extends Controller
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
         ]);
 
+        if($request->status == 'cancelled'){
+            $this->authorize('cancel', $order);
+        }
         // Statuses that are considered final — no further updates allowed
         $finalStatuses = ['delivered', 'cancelled'];
 

@@ -73,7 +73,7 @@
           </div>
 
           <form method="POST"
-                action="{{ route('customer.devices.revoke', $token->id) }}"
+                action="{{ route('user.devices.revoke', $token->id) }}"
                 onsubmit="return confirm('Revoke this session?')">
             @csrf
             @method('DELETE')

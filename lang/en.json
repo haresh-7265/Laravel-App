@@ -93,5 +93,6 @@
     "Thank you for shopping with us!": "Thank you for shopping with us!",
 
     "Low Stock Alert": "Low Stock Alert",
-    "Low stock alert: :product has only :stock units left": "Low stock alert: :product has only :stock units left"
+    "Low stock alert: :product has only :stock units left": "Low stock alert: :product has only :stock units left",
+    "Locale changed successfully": "Locale changed successfully"
 }

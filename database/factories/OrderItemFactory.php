@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -26,6 +27,12 @@ class OrderItemFactory extends Factory
             'product_id' => Product::factory(),
             'product_name' => function (array $attributes) {
                 return Product::find($attributes['product_id'])?->name ?? implode(' ', fake()->words(3));
+            },
+            'category_id' => function (array $attributes) {
+                return Product::find($attributes['product_id'])->category_id;
+            },
+            'category_name' => function (array $attributes) {
+                return Category::find($attributes['category_id'])?->name ?? implode(' ', fake()->words(3));
             },
             'price' => function (array $attributes) {
                 return Product::find($attributes['product_id'])?->price ?? fake()->randomFloat(2, 10, 500);

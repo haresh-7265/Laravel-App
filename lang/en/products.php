@@ -47,7 +47,7 @@ return [
     'back'             => 'Back',
     'cancel'           => 'Cancel',
     'export'           => 'Export',
-    'add_to_cart'      => '🛒 Add to Cart',
+    'add_to_cart'      => 'Add to Cart',
     'notify_me'        => 'Notify Me',
     'remove_notify'    => 'Remove Notify',
     'email_placeholder'=> 'Enter your email address',

@@ -93,5 +93,6 @@
     "Thank you for shopping with us!": "شكرًا لتسوقك معنا!",
 
     "Low Stock Alert": "تنبيه انخفاض المخزون",
-    "Low stock alert: :product has only :stock units left": "تنبيه مخزون: :product يتبقى منه :stock وحدة فقط"
+    "Low stock alert: :product has only :stock units left": "تنبيه مخزون: :product يتبقى منه :stock وحدة فقط",
+    "Locale changed successfully": "تم تغيير اللغة بنجاح"
 }

@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Exceptions\ProductHasOrdersException;
+use App\Models\Admin;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
@@ -14,56 +17,60 @@ use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
-    public function getAll(string $role = 'customer')
+    public function getAll(User|Admin|null $user = null)
     {
-        $key = "products.{$role}.all";
+        [$key, $query] = match (true) {
+            // guest and default logged-in user see same data — share one cache key
+            is_null($user) => ['products.active', fn () => Product::active()->with('category')->get()],
+            $user->can('manage_products') => ['products.all',    fn () => Product::with('category')->get()],
+            default => ['products.active', fn () => Product::active()->with('category')->get()],
+        };
 
-        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), fn () => Product::active()->with('category')->get());
+        return Cache::tags(['products', 'products.list'])->remember($key, now()->addHour(), $query);
     }
 
     public function getHomepageProducts(
         array $filters,
-        string $role = 'customer',
+        User|Admin|null $user = null,
         ?string $cursor = null,
         int $perPage = 20): array
     {
         return Concurrency::run([
-            'featured' => fn () => $this->getFeaturedProducts($role),
-            'newArrivals' => fn () => $this->getNewArrivalProducts($role),
-            'onSale' => fn () => $this->getOnSaleProducts($role),
-            'products' => fn () => $this->getFilteredProducts($filters, $role, $cursor, $perPage),
+            'featured' => fn () => $this->getFeaturedProducts($user),
+            'newArrivals' => fn () => $this->getNewArrivalProducts($user),
+            'onSale' => fn () => $this->getOnSaleProducts($user),
+            'products' => fn () => $this->getFilteredProducts($filters, $user, $cursor, $perPage),
         ]);
     }
 
     // GET paginated products
     public function getFilteredProducts(
         array $filters,
-        string $role = 'customer',
+        User|Admin|null $user = null,
         ?string $cursor = null,
         int $perPage = 20)
     {
         ksort($filters);
+        // dump($user);
+        $isManager = ! is_null($user) && $user->can('manage_products');
+        // dd($isManager);
+        $filterHash = md5(json_encode($filters));
 
-        $hash = md5(json_encode([
-            'filters' => $filters,
-            'cursor' => $cursor,
-            'perPage' => $perPage,
-            'role' => $role,
-        ]));
-        $cacheKey = "products.{$role}.{$hash}";
+        $scop = $isManager ? 'all' : 'active';
+        $Key = "products.{$scop}.{$filterHash}.{$perPage}.{$cursor}";
 
-        return Cache::tags(['products', 'products.list'])->remember($cacheKey, now()->addHour(), function () use ($perPage, $filters, $role) {
+        return Cache::tags(['products', 'products.list'])->remember($Key, now()->addHour(), function () use ($perPage, $filters, $isManager) {
 
             $q = $filters['q'] ?? null;
             if ($q) {
                 $products = Product::search($q)
-                    ->query(fn ($b) => $this->applyFilters($filters, $role, $b))
+                    ->query(fn ($b) => $this->applyFilters($filters, $isManager, $b))
                     ->paginate($perPage, 'cursor')
                     ->withQueryString();
             } else {
                 $products = $this->applyFilters(
                     filters: $filters,
-                    role: $role)
+                    isManager: $isManager)
                     ->paginate($perPage, 'cursor')
                     ->withQueryString();
             }
@@ -127,15 +134,17 @@ class ProductService
                 Log::channel('product')->info('Product updated', [
                     'product_id' => $product->id,
                     'changes' => $product->getChanges(),
-                    'updated_by' => current_user()?->id ?? 'system',
+                    'updated_by_id' => current_user()?->id ?? null,
+                    'updated_by_type' => current_user()?->getMorphClass() ?? null,
                 ]);
-            })->refresh();
+            });
 
         } catch (QueryException $e) {
             Log::channel('product')->error('Failed to update product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'updated_by' => current_user()?->id,
+                'updated_by_id' => current_user()?->id ?? null,
+                'updated_by_type' => current_user()?->getMorphClass() ?? null,
             ]);
 
             throw $e;
@@ -143,7 +152,8 @@ class ProductService
             Log::channel('product')->error('Unexpected error updating product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'updated_by' => current_user()?->id,
+                'updated_by_id' => current_user()?->id ?? null,
+                'updated_by_type' => current_user()?->getMorphClass() ?? null,
             ]);
 
             throw $e;
@@ -155,9 +165,9 @@ class ProductService
     {
         try {
 
-            if ($product->orderItems()->exists()) {
-                throw new ProductHasOrdersException;
-            }
+            // if ($product->orderItems()->exists()) {
+            //     throw new ProductHasOrdersException;
+            // }
             $product->delete();
 
             return true;
@@ -166,7 +176,8 @@ class ProductService
             Log::channel('product')->error('Failed to delete product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'deleted_by' => current_user()?->id,
+                'updated_by_id' => current_user()?->id ?? null,
+                'updated_by_type' => current_user()?->getMorphClass() ?? null,
             ]);
 
             throw $e;
@@ -174,7 +185,8 @@ class ProductService
             Log::channel('product')->error('Unexpected error deleting product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
-                'deleted_by' => current_user()?->id,
+                'updated_by_id' => current_user()?->id ?? null,
+                'updated_by_type' => current_user()?->getMorphClass() ?? null,
             ]);
 
             throw $e;
@@ -240,7 +252,7 @@ class ProductService
     // filters
     public function applyFilters(
         array $filters,
-        string $role,
+        bool $isManager = false,
         ?Builder $builder = null): Builder
     {
         return ($builder ?? Product::query())
@@ -259,7 +271,7 @@ class ProductService
                 DB::raw('COALESCE(products.discount_price, products.price) as effective_price'),
             ])
             ->join('categories', 'categories.id', '=', 'products.category_id')
-            ->when($role !== 'admin', function ($q) {
+            ->when(! $isManager, function ($q) {
                 $q->where('products.is_active', true);
             })
             ->when(! empty($filters['min_price']), function ($q) use ($filters) {
@@ -297,13 +309,18 @@ class ProductService
     }
 
     // get featuren products
-    public function getFeaturedProducts(string $role = 'customer', int $limit = 8)
+    public function getFeaturedProducts(User|Admin|null $user = null, int $limit = 8): Collection
     {
+        $isManager = ! is_null($user) && $user->can('manage_products');
+
+        $key = $isManager
+            ? "products.all.featured.{$limit}"
+            : "products.active.featured.{$limit}";
 
         return Cache::tags(['products', 'products.list'])
-            ->remember("products.{$role}.featured",
+            ->remember($key,
                 now()->addHour(),
-                fn () => Product::active()
+                fn () => Product::when(! $isManager, fn ($q) => $q->active())
                     ->with('category')
                     ->whereJsonContains('tags', 'featured')
                     ->limit($limit)
@@ -312,32 +329,40 @@ class ProductService
     }
 
     // get new arrivals products
-    public function getNewArrivalProducts(string $role = 'customer', int $limit = 8)
+    public function getNewArrivalProducts(User|Admin|null $user = null, int $limit = 8): Collection
     {
-        return Cache::tags(['products', 'products.list'])
-            ->remember("products.{$role}.new",
-                now()->addHour(),
-                fn () => Product::active()
-                    ->with('category')
-                    ->latest()
-                    ->limit($limit)
-                    ->get()
+        $isManager = ! is_null($user) && $user->can('manage_products');
+
+        $key = $isManager
+            ? "products.all.new.{$limit}"
+            : "products.active.new.{$limit}";
+
+        return Cache::tags(['products', 'products.new'])
+            ->remember($key, now()->addHour(), fn () => Product::when(! $isManager, fn ($q) => $q->active())
+                ->with('category')
+                ->latest()
+                ->limit($limit)
+                ->get()
             );
     }
 
     // get on sale products
-    public function getOnSaleProducts(string $role = 'customer', int $limit = 8)
+    public function getOnSaleProducts(User|Admin|null $user = null, int $limit = 8): Collection
     {
-        return Cache::tags(['products', 'products.list'])
-            ->remember("products.{$role}.onsale",
-                now()->addHour(),
-                fn () => Product::active()
-                    ->with('category')
-                    ->whereNotNull('discount_price')
-                    ->where('discount_price', '>', 0)
-                    ->whereColumn('discount_price', '<', 'price')
-                    ->limit($limit)
-                    ->get()
+        $isManager = ! is_null($user) && $user->can('manage_products');
+
+        $key = $isManager
+            ? "products.all.onsale.{$limit}"
+            : "products.active.onsale.{$limit}";
+
+        return Cache::tags(['products', 'products.onsale'])
+            ->remember($key, now()->addHour(), fn () => Product::when(! $isManager, fn ($q) => $q->active())
+                ->with('category')
+                ->whereNotNull('discount_price')
+                ->where('discount_price', '>', 0)
+                ->whereColumn('discount_price', '<', 'price')
+                ->limit($limit)
+                ->get()
             );
     }
 
@@ -369,6 +394,20 @@ class ProductService
     {
         $product = Product::onlyTrashed()->findOrFail($id);
         $product->forceDelete();
+
+        return $product;
+    }
+
+    public function loadShowRelations(Product $product, User|Admin|null $user): Product
+    {
+        $product->load([
+            'reviews' => fn ($q) => $q->when(
+                $user instanceof User,
+                fn ($q) => $q->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$user->id])
+            )->latest(),
+            'reviews.user',
+            'category',
+        ]);
 
         return $product;
     }

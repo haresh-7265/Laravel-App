@@ -18,7 +18,7 @@ class ProductImportController extends Controller
      */
     public function index()
     {
-        Gate::authorize('manage-products');
+        Gate::authorize('manage_products');
 
         $batchIds = session()->get('batch_ids', []);
 
@@ -30,7 +30,7 @@ class ProductImportController extends Controller
      */
     public function store(Request $request)
     {
-        Gate::authorize('manage-products');
+        Gate::authorize('manage_products');
 
         $request->validate([
             'csv_file' => ['required', 'file', 'mimes:csv', 'max:10240'],
@@ -82,7 +82,7 @@ class ProductImportController extends Controller
         session()->push('batch_ids', $batch->id);
 
         return redirect()
-            ->route('admin.import.index')
+            ->route('products.import.index')
             ->with('success', "Batch dispatched with {$batch->totalJobs} jobs!");
     }
 
@@ -91,7 +91,7 @@ class ProductImportController extends Controller
      */
     public function status(string $batchId)
     {
-        Gate::authorize('manage-products');
+        Gate::authorize('manage_products');
 
         $batch = Bus::findBatch($batchId);
 
@@ -125,7 +125,7 @@ class ProductImportController extends Controller
      */
     public function cancel(string $batchId)
     {
-        Gate::authorize('manage-products');
+        Gate::authorize('manage_products');
 
         $batch = Bus::findBatch($batchId);
 

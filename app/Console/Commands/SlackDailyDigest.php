@@ -35,7 +35,7 @@ class SlackDailyDigest extends Command
 
         $orderCount = Order::whereDate('created_at', $yesterday)->count();
         $revenue = Order::whereDate('created_at', $yesterday)->sum('total');
-        $newCustomers = User::whereDate('created_at', $yesterday)->pluck('name')->toArray();
+        $newCustomers = User::customers()->whereDate('created_at', $yesterday)->pluck('name')->toArray();
         $lowStockProducts = Product::where('stock', '<', 10)
             ->orderBy('stock')
             ->get(['name', 'stock'])

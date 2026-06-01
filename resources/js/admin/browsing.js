@@ -1,5 +1,5 @@
 let browsingCustomers = {};
-let totalJoinedToday = new Set();
+let totalJoinedToday = 0;
 
 const channel = window.Echo.join("store.browsing")
 
@@ -9,34 +9,33 @@ const channel = window.Echo.join("store.browsing")
         // console.log(browsingCustomers);
 
         $.each(users, function (_, user) {
-            if (user.role != "customer") return true;
+            if (user.is_admin) return;
             browsingCustomers[user.id] = {
                 ...user,
                 joinedAt: Date.now(),
             };
         });
 
-        Object.values(browsingCustomers).forEach(function (user) {
-            totalJoinedToday.add(user['id'])
-        });
+        let firstCustomer = users.find(u => !u.is_admin);
+        totalJoinedToday = firstCustomer ? firstCustomer.joinedToday : 0;
         renderPanel(browsingCustomers);
     })
 
     // 🔹 User joined
     .joining(function (user) {
-        if (user.role != "customer") return;
+        if (user.is_admin) return;
         browsingCustomers[user.id] = {
             ...user,
             joinedAt: Date.now(),
         };
 
-        totalJoinedToday.add(user.id);
+        totalJoinedToday=user.joinedToday;
         renderPanel(browsingCustomers);
     })
 
     // 🔹 User left
     .leaving(function (user) {
-        if (user.role != "customer") return;
+        if (user.is_admin) return;
         delete browsingCustomers[user.id];
         renderPanel(browsingCustomers);
     });
@@ -46,7 +45,7 @@ function renderPanel(browsingCustomers) {
     // console.log("customers", customers);
     // 🔹 Metrics
     $("#online-count").text(customers.length);
-    $("#joined-today").text(totalJoinedToday.size);
+    $("#joined-today").text(totalJoinedToday);
 
     // 🔹 Customer list
     let html = "";

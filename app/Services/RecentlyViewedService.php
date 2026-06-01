@@ -11,18 +11,18 @@ class RecentlyViewedService
     protected int $ttlDays = 30;
 
     //  Generate unique key (user or session)
-    protected function getKey(?int $userId = null, ?string $userType = 'guest', ?string $sessionId = null): string
+    protected function getKey(?int $userId = null, ?string $model = 'Guest', ?string $sessionId = null): string
     {
         return $userId
-            ? "recently_viewed:{$userType}:{$userId}"
-            : "recently_viewed:session:{$sessionId}";
+            ? "recently_viewed.{$model}.{$userId}"
+            : "recently_viewed.session.{$sessionId}";
     }
 
     // ─── Track ────────────────────────────────────────────────
 
-    public function track(int $productId, ?int $userId = null, ?string $userType = 'guest', ?string $sessionId = null): void
+    public function track(int $productId, ?int $userId = null, ?string $model = 'Guest', ?string $sessionId = null): void
     {
-        $key = $this->getKey($userId, $userType, $sessionId);
+        $key = $this->getKey($userId, $model, $sessionId);
 
         $ids = Cache::tags(['products', 'products.list'])->get($key, []);
 
@@ -40,9 +40,9 @@ class RecentlyViewedService
 
     // ─── Get ──────────────────────────────────────────────────
 
-    public function get(?int $userId = null, ?string $userType = 'guest', ?string $sessionId = null)
+    public function get(?int $userId = null, ?string $model = 'Guest', ?string $sessionId = null)
     {
-        $key = $this->getKey($userId, $userType, $sessionId);
+        $key = $this->getKey($userId, $model, $sessionId);
 
         $ids = Cache::get($key, []);
 
@@ -56,9 +56,9 @@ class RecentlyViewedService
 
     // ─── Clear ────────────────────────────────────────────────
 
-    public function clear(?int $userId = null, ?string $userType = 'guest', ?string $sessionId = null): void
+    public function clear(?int $userId = null, ?string $model = 'Guest', ?string $sessionId = null): void
     {
-        $key = $this->getKey($userId, $userType, $sessionId);
+        $key = $this->getKey($userId, $model, $sessionId);
 
         Cache::tags(['products','products.list'])->forget($key);
     }

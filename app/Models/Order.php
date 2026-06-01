@@ -16,7 +16,7 @@ class Order extends Model
         'payment_method', 'payment_status', 'invoice_path',
         'notes', 'shipping_name', 'shipping_email', 'shipping_phone',
         'shipping_address', 'billing_address', 'shipping_city', 'shipping_state', 'shipping_pincode',
-        'created_by', 'updated_by',
+        'created_by', 'updated_by_id', 'updated_by_type',
     ];
 
     /**
@@ -58,7 +58,12 @@ class Order extends Model
     // Relationships
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)
+        ->withTrashed()
+        ->withDefault([
+            'name' => 'Deleted User',
+            'email' => 'N/A',
+        ]);
     }
 
     public function items()
@@ -66,14 +71,14 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    public function creator()
+    public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function updater()
+    public function updatedBy()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->morphTo('updated_by');
     }
 
     // Helper

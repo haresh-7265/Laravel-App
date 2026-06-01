@@ -14,7 +14,7 @@ class NotUsedPassword implements ValidationRule
      */
     public function __construct(protected $user = null)
     {
-        $this->user = $user ?? auth()->user();
+        $this->user = $user ?? current_user();
     }
 
     /**

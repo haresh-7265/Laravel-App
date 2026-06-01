@@ -20,7 +20,7 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $customerIds = User::where('role', 'customer')->pluck('id')->toArray();
+        $customerIds = User::customers()->pluck('id')->toArray();
         $adminIds = Admin::pluck('id')->toArray();;
         $productIds = Product::pluck('id')->toArray();
 
@@ -28,14 +28,17 @@ class OrderSeeder extends Seeder
             $this->command->error('Users and products must be seeded before orders.');
             return;
         }
+        $adminMorphType = app(Admin::class)->getMorphClass();
 
-        DB::transaction(function () use ($customerIds, $adminIds, $productIds) {
+        DB::transaction(function () use ($customerIds, $adminIds, $productIds, $adminMorphType) {
             for ($i = 0; $i < 500; $i++) {
                 // 1. Create order with placeholder values for total/subtotal
+                $userId = fake()->randomElement($customerIds);
                 $order = Order::factory()->create([
-                    'user_id' => fake()->randomElement($customerIds),
-                    'created_by' => fake()->randomElement($adminIds),
-                    'updated_by' => fake()->randomElement($adminIds),
+                    'user_id' => $userId,
+                    'created_by' => $userId,
+                    'updated_by_id' => fake()->randomElement($adminIds),
+                    'updated_by_type' => $adminMorphType,
                     'subtotal' => 0,
                     'discount' => 0,
                     'total' => 0,

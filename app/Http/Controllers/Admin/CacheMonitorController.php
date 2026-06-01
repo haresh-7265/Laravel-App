@@ -17,7 +17,7 @@ class CacheMonitorController extends Controller
      */
     public function index()
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('manage_cache');
 
         $data = $this->cacheMonitor->getStatistics();
 
@@ -29,7 +29,7 @@ class CacheMonitorController extends Controller
      */
     public function clearAll()
     {
-        Gate::authorize('view-admin-dashboard');
+        Gate::authorize('manage_cache');
 
         $this->cacheMonitor->clearAll();
 

@@ -18,15 +18,15 @@ return new class extends Migration {
         // Add soft deletes + audit columns to products
         Schema::table('products', function (Blueprint $table) {
             $table->softDeletes();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->nullableMorphs('created_by');
+            $table->nullableMorphs('updated_by');
         });
 
         // Add soft deletes + audit columns to orders
         Schema::table('orders', function (Blueprint $table) {
             $table->softDeletes();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->nullableMorphs('updated_by');
         });
     }
 
@@ -40,15 +40,15 @@ return new class extends Migration {
         });
 
         Schema::table('products', function (Blueprint $table) {
-            $table->dropForeign(['created_by']);
-            $table->dropForeign(['updated_by']);
-            $table->dropColumn(['deleted_at', 'created_by', 'updated_by']);
+            $table->dropSoftDeletes();
+            $table->dropMorphs('created_by');
+            $table->dropMorphs('updated_by');
         });
 
         Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
-            $table->dropForeign(['updated_by']);
-            $table->dropColumn(['deleted_at', 'created_by', 'updated_by']);
+            $table->dropColumn(['deleted_at', 'created_by']);
+            $table->dropMorphs('updated_by');
         });
     }
 };

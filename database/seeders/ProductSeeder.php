@@ -19,7 +19,8 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminIds = Admin::pluck('id')->toArray();
+        $admins = Admin::all();
+        $adminIds = $admins->pluck('id')->toArray();
         $categoryIds = Category::pluck('id')->toArray();
 
         if (empty($adminIds) || empty($categoryIds)) {
@@ -28,33 +29,27 @@ class ProductSeeder extends Seeder
             return;
         }
 
-        DB::transaction(function () use ($adminIds, $categoryIds) {
-            Product::factory()->count(50)->create([
-                'category_id' => fn () => fake()->randomElement($categoryIds),
-                'created_by' => fn () => fake()->randomElement($adminIds),
-                'updated_by' => fn () => fake()->randomElement($adminIds),
-            ]);
+        $morphType = app(Admin::class)->getMorphClass(); // 'admin'
+
+    $morphOverride = fn() => [
+        'category_id'      => fake()->randomElement($categoryIds),
+        'created_by_id'    => fake()->randomElement($adminIds),
+        'created_by_type'  => $morphType,
+        'updated_by_id'    => fake()->randomElement($adminIds),
+        'updated_by_type'  => $morphType,
+    ];
+
+        DB::transaction(function () use ($morphOverride) {
+            Product::factory()->count(50)->create($morphOverride);
 
             // onsale products
-            Product::factory()->onsale()->count(50)->create([
-                'category_id' => fn () => fake()->randomElement($categoryIds),
-                'created_by' => fn () => fake()->randomElement($adminIds),
-                'updated_by' => fn () => fake()->randomElement($adminIds),
-            ]);
+            Product::factory()->onsale()->count(50)->create($morphOverride);
 
             // featured products
-            Product::factory()->featured()->count(50)->create([
-                'category_id' => fn () => fake()->randomElement($categoryIds),
-                'created_by' => fn () => fake()->randomElement($adminIds),
-                'updated_by' => fn () => fake()->randomElement($adminIds),
-            ]);
+            Product::factory()->featured()->count(50)->create($morphOverride);
 
             // outofstock products
-            Product::factory()->outOfStock()->count(50)->create([
-                'category_id' => fn () => fake()->randomElement($categoryIds),
-                'created_by' => fn () => fake()->randomElement($adminIds),
-                'updated_by' => fn () => fake()->randomElement($adminIds),
-            ]);
+            Product::factory()->outOfStock()->count(50)->create($morphOverride);
 
         });
     }

@@ -18,7 +18,6 @@ class OrderObserver
     {
         $userId = current_user()?->id;
         $order->created_by = $order->created_by ?? $userId;
-        $order->updated_by = $order->updated_by ?? $userId;
     }
 
     /**
@@ -27,7 +26,9 @@ class OrderObserver
      */
     public function updating(Order $order): void
     {
-        $order->updated_by = current_user()?->id;
+        current_user()
+        ? $order->updatedBy()->associate(current_user())
+        : $order->updatedBy()->dissociate();
     }
 
     /**
