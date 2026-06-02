@@ -53,7 +53,7 @@ Route::get('/profile/cancel-email-change/{user}', [ProfileController::class, 'ca
     ->name('profile.cancel-email-change')
     ->middleware('signed');
 
-Route::middleware('auth:admin,web')->group(function () {
+Route::middleware('auth:web,admin')->group(function () {
     Route::middleware('verified')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -66,6 +66,7 @@ Route::middleware('auth:admin,web')->group(function () {
         Route::get('/unread-count', [NotificationController::class, 'unread'])->name('unread');
         Route::patch('/{id}/read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
         Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('markAllRead');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 });
 
@@ -104,6 +105,7 @@ Route::middleware('auth:admin,web')->group(function () {
             Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
             Route::get('invoices', [AdminOrderController::class, 'invoices'])->name('invoices.index');
         });
+
 
         // cache performance monitor
         Route::middleware(['permission:manage_cache'])->group(function () {
@@ -151,13 +153,6 @@ Route::middleware('auth:admin,web')->group(function () {
             Route::post('/roles/{user}/verify', [RoleController::class, 'verifyUser'])->name('roles.verify');
             Route::post('/roles/{user}/unverify', [RoleController::class, 'unverifyUser'])->name('roles.unverify');
             Route::post('/roles/{user}/force-reset', [RoleController::class, 'forcePasswordReset'])->name('roles.force-reset');
-            // Soft-delete (available to manage_users)
-            Route::delete('/roles/{user}/delete', [RoleController::class, 'destroy'])->name('roles.delete');
-            // Trash management — admin role only
-            Route::middleware(['role:admin'])->group(function () {
-                Route::post('/roles/{id}/restore', [RoleController::class, 'restore'])->name('roles.restore');
-                Route::delete('/roles/{id}/force-delete', [RoleController::class, 'forceDelete'])->name('roles.forceDelete');
-            });
             // online customer route
             Route::get('online-customers', function () {
                 $customers = collect();
@@ -186,6 +181,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Customer routes
     Route::middleware(['role:customer'])->group(function () {
+
 
         // varified routes
         Route::middleware('verified')->group(function () {
@@ -216,8 +212,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/api-keys/{id}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 });
 
-require __DIR__.'/auth.php';
-require __DIR__.'/cart.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/cart.php';
 
 // ─── Locale Switcher ───────────────────────────────
 Route::patch('/locale', [LocaleController::class, 'switch'])->name('locale.switch');
@@ -259,7 +255,7 @@ Route::get('/test-signed/{user?}', function ($user = 1) {
 
 // Validate signed URL
 Route::get('/unsubscribe/{user}', function (Request $request, $user) {
-    if (! $request->hasValidSignature()) {
+    if (!$request->hasValidSignature()) {
         abort(403, 'Invalid or expired link');
     }
 
@@ -318,3 +314,4 @@ if (app()->environment('local')) {
 
     Route::get('/test-db', [AnalyticsController::class, 'index']);
 }
+

@@ -3,13 +3,13 @@
 namespace App\Notifications;
 
 use App\Models\Product;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
 use Illuminate\Notifications\Slack\SlackMessage;
 
 class ProductLowStock extends BaseNotification
 {
-
     /**
      * Create a new notification instance.
      */
@@ -25,7 +25,7 @@ class ProductLowStock extends BaseNotification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'slack'];
+        return ['mail', 'database', 'slack', 'broadcast'];
     }
 
     /**
@@ -37,7 +37,9 @@ class ProductLowStock extends BaseNotification
     {
         return [
             'mail' => 'emails',
-            'slack' => 'emails',
+            'slack' => 'notifications',
+            'database' => 'default',
+            'broadcast' => 'realtime',
         ];
     }
 
@@ -75,7 +77,7 @@ class ProductLowStock extends BaseNotification
                 'product' => $this->product->name,
                 'stock' => $this->product->stock,
             ]),
-            'icon' => 'alert',
+            'icon' => 'bi-exclamation-triangle',
         ];
     }
 
@@ -121,6 +123,17 @@ class ProductLowStock extends BaseNotification
             });
 
         return $message;
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'type' => 'warning',
+            'message' => __('Low stock alert: :product has only :stock units left', [
+                'product' => $this->product->name,
+                'stock' => $this->product->stock,
+            ]),
+        ]);
     }
 
     // -------------------------------------------------------------------------

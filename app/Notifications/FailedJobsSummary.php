@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class FailedJobsSummary extends BaseNotification
@@ -13,9 +14,7 @@ class FailedJobsSummary extends BaseNotification
         public readonly array $failedJobs,
         public readonly array $groupedCounts,
         public readonly int $hours = 24,
-    ) {
-        $this->onQueue('emails');
-    }
+    ) {}
 
     /**
      * Only email — this is a daily digest, not an urgent alert.
@@ -24,7 +23,15 @@ class FailedJobsSummary extends BaseNotification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'broadcast'];
+    }
+
+    public function viaQueues(){
+        return [
+            'mail' => 'emails',
+            'database' => 'default',
+            'broadcast' => 'realtime',
+        ];
     }
 
     /**
@@ -36,7 +43,7 @@ class FailedJobsSummary extends BaseNotification
 
         $mail = (new MailMessage)
             ->subject("📊 Failed Jobs Summary — {$totalCount} failure(s) in the last {$this->hours}h")
-            ->greeting("Failed Jobs Report")
+            ->greeting('Failed Jobs Report')
             ->line("There were **{$totalCount}** failed job(s) in the last **{$this->hours} hours**.")
             ->line('');
 
@@ -56,7 +63,7 @@ class FailedJobsSummary extends BaseNotification
         }
 
         if ($totalCount > 10) {
-            $mail->line("… and " . ($totalCount - 10) . " more.");
+            $mail->line('… and '.($totalCount - 10).' more.');
         }
 
         $mail->action('View Dashboard', url('/admin/dashboard'));
@@ -76,9 +83,9 @@ class FailedJobsSummary extends BaseNotification
         return [
             'total_failures' => $totalCount,
             'grouped_counts' => $this->groupedCounts,
-            'hours'          => $this->hours,
-            'message'        => "{$totalCount} job(s) failed in the last {$this->hours} hours.",
-            'icon'           => 'warning',
+            'hours' => $this->hours,
+            'message' => "{$totalCount} job(s) failed in the last {$this->hours} hours.",
+            'icon' => 'bi-exclamation-triangle',
         ];
     }
 
@@ -88,8 +95,18 @@ class FailedJobsSummary extends BaseNotification
     public function getPayload(): array
     {
         return [
-            'total'   => count($this->failedJobs),
+            'total' => count($this->failedJobs),
             'grouped' => $this->groupedCounts,
         ];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        $totalCount = count($this->failedJobs);
+
+        return new BroadcastMessage([
+            'type' => 'success',
+            'message' => "{$totalCount} job(s) failed in the last {$this->hours} hours.",
+        ]);
     }
 }

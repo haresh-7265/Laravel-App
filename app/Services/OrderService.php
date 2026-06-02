@@ -323,10 +323,13 @@ class OrderService
             return;
         }
         $order->update(['status' => $status]);
-        $order->refresh();
 
-        if ($status === 'shipped' && $order->user) {
+        if ($status === 'shipped' && $order->user_id) {
             $order->user->notify((new OrderShipped($order))->locale($order->user->preferredLocale()));
+        } else {
+            \Notification::route('mail', [
+                $order->shipping_email => $order->shipping_name,
+            ])->notify(new OrderShipped($order));
         }
     }
 

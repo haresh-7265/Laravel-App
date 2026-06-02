@@ -27,16 +27,4 @@ document.addEventListener('DOMContentLoaded', () => {
     @if(session('info'))     window.notify('info',     @json(session('info')));    @endif
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-        @customer
-            if (window.initNotificationListener) {
-                window.initNotificationListener({{ current_user()->id }}, 'User');
-            }
-        @endcustomer
-        @admin
-            if (window.initNotificationListener) {
-                window.initNotificationListener({{ current_user()->id }}, 'Admin');
-            }
-        @endadmin
-});
 </script>

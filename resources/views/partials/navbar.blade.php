@@ -6,15 +6,15 @@
         <button id="sidebar-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar" class="flex items-center justify-center w-8 h-8 rounded-lg
                    text-gray-300 hover:bg-gray-700 hover:text-white
                    transition flex-shrink-0" title="Menu">
-            <i class="bi bi-list text-xl leading-none"></i>
-        </button>
+                <i class="bi bi-list text-xl leading-none"></i>
+            </button>
 
         {{-- ── Brand ──────────────────────────────────────────────────── --}}
         <a href="/" class="flex items-center justify-center w-8 h-8 flex-shrink-0">
-            <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-8 h-8 object-contain">
+                <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-8 h-8 object-contain">
         </a>
         <a href="/" class="text-base font-semibold flex-shrink-0">
-            {{ config('app.name') }}
+                    {{ config('app.name') }}
         </a>
 
         {{-- ── Right side actions ──────────────────────────────────────── --}}
@@ -37,7 +37,7 @@
                                      rounded-full px-0.5">
                         {{ $cart_count > 99 ? '99+' : ($cart_count ?: '0') }}
                     </span>
-                </a>
+            </a>
             @endcan
 
             {{-- Locale Switcher --}}
@@ -65,21 +65,21 @@
             {{-- Notification Bell --}}
             @include('partials.notification-bell')
 
-            {{-- Profile avatar --}}
+            {{-- Profile avatar (Initials) --}}
             @anyauth
-                <a href="{{ route('profile.edit') }}" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center
-                              text-sm font-medium text-white hover:bg-blue-500 transition" title="Profile">
+                <a href="{{ route('profile.edit') }}" 
+                   class="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-xs font-semibold text-white transition-colors" 
+                   title="Profile">
                     {{ Str::initials(current_user()?->name) }}
                 </a>
             @endanyauth
 
             {{-- Guest login --}}
-            @guest
-                <a href="{{ route('login') }}" class="border border-gray-300 px-3 py-1 rounded text-sm
-                              hover:bg-white hover:text-black transition">
+            @if(is_guest())
+                <a href="{{ route('login') }}" class="border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors">
                     Log in
                 </a>
-            @endguest
+            @endif
 
         </div>
     </div>

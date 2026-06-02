@@ -87,7 +87,7 @@ class NewOrderReceived extends BaseNotification
                 'order' => $this->order->order_number,
                 'customer' => $this->order->shipping_name,
             ]),
-            'icon' => 'order',
+            'icon' => 'bi-bag',
         ];
     }
 

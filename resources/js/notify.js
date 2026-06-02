@@ -73,38 +73,5 @@
         `;
         document.head.appendChild(style);
     }
-    function updateNotificationBadge(count){
-        
-    };
-    function initNotificationListener(userId, userType) {
-        if (!window.Echo || !userId) return;
-
-        window.Echo.private(`App.Models.${userType}.${userId}`)
-
-            // ── listen for specific broadcastType() name ──
-            .notification((notification) => {
-                console.log(notification);
-                const type = notification.type || "info";
-                const title = notification.title || "New notification";
-                const message = notification.message || "";
-
-                // show toast
-                window.notify(type, title, message, 6000);
-
-                // bump bell badge
-                bumpBadge();
-            });
-
-    }
-
-    function bumpBadge() {
-        const badge = document.getElementById("notification-badge");
-        if (!badge) return;
-        const count = parseInt(badge.textContent) || 0;
-        const next = count + 1;
-        badge.textContent = next > 99 ? "99+" : next;
-        badge.style.display = "flex";
-    }
-
-    window.initNotificationListener = initNotificationListener;
+    
 })();

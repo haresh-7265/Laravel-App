@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
@@ -17,7 +18,6 @@ class JobFailedAlert extends BaseNotification
         public readonly string $errorMessage,
         public readonly array $context = [],
     ) {
-        $this->onQueue('notifications');
     }
 
     /**
@@ -27,17 +27,18 @@ class JobFailedAlert extends BaseNotification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', 'slack'];
+        return ['mail', 'database', 'slack', 'broadcast'];
     }
 
     /**
      * Route mail and slack to the "emails" queue.
      */
-    public function viaQueues(): array
-    {
+    public function viaQueues(){
         return [
-            'mail'  => 'emails',
-            'slack' => 'emails',
+            'mail' => 'emails',
+            'database' => 'default',
+            'broadcast' => 'realtime',
+            'slack' => 'notifications',
         ];
     }
 
@@ -74,7 +75,7 @@ class JobFailedAlert extends BaseNotification
             'error'     => $this->errorMessage,
             'context'   => $this->context,
             'message'   => "Job '{$this->jobName}' failed: {$this->errorMessage}",
-            'icon'      => 'error',
+            'icon'      => 'bi-exclamation-triangle',
         ];
     }
 
@@ -113,5 +114,13 @@ class JobFailedAlert extends BaseNotification
             'error'    => $this->errorMessage,
             'context'  => $this->context,
         ];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'type' => 'error',
+            'message' => "Job '{$this->jobName}' failed: {$this->errorMessage}",
+        ]);
     }
 }
