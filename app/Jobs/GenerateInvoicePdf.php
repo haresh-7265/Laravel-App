@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
@@ -45,7 +46,7 @@ class GenerateInvoicePdf implements ShouldQueue
 
         $filename = "invoices/invoice-{$this->order->order_number}.pdf";
 
-        Storage::disk('public')->put($filename, $pdf->output());
+        Storage::disk('local')->put($filename, $pdf->output());
 
         $this->order->update(['invoice_path' => $filename]);
     }
@@ -53,7 +54,7 @@ class GenerateInvoicePdf implements ShouldQueue
     public function failed(\Throwable $e): void
     {
         // Log the failure
-        \Log::channel('order')->error("Failed to Generate Invoice Pdf for order #{$this->order->id}", [
+        Log::channel('order')->error("Failed to Generate Invoice Pdf for order #{$this->order->id}", [
             'error' => $e->getMessage(),
             'file'  => __FILE__,
             'line'  => __LINE__,

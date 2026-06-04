@@ -14,7 +14,7 @@ Route::middleware('throttle:api')->group(function () {
 
         return response()->json([
             'status' => true,
-            'message' => 'Product data fatched successfully',
+            'message' => 'Product data fetched successfully',
             'data' => $products->toArray(),
         ]);
     });
@@ -35,8 +35,8 @@ Route::post('slack/interactions', [SlackInteractionController::class, 'handle'])
 Route::middleware(['web', 'auth:admin,web', 'permission:manage_orders'])->get('/orders', [OrderController::class, 'indexApi'])->name('api.orders.index');
 
 // public
-Route::post('/login',    [ApiAuthController::class, 'login']);
-Route::post('/register', [ApiAuthController::class, 'register']);
+Route::post('/login',    [ApiAuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/register', [ApiAuthController::class, 'register'])->middleware('throttle:5,1');
 
 // protected
 Route::middleware('auth:sanctum')->group(function () {

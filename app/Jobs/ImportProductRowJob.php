@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ImportProductRowJob implements ShouldQueue
 {
@@ -56,6 +57,16 @@ class ImportProductRowJob implements ShouldQueue
             return;
         }
 
+        // ── Price validation ──────────────────────────────────────────
+        $stock = (int) ($row['stock'] ?? 0);
+        if ($stock < 0) {
+            $this->fail(new \InvalidArgumentException(
+                "Row [{$row['name']}]: stock cannot be negative ({$stock})."
+            ));
+
+            return;
+        }
+
         // ── Category — find or create by name ────────────────────────
         $categoryName = trim($row['category'] ?? '');
 
@@ -78,9 +89,7 @@ class ImportProductRowJob implements ShouldQueue
         $tags = $this->parseTags($row['tags'] ?? null);
 
         // ── Upsert product ────────────────────────────────────────────
-        $slug = ! empty($row['slug'])
-            ? $row['slug']
-            : str($row['name'] ?? 'untitled-'.uniqid())->slug();
+        $slug = str($row['name'])->slug();
 
         Product::updateOrCreate(
             ['slug' => $slug],
@@ -100,7 +109,7 @@ class ImportProductRowJob implements ShouldQueue
 
     public function failed(\Throwable $e)
     {
-        \Log::channel('product')->error('Product import failded', [
+        Log::channel('product')->error('Product import failded', [
             'error' => $e->getMessage(),
             'data' => $this->row,
         ]);

@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 
 abstract class BaseNotification extends Notification implements ShouldQueue
 {
@@ -84,7 +85,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'payload' => method_exists($this, 'getPayload') ? $this->getPayload() : [],
         ];
 
-        \Illuminate\Support\Facades\Notification::route('mail', $fallbackEmail)
+        NotificationFacade::route('mail', $fallbackEmail)
             ->notify(new SlackFallbackNotification($details));
     }
 }

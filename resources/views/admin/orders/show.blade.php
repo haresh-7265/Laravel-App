@@ -28,7 +28,7 @@
     </div>
 
     {{-- Update Status Form --}}
-    <form method="POST" action="{{ route('admin.orders.updateStatus', $order) }}" class="d-flex gap-2 align-items-center">
+    <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" class="d-flex gap-2 align-items-center">
         @csrf
         @method('PATCH')
         <select name="status" class="form-select form-select-sm" style="min-width: 150px;"

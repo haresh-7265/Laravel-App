@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\User;
+use App\Services\AuthThrottleService;
 use App\Services\CartService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $email = $request->input('email');
-        $throttleService = app(\App\Services\AuthThrottleService::class);
+        $throttleService = app(AuthThrottleService::class);
 
         if ($email) {
             // 1. Check if the account is currently locked out
@@ -234,7 +235,7 @@ class AuthController extends Controller
             'impersonate.original_admin_id',
         ]);
 
-        return redirect()->route('admin.online-customers')->with('success', 'Impersonation stopped.');
+        return redirect()->route('admin.roles.index')->with('success', 'Impersonation stopped.');
     }
 
     /**

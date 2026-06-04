@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Listeners\CacheEventListener;
 use App\Models\Admin;
 use App\Models\Cart;
 use App\Models\Order;
@@ -16,14 +15,8 @@ use App\Policies\ProfilePolicy;
 use App\Policies\ReviewPolicy;
 use App\Services\ExternalApiService;
 use App\Services\FakeStoreService;
-use App\Services\Greeter;
-use App\Services\PaymentService;
-use App\Services\TestService1;
-use App\Services\TestService2;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Cache\Events\CacheHit;
-use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
@@ -32,12 +25,15 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -49,19 +45,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        Log::info('AppServiceProvider register method');
 
-        $this->app->bind(PaymentService::class, function () {
-            return new PaymentService;
-        });
-
-        $this->app->bind(TestService1::class);
-
-        $this->app->singleton(TestService2::class);
-
-        $this->app->singleton('greeter', function () {
-            return new Greeter;
-        });
 
         $this->app->singleton(FakeStoreService::class);
 
@@ -73,25 +57,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Log::info('AppServiceProvider boot method');
 
         // ── Named Rate Limiters ─────────────────────────────────────
         $this->configureRateLimiting();
 
-        // // ─── Cache event logging ────────────────────────
-        // $listener = new CacheEventListener();
-        // Event::listen(CacheHit::class, [$listener, 'handleCacheHit']);
-        // Event::listen(CacheMissed::class, [$listener, 'handleCacheMissed']);
-
-        \Response::macro('success', function ($data = null, $message = 'Success', $code = 200) {
-            return \Response::json([
+        Response::macro('success', function ($data = null, $message = 'Success', $code = 200) {
+            return response()->json([
                 'status' => 'success',
                 'message' => $message,
                 'data' => $data,
             ], $code);
         });
 
-        \Response::macro('error', function ($message = 'Error', $error = null) {
+        Response::macro('error', function ($message = 'Error', $error = null) {
             return response()->json([
                 'status' => false,
                 'message' => $message,
@@ -99,15 +77,11 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        \View::composer('*', function ($view) {
+        View::composer('*', function ($view) {
             $view->with('current_logged_user', current_user());
         });
 
-        \View::share('company_name', 'Intern Training App');
 
-        \Blade::directive('currency', function ($amount) {
-            return "<?php echo '₹' . number_format((float)$amount, 2); ?>";
-        });
 
         Http::macro('jsonApi', function (string $baseUrl, string $apiKey, int $timeout) {
             return Http::baseUrl($baseUrl)
@@ -129,7 +103,7 @@ class AppServiceProvider extends ServiceProvider
 
         if (! app()->isProduction()) {
             $listening = false;
-            \DB::listen(function (QueryExecuted $event) use (&$listening) {
+            DB::listen(function (QueryExecuted $event) use (&$listening) {
                 if ($listening) {
                     return;
                 } // ✅ skip if already logging
@@ -146,7 +120,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $isLoggingSlowQuery = false;
-        \DB::whenQueryingForLongerThan(100, function (Connection $connection, QueryExecuted $event) use (&$isLoggingSlowQuery) {
+        DB::whenQueryingForLongerThan(100, function (Connection $connection, QueryExecuted $event) use (&$isLoggingSlowQuery) {
 
             if ($isLoggingSlowQuery) {
                 return;
@@ -173,7 +147,7 @@ class AppServiceProvider extends ServiceProvider
                     'updated_at' => now(),
                 ]))->onQueue('analytics'); // Runs AFTER response is sent to user
             } catch (\Throwable $e) {
-                \Log::error('Failed to dispatch slow query job: '.$e->getMessage());
+                Log::error('Failed to dispatch slow query job: '.$e->getMessage());
             } finally {
                 $isLoggingSlowQuery = false;
             }
@@ -181,7 +155,9 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(! app()->isProduction());
 
-        Auth::shouldUse(current_guard());
+        if ($activeGuard = current_guard()) {
+            Auth::shouldUse($activeGuard);
+        }
         // Set default user resolver to check active guards
         Auth::resolveUsersUsing(fn () => current_user());
 
@@ -198,8 +174,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Define authorization gates
         Gate::define('view-admin-dashboard', fn ($user) => $user instanceof Admin);
-        // Gate::define('manage-products', fn ($user) => $user instanceof Admin);
-        // Gate::define('manage-orders', fn ($user) => $user instanceof Admin);
         Gate::define('impersonate-users', fn ($user) => $user instanceof Admin);
         Gate::define('view-analytics', fn ($user) => $user instanceof Admin);
         Gate::define('edit-comment', fn ($u, $c, $p) => $u->id === $c->user_id || $u->id === $p->user_id);

@@ -62,7 +62,7 @@ class OrderConfirmation extends Mailable implements ShouldQueue
         $attachments = [];
 
         if ($this->order->invoice_path) {
-            if (Storage::disk('public')->exists($this->order->invoice_path)) {
+            if (Storage::disk('local')->exists($this->order->invoice_path)) {
                 $attachments[] = Attachment::fromStorageDisk('public', $this->order->invoice_path)
                     ->as("invoice-{$this->order->order_number}.pdf")
                     ->withMime('application/pdf');

@@ -71,7 +71,7 @@ class NotifyAdmin implements ShouldQueue
 
     public function failed($event, Throwable $exception): void
     {
-        \Log::error('Admin notification failed', [
+        Log::error('Admin notification failed', [
             'event' => get_class($event),
             'order_id' => $event->order->order_number,
             'error' => $exception->getMessage(),

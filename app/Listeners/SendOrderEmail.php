@@ -6,6 +6,8 @@ use App\Mail\OrderMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use app\Events\Order\{OrderPlaced, OrderPaid, OrderDelivered, OrderShipped};
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class SendOrderEmail implements ShouldQueue
@@ -25,13 +27,13 @@ class SendOrderEmail implements ShouldQueue
         };
 
         if ($event) {
-            \Mail::to($order->shipping_email)->send(new OrderMail($order, $event));
+            Mail::to($order->shipping_email)->send(new OrderMail($order, $event));
         }
     }
 
     public function failed( $event, Throwable $exception): void
     {
-        \Log::error('Order email failed', [
+        Log::error('Order email failed', [
             'event'    => get_class($event),
             'order_id' => $event->order->order_number,
             'error'    => $exception->getMessage(),

@@ -99,21 +99,5 @@ return [
         'retry_ms' => (int) env('WEBHOOK_NOTIFICATION_RETRY_MS', 500),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Vault / Secrets Manager
-    |--------------------------------------------------------------------------
-    |
-    | URL and credentials for the external secrets vault (Doppler, HashiCorp,
-    | AWS Secrets Manager, or any compatible provider). Switch providers by
-    | updating VAULT_URL and VAULT_TOKEN — no code changes required.
-    |
-    */
-    
-    'vault' => [
-        'token'   => env('VAULT_TOKEN'),
-        'url'     => env('VAULT_URL'),
-        'timeout' => env('VAULT_TIMEOUT', 3),
-    ],
     
 ];

@@ -7,6 +7,7 @@ use App\Mail\ForcedPasswordResetMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -42,7 +43,7 @@ class RoleController extends Controller
 
         $user->delete();
 
-        \Log::channel('security')->info('User soft-deleted by admin', [
+        Log::channel('security')->info('User soft-deleted by admin', [
             'deletable_id'   => current_user()->id,
             'deletable_type' => get_class(current_user()),
             'user_id'    => $user->id,
@@ -65,7 +66,7 @@ class RoleController extends Controller
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
 
-        \Log::channel('security')->info('Trashed user restored by admin', [
+        Log::channel('security')->info('Trashed user restored by admin', [
             'restorable_id'   => current_user()->id,
             'restorable_type' => get_class(current_user()),
             'user_id'    => $user->id,
@@ -91,7 +92,7 @@ class RoleController extends Controller
 
         $user->forceDelete();
 
-        \Log::channel('security')->info('User permanently deleted by admin', [
+        Log::channel('security')->info('User permanently deleted by admin', [
             'deletable_id'   => current_user()->id,
             'deletable_type'   => get_class(current_user()),
             'user_id'    => $id,
@@ -115,7 +116,7 @@ class RoleController extends Controller
         $user->syncRoles($request->roles ?? []);
         $new = $request->roles ?? [];
 
-        \Log::channel('security')->info('Role assignment changed', [
+        Log::channel('security')->info('Role assignment changed', [
             'assignable_id' => current_user()->id,
             'assignable_type' => get_class(current_user()),
             'user_id' => $user->id,
@@ -147,7 +148,7 @@ class RoleController extends Controller
 
         $role->permissions()->sync($permIds);
 
-        \Log::channel('security')->info('Role permissions changed', [
+        Log::channel('security')->info('Role permissions changed', [
             'assignable_id' => current_user()->id,
             'assignable_type' => get_class(current_user()),
             'role' => $role->name,
@@ -169,7 +170,7 @@ class RoleController extends Controller
     {
         $user->markEmailAsVerified();
 
-        \Log::channel('security')->info('User email manually verified by admin', [
+        Log::channel('security')->info('User email manually verified by admin', [
             'verifible_id' => current_user()->id,
             'verifible_type' => get_class(current_user()),
             'user_id' => $user->id,
@@ -190,7 +191,7 @@ class RoleController extends Controller
             'email_verified_at' => null,
         ])->save();
 
-        \Log::channel('security')->info('User email manually un-verified by admin', [
+        Log::channel('security')->info('User email manually un-verified by admin', [
             'verifible_id' => current_user()->id,
             'verifible_type' => get_class(current_user()),
             'user_id' => $user->id,
@@ -214,7 +215,7 @@ class RoleController extends Controller
         // Send warning/explanation email
         Mail::to($user->email)->send(new ForcedPasswordResetMail($user));
 
-        \Log::channel('security')->info('Forced password reset triggered by admin', [
+        Log::channel('security')->info('Forced password reset triggered by admin', [
             'forcable_id' => current_user()->id,
             'forcable_type' => get_class(current_user()),
             'user_id' => $user->id,

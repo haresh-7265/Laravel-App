@@ -11,6 +11,7 @@ use App\Services\RecentlyViewedService;
 use Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -95,9 +96,9 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $user = current_user();
-        ProductViewed::dispatch($product, $user, session()->id());
 
         $product = Products::loadShowRelations($product, $user);
+        ProductViewed::dispatch($product, $user, session()->id());
 
         return view('products.show', compact('product'));
     }
@@ -185,7 +186,7 @@ class ProductController extends Controller
                         ]);
                     });
             } catch (\Exception $e) {
-                \Log::channel('product')->error('CSV Export failed: '.$e->getMessage());
+                Log::channel('product')->error('CSV Export failed: '.$e->getMessage());
             } finally {
                 fclose($handle);
             }

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -45,7 +46,7 @@ class ContactController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'message' => "Too many contact submissions. Please try again in {$minutes} " . \Str::plural('minute', $minutes) . " ({$seconds}s).",
+                    'message' => "Too many contact submissions. Please try again in {$minutes} " . Str::plural('minute', $minutes) . " ({$seconds}s).",
                 ]);
         }
 

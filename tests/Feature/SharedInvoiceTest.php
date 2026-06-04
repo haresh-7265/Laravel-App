@@ -24,8 +24,8 @@ class SharedInvoiceTest extends TestCase
 
     public function test_guest_can_download_invoice_with_valid_encrypted_payload()
     {
-        Storage::fake('public');
-        Storage::disk('public')->put('invoices/dummy.pdf', 'dummy content');
+        Storage::fake('local');
+        Storage::disk('local')->put('invoices/dummy.pdf', 'dummy content');
 
         $user = User::factory()->create();
         $order = Order::factory()->create([

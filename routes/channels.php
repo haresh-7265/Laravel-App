@@ -30,14 +30,13 @@ Broadcast::channel('store.browsing', function ($user) {
         return [
             'id' => $user->id,
             'name' => $user->name,
-            'joinedToday' => (int) Redis::scard('browse.today:'.now()->toDateString()),
-            // 'joinedAt' => 
+            'joinedToday' => (int) Cache::remember('browse.today:'.now()->toDateString(), 60, fn () => Redis::scard('browse.today:'.now()->toDateString())),
             'page' => parse_url(request()->headers->get('referer', '/'), PHP_URL_PATH),
         ];
     }
     if ($user instanceof Admin) {
         return [
-            'id' => 'admin-' . $user->id,
+            'id' => 'admin-'.$user->id,
             'name' => $user->name,
             'is_admin' => true,
         ];

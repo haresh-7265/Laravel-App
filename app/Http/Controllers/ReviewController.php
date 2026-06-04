@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class ReviewController extends Controller
 {
@@ -42,7 +43,7 @@ class ReviewController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'rating' => "You've submitted too many reviews. Please try again in {$minutes} " . \Str::plural('minute', $minutes) . " ({$seconds}s).",
+                    'rating' => "You've submitted too many reviews. Please try again in {$minutes} " . Str::plural('minute', $minutes) . " ({$seconds}s).",
                 ]);
         }
 

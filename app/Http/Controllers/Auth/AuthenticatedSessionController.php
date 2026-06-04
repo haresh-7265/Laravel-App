@@ -8,6 +8,7 @@ use App\Services\CartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 
@@ -34,7 +35,7 @@ class AuthenticatedSessionController extends Controller
         // Merge guest cart into user cart here
             app(CartService::class)->mergeSessionCart($sessionCart);
 
-            \Log::channel('security')->info('User logged in', [
+            Log::channel('security')->info('User logged in', [
                 'user_id' => Auth::id(),
                 'email' => Auth::user()->email,
                 'remember_me' => $request->boolean('remember'),

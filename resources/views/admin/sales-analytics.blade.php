@@ -7,7 +7,7 @@
     {{-- Header --}}
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h1 class="h5 fw-semibold text-dark mb-0">Sales Analytics</h1>
-        <form method="GET" action="{{ route('admin.sales-analytics') }}">
+        <form method="GET" action="{{ route('admin.analytics.index') }}">
             <select name="year" onchange="this.form.submit()"
                 class="form-select form-select-sm" style="width: auto;">
                 @foreach($years as $y)
@@ -38,7 +38,7 @@
     <div class="card border-light rounded-3 p-4 mb-4">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h2 class="h6 fw-medium text-secondary mb-0">Monthly sales — {{ $selectedYear }}</h2>
-            <a href="{{ route('admin.sales-analytics.export', ['type' => 'monthly', 'year' => $selectedYear]) }}"
+            <a href="{{ route('admin.analytics.export', ['type' => 'monthly', 'year' => $selectedYear]) }}"
                class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                Export CSV ↓
             </a>
@@ -57,7 +57,7 @@
             <div class="card border-light rounded-3 p-4 h-100">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h2 class="h6 fw-medium text-secondary mb-0">Top 10 products</h2>
-                    <a href="{{ route('admin.sales-analytics.export', ['type' => 'products', 'year' => $selectedYear]) }}"
+                    <a href="{{ route('admin.analytics.export', ['type' => 'products', 'year' => $selectedYear]) }}"
                        class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                        Export CSV ↓
                     </a>
@@ -100,7 +100,7 @@
             <div class="card border-light rounded-3 p-4 h-100">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h2 class="h6 fw-medium text-secondary mb-0">Top 10 customers</h2>
-                    <a href="{{ route('admin.sales-analytics.export', ['type' => 'customers', 'year' => $selectedYear]) }}"
+                    <a href="{{ route('admin.analytics.export', ['type' => 'customers', 'year' => $selectedYear]) }}"
                        class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                        Export CSV ↓
                     </a>
@@ -145,7 +145,7 @@
     <div class="card border-light rounded-3 p-4 mb-4">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h2 class="h6 fw-medium text-secondary mb-0">Sales by category</h2>
-            <a href="{{ route('admin.sales-analytics.export', ['type' => 'category', 'year' => $selectedYear]) }}"
+            <a href="{{ route('admin.analytics.export', ['type' => 'category', 'year' => $selectedYear]) }}"
                class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 12px;">
                Export CSV ↓
             </a>

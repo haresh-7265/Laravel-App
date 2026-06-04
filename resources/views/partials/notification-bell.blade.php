@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Handle dropdown mark all read
     markAll?.addEventListener('click', function (e) {
         e.stopPropagation();
-        fetch('{{ route("notifications.markAllRead") }}', {
+        fetch('{{ route("notifications.read-all") }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\DailyDigest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class SlackDailyDigest extends Command
@@ -45,7 +46,7 @@ class SlackDailyDigest extends Command
             ])
             ->values()
             ->toArray();
-        $failedJobsCount = \DB::table('failed_jobs')
+        $failedJobsCount = DB::table('failed_jobs')
             ->whereDate('failed_at', $yesterday)
             ->count();
 

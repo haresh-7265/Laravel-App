@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -56,7 +57,7 @@ class RegisteredUserController extends Controller
         // Merge guest cart into user cart here
         app(CartService::class)->mergeSessionCart($sessionCart);
 
-        \Log::channel('security')->info('New user registered', [
+        Log::channel('security')->info('New user registered', [
             'user_id' => $user->id,
             'email' => $user->email,
             'ip' => $request->ip(),

@@ -142,7 +142,7 @@ window._notifState = {
     fetchUrl:  "{{ route('notifications.index') }}",
     readUrl:   "/notifications/__ID__/read",
     deleteUrl: "/notifications/__ID__",
-    markAllUrl:"{{ route('notifications.markAllRead') }}",
+    markAllUrl:"{{ route('notifications.read-all') }}",
     csrfToken: "{{ csrf_token() }}",
 };
 </script>

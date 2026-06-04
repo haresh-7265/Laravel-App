@@ -19,7 +19,10 @@ class SalesAnalyticsService
             ])
             ->whereYear('created_at', $year)
             ->where('status', 'delivered')
-            ->groupBy(DB::raw('DATE_FORMAT(created_at, "%b")'))
+            ->groupBy(
+                DB::raw('DATE_FORMAT(created_at, "%b")'),
+                DB::raw('MONTH(created_at)')
+            )
             ->orderBy(DB::raw('MONTH(created_at)'), 'asc')
             ->get()
             ->keyBy('month');
@@ -134,7 +137,7 @@ class SalesAnalyticsService
      */
     public function getCustomerAggregation(int $userId): array
     {
-        $result = \DB::select('
+        $result = DB::select('
             SELECT 
                 COUNT(id) as total_orders,
                 SUM(total) as lifetime_value,
@@ -152,7 +155,7 @@ class SalesAnalyticsService
      */
     public function getCustomerAggregationNamed(int $userId): array
     {
-        $result = \DB::select('
+        $result = DB::select('
             SELECT 
                 COUNT(id) as total_orders,
                 SUM(total) as lifetime_value,
@@ -173,6 +176,6 @@ class SalesAnalyticsService
     public function truncateOrderAnalytics(): void
     {
         // Example of a one-off DDL operation
-        \DB::connection('analytics')->statement('TRUNCATE TABLE order_analytics'); // Example truncate
+        DB::connection('analytics')->statement('TRUNCATE TABLE order_analytics'); // Example truncate
     }
 }

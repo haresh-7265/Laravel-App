@@ -8,8 +8,6 @@ use App\Services\OrderService;
 use Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -135,24 +133,6 @@ class OrderController extends Controller
         return back()->with('success', 'Payment status updated successfully.');
     }
 
-    public function invoices()
-    {
-        $this->authorize('viewAny', Order::class);
-
-        $files = Storage::disk('public')->files('invoices');
-
-        $invoices = collect($files)->map(function ($path) {
-            return [
-                'filename' => basename($path),
-                'path' => $path,
-                'url' => Storage::disk('public')->url($path),
-                'size' => Storage::disk('public')->size($path),
-                'lastModified' => Storage::disk('public')->lastModified($path),
-            ];
-        })->sortByDesc('lastModified');
-
-        return view('admin.invoices', compact('invoices'));
-    }
 
     private function formatOrder(Order $order): array
     {

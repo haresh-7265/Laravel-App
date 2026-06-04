@@ -20,6 +20,6 @@ class CheckoutTest extends TestCase
 
         GenerateInvoicePdf::dispatchSync($order); // bypasses queue, runs now
 
-        Storage::disk('public')->assertExists("invoices/invoice-{$order->order_number}.pdf");
+        Storage::disk('local')->assertExists("invoices/invoice-{$order->order_number}.pdf");
     }
 }

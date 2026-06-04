@@ -38,14 +38,56 @@ class ProductImportController extends Controller
 
         $path = $request->file('csv_file')->getRealPath();
 
-        // Build jobs from the CSV using LazyCollection (Module 29.5 pattern)
-        $jobs = LazyCollection::make(function () use ($path) {
+        // 1. Open the file to read and validate the header row first
+        $handle = fopen($path, 'r');
+        if (!$handle) {
+            return back()->with('error', 'Failed to open the uploaded CSV file.');
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return back()->with('error', 'The CSV file has no header row.');
+        }
+
+        // Strip BOM + whitespace from headers
+        $header = array_map(fn ($h) => strtolower(trim(preg_replace('/\x{FEFF}/u', '', $h))), $header);
+
+        $allowedHeaders = ['name', 'price', 'discount_price', 'stock', 'category', 'description', 'is_active', 'tags'];
+        $requiredHeaders = ['name', 'price', 'stock', 'category'];
+
+        $missingRequired = array_diff($requiredHeaders, $header);
+        $unknownHeaders = array_diff($header, $allowedHeaders);
+
+        if (!empty($missingRequired)) {
+            fclose($handle);
+            return back()->withErrors([
+                'csv_file' => 'Missing required columns: ' . implode(', ', $missingRequired),
+            ])->with('error', 'Missing required columns: ' . implode(', ', $missingRequired));
+        }
+
+        if (!empty($unknownHeaders)) {
+            fclose($handle);
+            return back()->withErrors([
+                'csv_file' => 'Unknown columns found: ' . implode(', ', $unknownHeaders),
+            ])->with('error', 'Unknown columns found: ' . implode(', ', $unknownHeaders));
+        }
+
+        fclose($handle);
+
+        // 2. Build jobs from the CSV using LazyCollection
+        $jobs = LazyCollection::make(function () use ($path, $header) {
             $handle = fopen($path, 'r');
 
-            // Read header row
-            $header = fgetcsv($handle);
+            // Skip header row since we already validated it
+            fgetcsv($handle);
 
             while (($row = fgetcsv($handle)) !== false) {
+                // Skip empty rows
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+                
                 // Combine header + row into associative array
                 yield array_combine($header, $row);
             }

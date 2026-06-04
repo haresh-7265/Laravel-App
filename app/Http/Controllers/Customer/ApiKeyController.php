@@ -43,25 +43,12 @@ class ApiKeyController extends Controller
         ]);
 
         // Generate a secure random API key with prefix
-        $plaintextKey = 'uk_' . Str::random(40);
-
-        // Fast, unsalted SHA-256 hash for database storage
-        $hashedKey = hash('sha256', $plaintextKey);
-
-        $apiKey = $request->user()->apiKeys()->create([
-            'name' => $request->name,
-            'key_hash' => $hashedKey,
-        ]);
+        $plaintextKey = ApiKey::generateFor(auth()->user(), $request->name);
 
         return response()->json([
             'status' => 'success',
             'message' => 'API Key created successfully. Store this key safely as it will not be shown again.',
             'plain_text_key' => $plaintextKey,
-            'api_key' => [
-                'id' => $apiKey->id,
-                'name' => $apiKey->name,
-                'created_at' => $apiKey->created_at,
-            ],
         ], 201);
     }
 

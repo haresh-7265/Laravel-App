@@ -158,7 +158,7 @@
             </small>
         </div>
 
-        <form action="{{ route('admin.cache-clear') }}" method="POST"
+        <form action="{{ route('admin.cache.clear') }}" method="POST"
               onsubmit="return confirm('Are you sure you want to flush all cache? This cannot be undone.')">
             @csrf
             <button type="submit" class="btn btn-clear-cache">

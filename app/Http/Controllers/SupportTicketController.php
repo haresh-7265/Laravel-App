@@ -7,6 +7,7 @@ use App\Services\SupportTicketService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SupportTicketController extends Controller
@@ -39,7 +40,7 @@ class SupportTicketController extends Controller
             return redirect()->back()
                 ->withInput()
                 ->withErrors([
-                    'subject' => "You've reached the daily ticket limit (3 per day). Please try again in {$hours} " . \Str::plural('hour', $hours) . ".",
+                    'subject' => "You've reached the daily ticket limit (3 per day). Please try again in {$hours} " . Str::plural('hour', $hours) . ".",
                 ]);
         }
 

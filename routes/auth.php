@@ -65,7 +65,3 @@ Route::middleware('auth:admin,web')->group(function () {
     
     Route::post('/logout/all-devices', [AuthController::class, 'logoutAllDevices'])->name('logout.all');
 });
-
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');

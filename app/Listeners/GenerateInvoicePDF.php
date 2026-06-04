@@ -20,7 +20,7 @@ class GenerateInvoicePDF implements ShouldQueue
 
         $filename = "invoices/invoice-{$event->order->order_number}.pdf";
 
-        Storage::disk('public')->put($filename, $pdf->output());
+        Storage::disk('local')->put($filename, $pdf->output());
 
         $event->order->update(['invoice_path' => $filename]);
     }

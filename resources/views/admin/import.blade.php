@@ -365,8 +365,9 @@ document.querySelectorAll('[data-batch-id]').forEach(card => {
             const res  = await fetch(`${statusBase}/${batchId}`);
             const data = await res.json();
             updateCard(card, data);
-
+            console.log(data);
             if (data.finished || data.cancelled) {
+                console.log('Stopping polling', batchId);
                 clearInterval(timer); 
                 timer = null;
                 isRunning = false;

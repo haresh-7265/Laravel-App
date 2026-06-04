@@ -82,7 +82,7 @@ class NotificationTest extends TestCase
 
         // Act — admin updates status to "shipped"
         $response = $this->actingAs($this->admin)
-            ->patch(route('admin.orders.updateStatus', $this->order), [
+            ->patch(route('admin.orders.update-status', $this->order), [
                 'status' => 'shipped',
             ]);
 
@@ -110,7 +110,7 @@ class NotificationTest extends TestCase
 
         // Order is in "processing" — cannot jump directly to "delivered"
         $response = $this->actingAs($this->admin)
-            ->patch(route('admin.orders.updateStatus', $this->order), [
+            ->patch(route('admin.orders.update-status', $this->order), [
                 'status' => 'delivered',
             ]);
 
@@ -239,7 +239,7 @@ class NotificationTest extends TestCase
         Notification::fake();
 
         $this->actingAs($this->admin)
-            ->patch(route('admin.orders.updateStatus', $this->order), [
+            ->patch(route('admin.orders.update-status', $this->order), [
                 'status' => 'shipped',
             ]);
 

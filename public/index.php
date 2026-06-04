@@ -19,9 +19,5 @@ require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
 
-file_put_contents(
-    __DIR__ . '/../storage/logs/requestLifecycle.log','['. date("Y-m-d H:i:s") . '] Request Entered in public/index.php reached [' . PHP_EOL,
-    FILE_APPEND
-);
 
 $app->handleRequest(Request::capture());

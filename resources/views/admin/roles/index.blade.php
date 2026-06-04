@@ -577,7 +577,7 @@ document.addEventListener('click', function (e) {
     const userId = btn.dataset.userId;
     const isVerified = btn.dataset.verified === '1';
     const action = isVerified ? 'unverify' : 'verify';
-    const url = `/admin/roles/${userId}/${action}`;
+    const url = `/admin/user/${userId}/${action}`;
 
     btn.disabled = true;
     const originalHtml = btn.innerHTML;
@@ -633,7 +633,7 @@ document.addEventListener('click', function (e) {
     }
 
     const userId = btn.dataset.userId;
-    const url = `/admin/roles/${userId}/force-reset`;
+    const url = `/admin/user/${userId}/force-reset`;
 
     btn.disabled = true;
     const originalHtml = btn.innerHTML;
@@ -740,7 +740,7 @@ document.addEventListener('click', function (e) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> <span class="action-text">Deleting…</span>';
 
-    ajax(`/admin/roles/${userId}/delete`, {}, 'DELETE')
+    ajax(`/admin/user/${userId}/delete`, {}, 'DELETE')
         .then(res => {
             if (res.success) {
                 const row = document.querySelector(`tr[data-user-id="${userId}"]`);
@@ -781,7 +781,7 @@ document.addEventListener('click', function (e) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Restoring…';
 
-    ajax(`/admin/roles/${userId}/restore`, {}, 'POST')
+    ajax(`/admin/user/${userId}/restore`, {}, 'POST')
         .then(res => {
             if (res.success) {
                 const row = document.getElementById(`trashed-row-${userId}`);
@@ -815,7 +815,7 @@ document.addEventListener('click', function (e) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Deleting…';
 
-    ajax(`/admin/roles/${userId}/force-delete`, {}, 'DELETE')
+    ajax(`/admin/user/${userId}/force-delete`, {}, 'DELETE')
         .then(res => {
             if (res.success) {
                 const row = document.getElementById(`trashed-row-${userId}`);

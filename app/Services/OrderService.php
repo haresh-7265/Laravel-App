@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class OrderService
@@ -327,7 +328,7 @@ class OrderService
         if ($status === 'shipped' && $order->user_id) {
             $order->user->notify((new OrderShipped($order))->locale($order->user->preferredLocale()));
         } else {
-            \Notification::route('mail', [
+            Notification::route('mail', [
                 $order->shipping_email => $order->shipping_name,
             ])->notify(new OrderShipped($order));
         }

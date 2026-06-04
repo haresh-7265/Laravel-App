@@ -30,7 +30,7 @@ We divide secret management into three distinct tiers:
 For production, we use a custom Laravel service provider to fetch secrets from the vault during the framework boot cycle and register them dynamically into PHP's environment and Laravel's configurations.
 
 ### Registration:
-The [SecretsServiceProvider](file:///d:/laravel/laravel12-app/app/Providers/SecretsServiceProvider.php) is registered in [bootstrap/providers.php](file:///d:/laravel/laravel12-app/bootstrap/providers.php).
+The [SecretsServiceProvider](file:/app/Providers/SecretsServiceProvider.php) is registered in [bootstrap/providers.php](file:/bootstrap/providers.php).
 
 ### Workflow:
 1. When `app()->environment('production')` is true, the provider runs the `loadSecretsFromVault()` method.

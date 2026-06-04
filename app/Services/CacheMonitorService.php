@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -220,7 +221,7 @@ class CacheMonitorService
     private function getDatabaseCacheInfo(): array
     {
         $table = config('cache.stores.database.table', 'cache');
-        $count = \DB::table($table)->count();
+        $count = DB::table($table)->count();
 
         return [
             'display'    => "{$count} entries",

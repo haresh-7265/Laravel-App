@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->decimal('price', 8, 2);
+            $table->decimal('price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->integer('stock');
             $table->decimal('avg_rating', 3, 2)->default(0);

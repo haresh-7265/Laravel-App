@@ -118,11 +118,11 @@ class OrderController extends Controller
         $path = $order->invoice_path;
 
         // check file exists
-        if ($path && ! Storage::disk('public')->exists($path)) {
+        if ($path && ! Storage::disk('local')->exists($path)) {
             return back()->with('error', 'Invoice not found. Please contact support.');
         }
 
-        return Storage::disk('public')->download(
+        return Storage::disk('local')->download(
             $path,
             'Invoice-'.$order->order_number.'.pdf'
         );
@@ -155,11 +155,11 @@ class OrderController extends Controller
         $order = Order::findOrFail($data['order_id']);
         $path = $order->invoice_path;
 
-        if ($path && ! Storage::disk('public')->exists($path)) {
+        if ($path && ! Storage::disk('local')->exists($path)) {
             return back()->with('error', 'Invoice not found. Please contact support.');
         }
 
-        return Storage::disk('public')->download(
+        return Storage::disk('local')->download(
             $path,
             'Invoice-'.$order->order_number.'.pdf'
         );

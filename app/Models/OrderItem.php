@@ -14,6 +14,11 @@ class OrderItem extends Model
         'price', 'discount_price', 'quantity', 'subtotal',
     ];
 
+    protected $casts = [
+        'price' => 'decimal:2',
+        'discount_price' => 'decimal:2',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

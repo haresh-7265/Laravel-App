@@ -9,6 +9,7 @@ use App\Mail\CartAbandonedMail;
 use App\Services\RecentlyViewedService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -36,7 +37,7 @@ class CustomerActionSubscriber implements ShouldQueue
 
         $this->recentlyViewedService->track(
             $event->product->id,
-            $user,
+            $user?->id,
             $model,
             $event->sessionId
         );
@@ -111,7 +112,7 @@ class CustomerActionSubscriber implements ShouldQueue
 
     public function failed(object $event, Throwable $exception): void
     {
-        \Log::error('CustomerActionSubscriber job failed', [
+        Log::error('CustomerActionSubscriber job failed', [
             'event' => get_class($event),
             'exception' => $exception->getMessage(),
         ]);
